@@ -98,6 +98,11 @@ namespace Rocks.Profiling.Internal.Implementation
         /// </summary>
         public bool IsCompleted { get; private set; }
 
+        /// <summary>
+        ///     Returns true if <see cref="ChildNodes"/> is null or empty.
+        /// </summary>
+        public bool IsEmpty => this.ChildNodes == null || this.ChildNodes.Count == 0;
+
         #endregion
 
         #region Public methods

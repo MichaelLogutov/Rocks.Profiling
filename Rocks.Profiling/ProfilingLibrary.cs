@@ -77,7 +77,8 @@ namespace Rocks.Profiling
                                 });
 
             c.Register<IProfiler, Profiler>();
-            c.RegisterSingleton<IProfilingResultsProcessor, ProfilingResultsProcessor>();
+            c.RegisterSingleton<ICompletedSessionsProcessorQueue, CompletedSessionsProcessorQueue>();
+            c.RegisterSingleton<ICompletedSessionProcessorService, CompletedSessionProcessorService>();
 
             ReplaceProviderFactories();
         }

@@ -40,13 +40,12 @@
       <HintPath>..\packages\JetBrains.Annotations.10.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Rocks.Dataflow, Version=1.2.5541.28729, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rocks.Dataflow.1.2.5541.28729\lib\net451\Rocks.Dataflow.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Rocks.Helpers, Version=1.5.3.6, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Rocks.Helpers.1.5.3.6\lib\net451\Rocks.Helpers.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Rocks.SimpleInjector">
+      <HintPath>..\packages\Rocks.SimpleInjector.2.0.2.0\lib\net451\Rocks.SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="SimpleInjector, Version=3.1.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleInjector.3.1.2\lib\net45\SimpleInjector.dll</HintPath>
@@ -72,6 +71,10 @@
     <Compile Include="Data\IProfileOperation.cs" />
     <Compile Include="Data\ProfileOperationCategories.cs" />
     <Compile Include="Exceptions\OperationsOutOfOrderProfillingException.cs" />
+    <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />
+    <Compile Include="Internal\ICompletedSessionProcessorService.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionInfo.cs" />
     <Compile Include="Internal\Implementation\ProfileSession.cs" />
     <Compile Include="Internal\Implementation\ProfileOperation.cs" />
     <Compile Include="Exceptions\NoCurrentSessionProfilingException.cs" />
@@ -82,8 +85,8 @@
     <Compile Include="Internal\AdoNetWrappers\WrappedDbConnection.cs" />
     <Compile Include="Internal\AdoNetWrappers\WrappedDbProviderFactory.cs" />
     <Compile Include="Data\ProfileOperationNames.cs" />
-    <Compile Include="Internal\IProfilingResultsProcessor.cs" />
-    <Compile Include="Internal\Implementation\ProfilingResultsProcessor.cs" />
+    <Compile Include="Internal\ICompletedSessionsProcessorQueue.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionsProcessorQueue.cs" />
     <Compile Include="IProfiler.cs" />
     <Compile Include="Internal\Implementation\Profiler.cs" />
     <Compile Include="ProfilerFactory.cs" />

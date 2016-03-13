@@ -39,7 +39,7 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Stops current profile session and stores the results.
         /// </summary>
-        void Stop([CanBeNull] object additionalSessionData = null);
+        void Stop([CanBeNull] IDictionary<string, object> additionalSessionData = null);
 
         #endregion
     }

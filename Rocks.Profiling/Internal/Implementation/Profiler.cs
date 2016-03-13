@@ -17,22 +17,22 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Private readonly fields
 
-        private readonly IProfilingResultsProcessor resultsProcessor;
+        private readonly ICompletedSessionsProcessorQueue completedSessionsProcessorQueue;
 
         #endregion
 
         #region Construct
 
-        public Profiler([NotNull] ProfilerConfiguration configuration, [NotNull] IProfilingResultsProcessor resultsProcessor)
+        public Profiler([NotNull] ProfilerConfiguration configuration, [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            if (resultsProcessor == null)
-                throw new ArgumentNullException(nameof(resultsProcessor));
+            if (completedSessionsProcessorQueue == null)
+                throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
 
             this.Configuration = configuration;
-            this.resultsProcessor = resultsProcessor;
+            this.completedSessionsProcessorQueue = completedSessionsProcessorQueue;
         }
 
         #endregion
@@ -98,7 +98,7 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     If there is no session started - throws an exception.<br />
         ///     Any exceptions this method throws are swallowed and logged to <see cref="ProfilerConfiguration.ErrorLogger"/>.
         /// </summary>
-        public void Stop(object additionalSessionData = null)
+        public void Stop(IDictionary<string, object> additionalSessionData = null)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (session == null)
                     throw new NoCurrentSessionProfilingException();
 
-                this.resultsProcessor.Add(session, additionalSessionData);
+                this.completedSessionsProcessorQueue.Add(new CompletedSessionInfo(session, additionalSessionData));
 
                 CurrentSession.Value = null;
             }

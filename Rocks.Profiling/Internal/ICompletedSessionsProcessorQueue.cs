@@ -4,13 +4,13 @@ using Rocks.Profiling.Internal.Implementation;
 namespace Rocks.Profiling.Internal
 {
     /// <summary>
-    ///     Consumes the results of the profiling and sends them to storage if needed.
+    ///     A queue for the completed profile session, which will handles the processing.
     /// </summary>
-    internal interface IProfilingResultsProcessor
+    internal interface ICompletedSessionsProcessorQueue
     {
         /// <summary>
         ///     Add results from completed profiling session.
         /// </summary>
-        void Add([NotNull] ProfileSession session, [CanBeNull] object additionalSessionData);
+        void Add([NotNull] CompletedSessionInfo completedSessionInfo);
     }
 }

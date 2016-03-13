@@ -100,8 +100,9 @@
     <Compile Include="DependencyInjectionConfigTests.cs" />
     <Compile Include="FixtureBuilder.cs" />
     <Compile Include="IntegrationTests\ProfilerMultithreadStressTest.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionProcessorServiceTests.cs" />
     <Compile Include="Internal\Implementation\ProfilerTests.cs" />
-    <Compile Include="Internal\Implementation\ProfilingResultsProcessorTests.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionsProcessorQueueTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -57,7 +57,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // arrange
             var fixture = new FixtureBuilder().Build();
 
-            var additional_session_data = new object();
+            var additional_session_data = new Dictionary<string, object>();
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
 
@@ -82,8 +82,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // arrange
             var fixture = new FixtureBuilder().Build();
 
-            var additional_session_data = new object();
-            var results_processor = fixture.Freeze<IProfilingResultsProcessor>();
+            var additional_session_data = new Dictionary<string, object>();
+            var results_processor = fixture.Freeze<ICompletedSessionsProcessorQueue>();
 
             var sut = fixture.Create<Profiler>();
 
@@ -96,7 +96,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             results_processor
                 .Received(1)
-                .Add(Arg.Any<ProfileSession>(), additional_session_data);
+                .Add(Arg.Is<CompletedSessionInfo>(x => x != null && x.AdditionalData == additional_session_data));
         }
 
 
@@ -187,7 +187,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var fixture = new FixtureBuilder().Build();
 
 
-            var additional_session_data = new object();
+            var additional_session_data = new Dictionary<string, object>();
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
 
@@ -244,9 +244,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             var results = new List<ProfileSession>();
 
-            fixture.Freeze<IProfilingResultsProcessor>()
-                   .WhenForAnyArgs(x => x.Add(null, null))
-                   .Do(x => results.Add(x.Arg<ProfileSession>()));
+            fixture.Freeze<ICompletedSessionsProcessorQueue>()
+                   .WhenForAnyArgs(x => x.Add(null))
+                   .Do(x => results.Add(x.Arg<CompletedSessionInfo>().Session));
 
             return results;
         }
