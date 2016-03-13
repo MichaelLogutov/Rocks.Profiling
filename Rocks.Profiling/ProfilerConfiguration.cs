@@ -1,41 +1,41 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
 using Rocks.Helpers;
+using Rocks.Profiling.Internal;
+using Rocks.Profiling.Internal.Implementation;
+using SimpleInjector;
 
 namespace Rocks.Profiling
 {
     /// <summary>
     ///     Profiler configuration.
     /// </summary>
-    public class ProfilerConfiguration
+    public sealed class ProfilerConfiguration
     {
+        #region Private readonly fields
+
+        private readonly IList<IProfilerServiceOverride> serviceOverrides;
+
+        #endregion
+
+        #region Construct
+
+        public ProfilerConfiguration()
+        {
+            this.serviceOverrides = new List<IProfilerServiceOverride>();
+        }
+
+        #endregion
+
         #region Public properties
 
         /// <summary>
-        ///     If true then enables autoprofiling the most expensive stream of operations.<br />
-        ///     Value can be specified in application config key "Profiling.AutoProfileEnabled".<br />
+        ///     If true then enables profiling the most expensive stream of operations.<br />
+        ///     Value can be specified in application config key "Profiling.ProfilingEnabled".<br />
         ///     Default value is true.
         /// </summary>
-        public bool AutoProfileEnabled { get; set; }
-
-
-        /// <summary>
-        ///     True if logging profiler internal events is enabled.<br />
-        ///     Value can be specified in application config key "Profiling.LoggingEnabled".<br />
-        ///     Default value is false.
-        /// </summary>
-        public bool LoggingEnabled { get; set; }
-
-
-        /// <summary>
-        ///     Error logging action. Will be called on unhandled exceptions if <see cref="LoggingEnabled" /> is true.<br />
-        ///     The implementation of this action should be thread safe. <br />
-        ///     Default value is null.
-        /// </summary>
-        [CanBeNull]
-        public Action<Exception> ErrorLogger { get; set; }
+        public bool ProfilingEnabled { get; set; }
 
 
         /// <summary>
@@ -62,8 +62,7 @@ namespace Rocks.Profiling
         {
             var result = new ProfilerConfiguration();
 
-            result.AutoProfileEnabled = ConfigurationManager.AppSettings["Profiling.AutoProfileEnabled"].ToBool() ?? true;
-            result.LoggingEnabled = ConfigurationManager.AppSettings["Profiling.LoggingEnabled"].ToBool() ?? false;
+            result.ProfilingEnabled = ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ?? true;
             result.ResultsBufferSize = ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ?? 10000;
 
             result.SessionMinimalDuration = ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
@@ -77,26 +76,13 @@ namespace Rocks.Profiling
         #region Public methods
 
         /// <summary>
-        ///     Logs an exception to <see cref="ErrorLogger" /> if <see cref="LoggingEnabled" /> is true.
+        ///     Overrides specified <typeparamref name="TService" /> implementation.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void LogError(Exception ex)
+        public ProfilerConfiguration OverrideService<TService, TImplementation>()
+            where TImplementation : TService
         {
-            if (!this.LoggingEnabled)
-                return;
-
-            try
-            {
-                this.ErrorLogger?.Invoke(ex);
-            }
-                // ReSharper disable once RedundantCatchClause
-            catch
-            {
-#if DEBUG
-                // ReSharper disable once ThrowingSystemException
-                throw;
-#endif
-            }
+            this.serviceOverrides.Add(new ProfilerServiceOverride<TService, TImplementation>());
+            return this;
         }
 
         #endregion
@@ -106,7 +92,20 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Returns true, if ADO.NET calls should be intercepted.
         /// </summary>
-        internal bool ShouldInterceptAdoNet => this.AutoProfileEnabled;
+        internal bool ShouldInterceptAdoNet => this.ProfilingEnabled;
+
+        #endregion
+
+        #region Protected methods
+
+        /// <summary>
+        ///     Performs configuration of the DI container based on configuration values.
+        /// </summary>
+        internal void ConfigureServices(Container container)
+        {
+            foreach (var service_override in this.serviceOverrides)
+                service_override.Apply(container);
+        }
 
         #endregion
     }

@@ -70,11 +70,13 @@
   <ItemGroup>
     <Compile Include="Data\IProfileOperation.cs" />
     <Compile Include="Data\ProfileOperationCategories.cs" />
+    <Compile Include="Data\ProfileResult.cs" />
     <Compile Include="Exceptions\OperationsOutOfOrderProfillingException.cs" />
     <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />
     <Compile Include="Internal\ICompletedSessionProcessorService.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionInfo.cs" />
+    <Compile Include="Internal\IProfilerServiceOverride.cs" />
     <Compile Include="Internal\Implementation\ProfileSession.cs" />
     <Compile Include="Internal\Implementation\ProfileOperation.cs" />
     <Compile Include="Exceptions\NoCurrentSessionProfilingException.cs" />
@@ -89,7 +91,14 @@
     <Compile Include="Internal\Implementation\CompletedSessionsProcessorQueue.cs" />
     <Compile Include="IProfiler.cs" />
     <Compile Include="Internal\Implementation\Profiler.cs" />
-    <Compile Include="ProfilerFactory.cs" />
+    <Compile Include="Loggers\IProfilerLogger.cs" />
+    <Compile Include="Internal\Implementation\ProfilerServiceOverride.cs" />
+    <Compile Include="Storage\IProfilerResultsStorage.cs" />
+    <Compile Include="Loggers\RethrowProfilerLogger.cs" />
+    <Compile Include="Loggers\ConsoleProfilerLogger.cs" />
+    <Compile Include="Loggers\NullProfilerLogger.cs" />
+    <Compile Include="Storage\NullProfilerResultsStorage.cs" />
+    <Compile Include="Internal\Implementation\ProfilerFactory.cs" />
     <Compile Include="ProfilerConfiguration.cs" />
     <Compile Include="ProfilingLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -97,6 +106,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

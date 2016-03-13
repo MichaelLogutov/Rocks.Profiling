@@ -1,11 +1,11 @@
 ﻿using JetBrains.Annotations;
 
-namespace Rocks.Profiling
+namespace Rocks.Profiling.Internal.Implementation
 {
     /// <summary>
     ///     Profiler factory service locator.
     /// </summary>
-    public static class ProfilerFactory
+    internal static class ProfilerFactory
     {
         #region Static fields
 

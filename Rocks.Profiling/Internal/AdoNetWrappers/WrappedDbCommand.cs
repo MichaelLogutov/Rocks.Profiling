@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Data;
+using Rocks.Profiling.Internal.Implementation;
 
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {

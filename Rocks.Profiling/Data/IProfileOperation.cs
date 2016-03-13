@@ -7,7 +7,7 @@ namespace Rocks.Profiling.Data
     /// <summary>
     ///     Represents information about some arbitrary operation during profiling (for example, method execution).
     /// </summary>
-    public interface IProfileOperation : IDisposable
+    public interface IProfileOperation : IEnumerable<IProfileOperation>, IDisposable
     {
         /// <summary>
         ///     Operation name.
@@ -27,6 +27,12 @@ namespace Rocks.Profiling.Data
         /// </summary>
         [CanBeNull]
         IDictionary<string, object> Data { get; }
+
+        /// <summary>
+        ///     Parent node.
+        /// </summary>
+        [CanBeNull]
+        IProfileOperation Parent { get; }
 
         /// <summary>
         ///     Gets or sets additional data for this operation by key.

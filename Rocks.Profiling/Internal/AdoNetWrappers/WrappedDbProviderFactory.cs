@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Reflection;
+using Rocks.Profiling.Internal.Implementation;
 
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {

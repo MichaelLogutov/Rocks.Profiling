@@ -17,7 +17,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var fixture = new FixtureBuilder().Build();
 
 
-            var session = new ProfileSession();
+            var session = fixture.Create<ProfileSession>();
 
 
             // act
@@ -37,7 +37,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
 
-            var session = new ProfileSession();
+            var session = fixture.Create<ProfileSession>();
             AddOperation(session);
 
 
@@ -58,7 +58,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
 
-            var session = new ProfileSession();
+            var session = fixture.Create<ProfileSession>();
             AddOperation(session, 0, 100);
             AddOperation(session, 100, 1000);
 

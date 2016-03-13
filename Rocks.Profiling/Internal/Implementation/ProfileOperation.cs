@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using Rocks.Profiling.Data;
 
@@ -68,7 +70,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Profile session for this operation.
         /// </summary>
-        [NotNull]
+        [CanBeNull]
         public ProfileSession Session { get; set; }
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace Rocks.Profiling.Internal.Implementation
         public bool IsCompleted { get; private set; }
 
         /// <summary>
-        ///     Returns true if <see cref="ChildNodes"/> is null or empty.
+        ///     Returns true if <see cref="ChildNodes" /> is null or empty.
         /// </summary>
         public bool IsEmpty => this.ChildNodes == null || this.ChildNodes.Count == 0;
 
@@ -145,6 +147,42 @@ namespace Rocks.Profiling.Internal.Implementation
         #region IProfileOperation Members
 
         /// <summary>
+        ///     Parent node.
+        /// </summary>
+        IProfileOperation IProfileOperation.Parent => this.Parent as IProfileOperation;
+
+
+        /// <summary>
+        ///     Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        ///     An enumerator that can be used to iterate through the collection.
+        /// </returns>
+        IEnumerator<IProfileOperation> IEnumerable<IProfileOperation>.GetEnumerator()
+        {
+            if (this.ChildNodes == null)
+                return (IEnumerator<IProfileOperation>) Enumerable.Empty<IProfileOperation>();
+
+            return this.ChildNodes.GetEnumerator();
+        }
+
+
+        /// <summary>
+        ///     Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        ///     An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// </returns>
+        public IEnumerator GetEnumerator()
+        {
+            if (this.ChildNodes == null)
+                return new ProfileOperation[0].GetEnumerator();
+
+            return ((IEnumerable) this.ChildNodes).GetEnumerator();
+        }
+
+
+        /// <summary>
         ///     Adds new data.
         ///     Overwrite previous value with the same <paramref name="dataKey" />.
         ///     The key is case sensitive.
@@ -169,15 +207,9 @@ namespace Rocks.Profiling.Internal.Implementation
             if (this.IsCompleted)
                 return;
 
-            try
-            {
-                this.Session.StopMeasure(this);
-                this.IsCompleted = true;
-            }
-            catch (Exception ex)
-            {
-                this.Profiler.Configuration.LogError(ex);
-            }
+            this.Session?.StopMeasure(this);
+
+            this.IsCompleted = true;
         }
 
         #endregion

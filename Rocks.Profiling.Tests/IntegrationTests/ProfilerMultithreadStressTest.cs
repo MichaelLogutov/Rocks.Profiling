@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Rocks.Helpers;
+using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Loggers;
 using Xunit;
 
 // ReSharper disable ThrowingSystemException
@@ -15,15 +17,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
         public void MultithreadStressTest_DoesNotThrow()
         {
             // arrange
-            ProfilingLibrary.Setup(() => null,
-                                   configure: x =>
-                                              {
-                                                  x.LoggingEnabled = true;
-                                                  x.ErrorLogger = ex =>
-                                                                  {
-                                                                      throw ex;
-                                                                  };
-                                              });
+            ProfilingLibrary.Setup(() => null, configure: x => x.OverrideService<IProfilerLogger, RethrowProfilerLogger>());
 
 
             var tasks = Enumerable.Range(0, 10)

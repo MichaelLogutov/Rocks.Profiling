@@ -1,26 +1,58 @@
 ﻿using System;
-using Rocks.Benchmark;
+using System.Configuration;
+using System.Threading.Tasks;
+using Dapper;
+using Newtonsoft.Json;
+using Rocks.Helpers;
+using Rocks.Profiling;
+using Rocks.Profiling.Data;
+using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Storage;
 
 namespace Sandbox
 {
     public class Program
     {
+        public class ConsoleProfileResultsStorage : IProfilerResultsStorage
+        {
+            /// <summary>
+            ///     Adds new profile <paramref name="result"/> to the storage.
+            /// </summary>
+            public void Add(ProfileResult result)
+            {
+                Console.WriteLine("\n" + JsonConvert.SerializeObject(result, Formatting.Indented));
+            }
+        }
+
+
         public static void Main()
         {
             try
             {
-                //ProfilingLibrary.Setup(() => null, configure: x => x.ErrorLogger = Console.WriteLine);
+                ProfilingLibrary.Setup(() => null,
+                                       configure: x =>
+                                                  {
+                                                      x.SessionMinimalDuration = TimeSpan.FromMilliseconds(1);
+                                                      x.OverrideService<IProfilerLogger, ConsoleProfilerLogger>();
+                                                      x.OverrideService<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
+                                                  });
 
-                //using (var connection = ConfigurationManager.ConnectionStrings["Realty"].CreateDbConnection())
-                //{
-                //    var id = connection.Query<int>("select top 1 Id from dbo.Objects with (nolock) order by Id desc").FirstOrNull();
+                ProfilingLibrary.StartProfiling();
 
-                //    Console.WriteLine("id: {0}", id);
-                //}
+                using (var connection = ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection())
+                {
+                    var id = connection.Query<int>("select top 1 object_id from sys.tables").FirstOrNull();
+
+                    Console.WriteLine("id: {0}", id);
+                }
+
+                ProfilingLibrary.StopProfiling();
+
+                Task.Delay(1000).Wait();
 
                 //DoAsync().Wait();
 
-                var benchmarks = new BenchmarkList(100, 100);
+                //var benchmarks = new BenchmarkList(100, 100);
 
                 //benchmarks.Add("Callstack", () => GetCallStackMethods());
                 //benchmarks.Add("Environment.StackTrace", () =>
@@ -73,7 +105,7 @@ namespace Sandbox
                 //                   }
                 //               });
 
-                benchmarks.RunAll(false).WriteToConsole();
+                //benchmarks.RunAll(false).WriteToConsole();
             }
                 // ReSharper disable once CatchAllClause
             catch (Exception ex)

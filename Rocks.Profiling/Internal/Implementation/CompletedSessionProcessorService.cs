@@ -1,4 +1,7 @@
 ﻿using System;
+using JetBrains.Annotations;
+using Rocks.Profiling.Data;
+using Rocks.Profiling.Storage;
 
 namespace Rocks.Profiling.Internal.Implementation
 {
@@ -7,14 +10,23 @@ namespace Rocks.Profiling.Internal.Implementation
         #region Private readonly fields
 
         private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerResultsStorage resultsStorage;
 
         #endregion
 
         #region Construct
 
-        public CompletedSessionProcessorService(ProfilerConfiguration configuration)
+        public CompletedSessionProcessorService([NotNull] ProfilerConfiguration configuration,
+                                                [NotNull] IProfilerResultsStorage resultsStorage)
         {
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            if (resultsStorage == null)
+                throw new ArgumentNullException(nameof(resultsStorage));
+
             this.configuration = configuration;
+            this.resultsStorage = resultsStorage;
         }
 
         #endregion
@@ -33,7 +45,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session.OperationsTreeRoot.IsEmpty)
                 return false;
 
-            var total_duration = GetSessionTotalDuration(session);
+            var total_duration = session.GetTotalDuration();
 
             if (total_duration < this.configuration.SessionMinimalDuration)
                 return false;
@@ -50,29 +62,9 @@ namespace Rocks.Profiling.Internal.Implementation
             if (completedSessionInfo == null)
                 throw new ArgumentNullException(nameof(completedSessionInfo));
 
-            throw new NotImplementedException();
-        }
+            var result = new ProfileResult(completedSessionInfo);
 
-        #endregion
-
-        #region Private methods
-
-        private static TimeSpan GetSessionTotalDuration(ProfileSession session)
-        {
-            if (session.OperationsTreeRoot.ChildNodes == null)
-                return TimeSpan.Zero;
-
-            var total_ticks = 0L;
-
-            foreach (var operation in session.OperationsTreeRoot.ChildNodes)
-            {
-                if (operation.EndTime == null)
-                    continue;
-
-                total_ticks += (operation.EndTime.Value - operation.StartTime).Ticks;
-            }
-
-            return new TimeSpan(total_ticks);
+            this.resultsStorage.Add(result);
         }
 
         #endregion

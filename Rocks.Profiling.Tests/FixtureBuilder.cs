@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoNSubstitute;
 using Ploeh.AutoFixture.Kernel;
+using Rocks.Profiling.Loggers;
 using SimpleInjector;
 
 namespace Rocks.Profiling.Tests
@@ -39,12 +40,7 @@ namespace Rocks.Profiling.Tests
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             fixture.Customize(new AutoConfiguredNSubstituteCustomization());
 
-            var profiler_configuration = fixture.Freeze<ProfilerConfiguration>();
-            profiler_configuration.LoggingEnabled = true;
-            profiler_configuration.ErrorLogger = x =>
-                                                 {
-                                                     throw x;
-                                                 };
+            fixture.Inject<IProfilerLogger>(new RethrowProfilerLogger());
 
             {
                 var container = new Container { Options = { AllowOverridingRegistrations = true } };

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -8,6 +9,8 @@ using JetBrains.Annotations;
 using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Storage;
 using SimpleInjector;
 
 namespace Rocks.Profiling
@@ -16,29 +19,7 @@ namespace Rocks.Profiling
     {
         #region Static fields
 
-        private static Container container;
-
-        #endregion
-
-        #region Public properties
-
-        /// <summary>
-        ///     Get current library DI container.
-        /// </summary>
-        /// <exception cref="InvalidOperationException" accessor="get">ProfilingLibrary не инициализирована. Необходимо вызвать ProfilingLibrary.Setup ()</exception>
-        public static Container Container
-        {
-            get
-            {
-                if (container == null)
-                    throw new InvalidOperationException("ProfilingLibrary не инициализирована. Необходимо вызвать ProfilingLibrary.Setup ()");
-
-                return container;
-            }
-            internal set { container = value; }
-        }
-
-        internal static Func<HttpContextBase> HttpContextFactory { get; private set; }
+        internal static Container Container { get; private set; }
 
         #endregion
 
@@ -46,21 +27,50 @@ namespace Rocks.Profiling
 
         public static void Setup(Func<HttpContextBase> httpContextFactory,
                                  Container externalContainer = null,
-                                 Lifestyle defaultLifestyle = null,
                                  Action<ProfilerConfiguration> configure = null)
         {
             if (externalContainer == null)
                 externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
 
-            if (defaultLifestyle == null)
-                // ReSharper disable once RedundantAssignment
-                defaultLifestyle = Lifestyle.Transient;
-
             RegisterAll(externalContainer, configure);
 
-            container = externalContainer;
+            Container = externalContainer;
             HttpContextFactory = httpContextFactory;
         }
+
+
+        /// <summary>
+        ///     Gets the current profiler instance.
+        /// </summary>
+        [NotNull]
+        public static IProfiler GetCurrentProfiler()
+        {
+            return ProfilerFactory.GetCurrentProfiler();
+        }
+
+
+        /// <summary>
+        ///     Starts new profile session on the current profile.
+        /// </summary>
+        public static void StartProfiling()
+        {
+            ProfilerFactory.GetCurrentProfiler().Start();
+        }
+
+
+        /// <summary>
+        ///     Starts new profile session on the current profile.
+        /// </summary>
+        public static void StopProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
+        {
+            ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
+        }
+
+        #endregion
+
+        #region Protected properties
+
+        internal static Func<HttpContextBase> HttpContextFactory { get; private set; }
 
         #endregion
 
@@ -68,19 +78,21 @@ namespace Rocks.Profiling
 
         private static void RegisterAll(Container c, [CanBeNull] Action<ProfilerConfiguration> configure)
         {
-            c.RegisterSingleton(() =>
-                                {
-                                    var config = ProfilerConfiguration.FromAppConfig();
-                                    configure?.Invoke(config);
+            var configuration = ProfilerConfiguration.FromAppConfig();
+            configure?.Invoke(configuration);
 
-                                    return config;
-                                });
+            c.RegisterSingleton(configuration);
 
             c.Register<IProfiler, Profiler>();
+            c.RegisterSingleton<IProfilerLogger, NullProfilerLogger>();
+
             c.RegisterSingleton<ICompletedSessionsProcessorQueue, CompletedSessionsProcessorQueue>();
             c.RegisterSingleton<ICompletedSessionProcessorService, CompletedSessionProcessorService>();
+            c.RegisterSingleton<IProfilerResultsStorage, NullProfilerResultsStorage>();
 
             ReplaceProviderFactories();
+
+            configuration.ConfigureServices(c);
         }
 
 

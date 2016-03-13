@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
+using Rocks.Profiling.Loggers;
 using Rocks.SimpleInjector.Attributes;
 
 namespace Rocks.Profiling.Internal.Implementation
@@ -15,7 +16,7 @@ namespace Rocks.Profiling.Internal.Implementation
         [ThreadSafe]
         private readonly object processingTaskInitializationLock = new object();
 
-        private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerLogger logger;
         private readonly ICompletedSessionProcessorService processorService;
 
         [ThreadSafe]
@@ -35,14 +36,23 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
-        public CompletedSessionsProcessorQueue([NotNull] ProfilerConfiguration configuration, ICompletedSessionProcessorService processorService)
+        public CompletedSessionsProcessorQueue([NotNull] ProfilerConfiguration configuration,
+                                               [NotNull] IProfilerLogger logger,
+                                               [NotNull] ICompletedSessionProcessorService processorService)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            this.configuration = configuration;
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
+
+            if (processorService == null)
+                throw new ArgumentNullException(nameof(processorService));
+
             this.processorService = processorService;
-            this.dataToProcess = new BlockingCollection<CompletedSessionInfo>(this.configuration.ResultsBufferSize);
+            this.logger = logger;
+
+            this.dataToProcess = new BlockingCollection<CompletedSessionInfo>(configuration.ResultsBufferSize);
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -62,7 +72,7 @@ namespace Rocks.Profiling.Internal.Implementation
             }
             catch (Exception ex)
             {
-                this.configuration.LogError(ex);
+                this.logger.LogError(ex);
             }
         }
 
@@ -107,10 +117,17 @@ namespace Rocks.Profiling.Internal.Implementation
                      {
                          while (!this.cancellationTokenSource.IsCancellationRequested)
                          {
-                             var completed_session_info = this.dataToProcess.Take();
+                             try
+                             {
+                                 var completed_session_info = this.dataToProcess.Take();
 
-                             if (this.processorService.ShouldProcess(completed_session_info))
-                                 this.processorService.Process(completed_session_info);
+                                 if (this.processorService.ShouldProcess(completed_session_info))
+                                     this.processorService.Process(completed_session_info);
+                             }
+                             catch (Exception ex)
+                             {
+                                 this.logger.LogError(ex);
+                             }
                          }
                      },
                      this.cancellationTokenSource.Token);
