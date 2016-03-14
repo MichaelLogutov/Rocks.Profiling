@@ -33,7 +33,9 @@ namespace Rocks.Profiling
         ///     If there is no session started - returns dummy operation that will do nothing.
         /// </summary>
         [NotNull]
-        IProfileOperation Profile([NotNull] string name, [CanBeNull] string category = null, [CanBeNull] IDictionary<string, object> data = null);
+        ProfileOperation Profile([NotNull] string name,
+                                 [CanBeNull] string category = null,
+                                 [CanBeNull] IDictionary<string, object> data = null);
 
 
         /// <summary>

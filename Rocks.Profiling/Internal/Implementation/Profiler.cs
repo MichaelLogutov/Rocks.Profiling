@@ -68,7 +68,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (CurrentSession.Value != null)
                     throw new SessionAlreadyStartedProfilingException();
 
-                CurrentSession.Value = new ProfileSession(this.logger);
+                CurrentSession.Value = new ProfileSession(this, this.logger);
             }
             catch (Exception ex)
             {
@@ -84,9 +84,9 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     If there is no session started - will do nothing on disposing.<br />
         ///     Any exceptions this method throws are swallowed and logged to <see cref="IProfilerLogger"/>.
         /// </summary>
-        public IProfileOperation Profile(string name, string category = null, IDictionary<string, object> data = null)
+        public ProfileOperation Profile(string name, string category = null, IDictionary<string, object> data = null)
         {
-            var operation = new ProfileOperation(name, category, data);
+            var operation = new ProfileOperation(category, data);
             operation.Profiler = this;
 
             CurrentSession.Value?.StartMeasure(operation);

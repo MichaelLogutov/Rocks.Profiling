@@ -1,17 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
 
-namespace Rocks.Profiling.Internal.Implementation
+namespace Rocks.Profiling.Data
 {
     /// <summary>
     ///     Represents a stream of profile events.
     ///     This class is not thread safe.
     /// </summary>
-    internal sealed class ProfileSession
+    public sealed class ProfileSession
     {
         #region Private readonly fields
 
@@ -29,15 +29,20 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
-        public ProfileSession([NotNull] IProfilerLogger logger)
+        public ProfileSession([NotNull] IProfiler profiler, [NotNull] IProfilerLogger logger)
         {
+            if (profiler == null)
+                throw new ArgumentNullException(nameof(profiler));
+
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
 
+            this.stopwatch = Stopwatch.StartNew();
+
+            this.Profiler = profiler;
             this.logger = logger;
 
-            this.stopwatch = Stopwatch.StartNew();
-            this.OperationsTreeRoot = new ProfileOperation(ProfileOperationNames.ProfileSession);
+            this.OperationsTreeRoot = new ProfileOperation(this, ProfileOperationNames.ProfileSession);
 
             this.currentOperation = this.OperationsTreeRoot;
         }
@@ -45,6 +50,16 @@ namespace Rocks.Profiling.Internal.Implementation
         #endregion
 
         #region Public properties
+
+        /// <summary>
+        ///     Profiler of the session.
+        /// </summary>
+        public IProfiler Profiler { get; }
+
+        /// <summary>
+        ///     Additional data associated with the session.
+        /// </summary>
+        public IDictionary<string, object> AdditionalData { get; set; }
 
         /// <summary>
         ///     Current time in session.
@@ -58,12 +73,12 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #endregion
 
-        #region Public methods
+        #region Protected methods
 
         /// <summary>
         ///     Starts new operation measure.
         /// </summary>
-        public void StartMeasure([NotNull] ProfileOperation operation)
+        internal void StartMeasure([NotNull] ProfileOperation operation)
         {
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
@@ -87,7 +102,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Stops operation measure.
         /// </summary>
-        public void StopMeasure([NotNull] ProfileOperation operation)
+        internal void StopMeasure([NotNull] ProfileOperation operation)
         {
             if (operation == null)
                 throw new ArgumentNullException(nameof(operation));
@@ -107,28 +122,6 @@ namespace Rocks.Profiling.Internal.Implementation
             {
                 this.logger.LogError(ex);
             }
-        }
-
-
-        /// <summary>
-        ///     Gets total duration of operations.
-        /// </summary>
-        public TimeSpan GetTotalDuration()
-        {
-            if (this.OperationsTreeRoot.ChildNodes == null)
-                return TimeSpan.Zero;
-
-            var total_ticks = 0L;
-
-            foreach (var operation in this.OperationsTreeRoot.ChildNodes)
-            {
-                if (operation.EndTime == null)
-                    continue;
-
-                total_ticks += (operation.EndTime.Value - operation.StartTime).Ticks;
-            }
-
-            return new TimeSpan(total_ticks);
         }
 
         #endregion

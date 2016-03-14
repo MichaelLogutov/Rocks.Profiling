@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture;
+using Rocks.Profiling.Data;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.Implementation;

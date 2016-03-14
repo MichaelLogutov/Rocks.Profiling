@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using Ploeh.AutoFixture;
+using Rocks.Profiling.Data;
 using Rocks.Profiling.Internal.Implementation;
 using Xunit;
 
@@ -84,7 +85,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
         private static void AddOperation(ProfileSession session)
         {
-            var operation = new ProfileOperation("test");
+            var operation = new ProfileOperation();
 
             session.StartMeasure(operation);
             session.StopMeasure(operation);
@@ -93,7 +94,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
         private static void AddOperation(ProfileSession session, int startTimeMs, int endTimeMs)
         {
-            var operation = new ProfileOperation("test");
+            var operation = new ProfileOperation();
 
             session.StartMeasure(operation);
             session.StopMeasure(operation);
