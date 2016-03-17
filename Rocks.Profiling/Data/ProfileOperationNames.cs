@@ -10,7 +10,7 @@ namespace Rocks.Profiling.Data
         /// <summary>
         ///     The root of the session operations tree.
         /// </summary>
-        public static string ProfileSession = "ProfileSession";
+        public static string ProfileSessionRoot = "Root";
 
         /// <summary>
         ///     Execution of <see cref="DbCommand.ExecuteNonQuery"/> method.

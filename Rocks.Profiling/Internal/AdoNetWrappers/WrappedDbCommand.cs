@@ -201,11 +201,12 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Private methods
 
-        [NotNull]
+        [CanBeNull]
         private IDisposable Profile(string name)
         {
-            var operation = this.profiler.Profile(name, ProfileOperationCategories.Sql);
-            operation["Sql"] = this.InnerCommand.CommandText;
+            var operation = this.profiler
+                                .Profile(name, ProfileOperationCategories.Sql)
+                                .WithOperationData("Sql", this.InnerCommand.CommandText);
 
             return operation;
         }

@@ -32,7 +32,7 @@ namespace Rocks.Profiling
         ///     Uppon disposing will store the results of measurement in the current session.<br />
         ///     If there is no session started - returns dummy operation that will do nothing.
         /// </summary>
-        [NotNull]
+        [CanBeNull, MustUseReturnValue]
         ProfileOperation Profile([NotNull] string name,
                                  [CanBeNull] string category = null,
                                  [CanBeNull] IDictionary<string, object> data = null);

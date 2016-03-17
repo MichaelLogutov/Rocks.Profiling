@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Data\ProfileOperationCategories.cs" />
     <Compile Include="Data\ProfileResult.cs" />
+    <Compile Include="Exceptions\OperationFromAnotherSessionProfilingException.cs" />
     <Compile Include="Exceptions\OperationsOutOfOrderProfillingException.cs" />
     <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />

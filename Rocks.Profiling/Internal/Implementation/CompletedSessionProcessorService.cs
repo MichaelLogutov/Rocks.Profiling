@@ -45,9 +45,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session.OperationsTreeRoot.IsEmpty)
                 return false;
 
-            var total_duration = session.GetTotalDuration();
-
-            if (total_duration < this.configuration.SessionMinimalDuration)
+            if (session.Duration < this.configuration.SessionMinimalDuration)
                 return false;
 
             return true;

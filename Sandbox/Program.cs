@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Threading.Tasks;
 using Dapper;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Rocks.Helpers;
 using Rocks.Profiling;
 using Rocks.Profiling.Data;
@@ -20,7 +22,14 @@ namespace Sandbox
             /// </summary>
             public void Add(ProfileResult result)
             {
-                Console.WriteLine("\n" + JsonConvert.SerializeObject(result, Formatting.Indented));
+                var json = JsonConvert.SerializeObject(result,
+                                                       new JsonSerializerSettings
+                                                       {
+                                                           Formatting = Formatting.Indented,
+                                                           ContractResolver = new CamelCasePropertyNamesContractResolver()
+                                                       });
+
+                Console.WriteLine("\n" + json);
             }
         }
 
@@ -46,9 +55,12 @@ namespace Sandbox
                     Console.WriteLine("id: {0}", id);
                 }
 
-                ProfilingLibrary.StopProfiling();
+                ProfilingLibrary.StopProfiling(new Dictionary<string, object>
+                                               {
+                                                   { "name", "test session" }
+                                               });
 
-                Task.Delay(1000).Wait();
+                Task.Delay(500).Wait();
 
                 //DoAsync().Wait();
 

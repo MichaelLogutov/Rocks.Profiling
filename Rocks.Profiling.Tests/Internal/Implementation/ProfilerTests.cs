@@ -28,7 +28,12 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            Action act = () => fixture.Create<Profiler>().Profile("test");
+            Action act = () =>
+                         {
+                             using (fixture.Create<Profiler>().Profile("test"))
+                             {
+                             }
+                         };
 
 
             // assert
@@ -67,7 +72,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // act
             sut.Start();
-            sut.Profile("test").Dispose();
+            using (sut.Profile("test"))
+            {
+            }
             sut.Stop(additional_session_data);
 
 
@@ -118,13 +125,17 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                     Task.Run(() =>
                              {
                                  sut.Start();
-                                 sut.Profile("a").Dispose();
+                                 using (sut.Profile("a"))
+                                 {
+                                 }
                                  sut.Stop();
                              }),
                     Task.Run(() =>
                              {
                                  sut.Start();
-                                 sut.Profile("b").Dispose();
+                                 using (sut.Profile("b"))
+                                 {
+                                 }
                                  sut.Stop();
                              })
                 ).ConfigureAwait(false);
@@ -154,14 +165,18 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var t1 = new Thread(() =>
                                 {
                                     sut.Start();
-                                    sut.Profile("a").Dispose();
+                                    using (sut.Profile("a"))
+                                    {
+                                    }
                                     sut.Stop();
                                 });
 
             var t2 = new Thread(() =>
                                 {
                                     sut.Start();
-                                    sut.Profile("b").Dispose();
+                                    using (sut.Profile("b"))
+                                    {
+                                    }
                                     sut.Stop();
                                 });
 
@@ -199,7 +214,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             sut.Start();
 
             using (sut.Profile("a"))
-                sut.Profile("b").Dispose();
+            using (sut.Profile("b"))
+            {
+            }
 
             sut.Stop(additional_session_data);
 
@@ -227,9 +244,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             Action act = () =>
                          {
-                             var operation1 = sut.Profile("a");
-                             sut.Profile("b");
-                             operation1.Dispose();
+                             using (sut.Profile("a"))
+                                 // ReSharper disable once MustUseReturnValue
+                                 sut.Profile("b");
                          };
 
 

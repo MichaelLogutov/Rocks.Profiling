@@ -42,7 +42,7 @@ namespace Rocks.Profiling.Data
             this.Profiler = profiler;
             this.logger = logger;
 
-            this.OperationsTreeRoot = new ProfileOperation(this, ProfileOperationNames.ProfileSession);
+            this.OperationsTreeRoot = new ProfileOperation(this, ProfileOperationNames.ProfileSessionRoot);
 
             this.currentOperation = this.OperationsTreeRoot;
         }
@@ -67,6 +67,11 @@ namespace Rocks.Profiling.Data
         public TimeSpan Time => this.stopwatch.Elapsed;
 
         /// <summary>
+        ///     Get the total duration of the operations in the session.
+        /// </summary>
+        public TimeSpan Duration => this.OperationsTreeRoot.Duration;
+
+        /// <summary>
         ///     The root of the session operations tree.
         /// </summary>
         public ProfileOperation OperationsTreeRoot { get; }
@@ -78,29 +83,28 @@ namespace Rocks.Profiling.Data
         /// <summary>
         ///     Starts new operation measure.
         /// </summary>
-        internal void StartMeasure([NotNull] ProfileOperation operation)
+        [NotNull, MustUseReturnValue]
+        internal ProfileOperation StartMeasure([NotNull] string name,
+                                               [CanBeNull] string category = null,
+                                               [CanBeNull] IDictionary<string, object> data = null)
         {
-            if (operation == null)
-                throw new ArgumentNullException(nameof(operation));
+            var operation = new ProfileOperation(session: this,
+                                                 name: name,
+                                                 category: category,
+                                                 parent: this.currentOperation,
+                                                 data: data);
 
-            try
-            {
-                operation.Session = this;
-                operation.StartTime = this.Time;
-                operation.Parent = this.currentOperation;
+            this.currentOperation.Add(operation);
+            this.currentOperation = operation;
 
-                this.currentOperation.Add(operation);
-                this.currentOperation = operation;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex);
-            }
+            return operation;
         }
 
 
         /// <summary>
         ///     Stops operation measure.
+        ///     This method should not be called directly - it will be called automatically
+        ///     uppon disposing of <see cref="ProfileOperation"/> returned from <see cref="StartMeasure"/>.
         /// </summary>
         internal void StopMeasure([NotNull] ProfileOperation operation)
         {
@@ -109,13 +113,16 @@ namespace Rocks.Profiling.Data
 
             try
             {
+                if (operation.Session != this)
+                    throw new OperationFromAnotherSessionProfilingException();
+
                 if (this.currentOperation != operation)
                     throw new OperationsOutOfOrderProfillingException();
 
                 if (this.currentOperation.Parent == null)
                     throw new OperationsOutOfOrderProfillingException();
 
-                this.currentOperation.EndTime = this.Time;
+                this.OperationsTreeRoot.EndTime = this.currentOperation.EndTime = this.Time;
                 this.currentOperation = this.currentOperation.Parent;
             }
             catch (Exception ex)

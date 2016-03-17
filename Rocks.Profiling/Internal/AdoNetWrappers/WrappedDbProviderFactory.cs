@@ -39,10 +39,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Public properties
 
-        public override bool CanCreateDataSourceEnumerator
-        {
-            get { return this.innerFactory.CanCreateDataSourceEnumerator; }
-        }
+        public override bool CanCreateDataSourceEnumerator => this.innerFactory.CanCreateDataSourceEnumerator;
 
         #endregion
 

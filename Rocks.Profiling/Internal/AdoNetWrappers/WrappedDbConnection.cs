@@ -51,30 +51,15 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             set { this.InnerConnection.ConnectionString = value; }
         }
 
-        public override int ConnectionTimeout
-        {
-            get { return this.InnerConnection.ConnectionTimeout; }
-        }
+        public override int ConnectionTimeout => this.InnerConnection.ConnectionTimeout;
 
-        public override string Database
-        {
-            get { return this.InnerConnection.Database; }
-        }
+        public override string Database => this.InnerConnection.Database;
 
-        public override string DataSource
-        {
-            get { return this.InnerConnection.DataSource; }
-        }
+        public override string DataSource => this.InnerConnection.DataSource;
 
-        public override ConnectionState State
-        {
-            get { return this.InnerConnection.State; }
-        }
+        public override ConnectionState State => this.InnerConnection.State;
 
-        public override string ServerVersion
-        {
-            get { return this.InnerConnection.ServerVersion; }
-        }
+        public override string ServerVersion => this.InnerConnection.ServerVersion;
 
         public override ISite Site
         {
@@ -131,10 +116,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Protected properties
 
-        protected override DbProviderFactory DbProviderFactory
-        {
-            get { return this.InnerProviderFactory; }
-        }
+        protected override DbProviderFactory DbProviderFactory => this.InnerProviderFactory;
 
         #endregion
 
@@ -161,8 +143,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && this.InnerConnection != null)
-                this.InnerConnection.Dispose();
+            if (disposing)
+                this.InnerConnection?.Dispose();
 
             this.InnerConnection = null;
             this.InnerProviderFactory = null;

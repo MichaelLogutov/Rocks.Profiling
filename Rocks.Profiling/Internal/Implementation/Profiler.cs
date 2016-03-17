@@ -86,12 +86,17 @@ namespace Rocks.Profiling.Internal.Implementation
         /// </summary>
         public ProfileOperation Profile(string name, string category = null, IDictionary<string, object> data = null)
         {
-            var operation = new ProfileOperation(category, data);
-            operation.Profiler = this;
+            try
+            {
+                var operation = CurrentSession.Value?.StartMeasure(name, category, data);
 
-            CurrentSession.Value?.StartMeasure(operation);
-
-            return operation;
+                return operation;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
+                return null;
+            }
         }
 
 

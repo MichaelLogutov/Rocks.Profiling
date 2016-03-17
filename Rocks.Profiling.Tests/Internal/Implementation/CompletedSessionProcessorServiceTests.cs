@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Data;
@@ -39,8 +40,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
 
             var session = fixture.Create<ProfileSession>();
-            AddOperation(session);
-
+            using (session.StartMeasure("test"))
+            {
+            }
 
             // act
             var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
@@ -52,16 +54,17 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
-        public void ShouldProcess_SessionHasTotalTimeMoreThanMinimum_ReturnsTrue()
+        public async Task ShouldProcess_SessionHasTotalTimeMoreThanMinimum_ReturnsTrue()
         {
             // arrange
             var fixture = new FixtureBuilder().Build();
 
-            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
+            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromMilliseconds(100));
 
             var session = fixture.Create<ProfileSession>();
-            AddOperation(session, 0, 100);
-            AddOperation(session, 100, 1000);
+
+            using (session.StartMeasure("test"))
+                await Task.Delay(101).ConfigureAwait(false);
 
 
             // act
@@ -80,27 +83,6 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             var configuration = fixture.Freeze<ProfilerConfiguration>();
             configuration.SessionMinimalDuration = duration;
-        }
-
-
-        private static void AddOperation(ProfileSession session)
-        {
-            var operation = new ProfileOperation();
-
-            session.StartMeasure(operation);
-            session.StopMeasure(operation);
-        }
-
-
-        private static void AddOperation(ProfileSession session, int startTimeMs, int endTimeMs)
-        {
-            var operation = new ProfileOperation();
-
-            session.StartMeasure(operation);
-            session.StopMeasure(operation);
-
-            operation.StartTime = TimeSpan.FromMilliseconds(startTimeMs);
-            operation.EndTime = TimeSpan.FromMilliseconds(endTimeMs);
         }
 
         #endregion

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
 namespace Rocks.Profiling.Data
@@ -8,7 +8,8 @@ namespace Rocks.Profiling.Data
     /// <summary>
     ///     Represents information about some arbitrary operation during profiling (for example, method execution).
     /// </summary>
-    public class ProfileOperation : IEnumerable<ProfileOperation>, IDisposable
+    [DataContract]
+    public class ProfileOperation : IDisposable
     {
         #region Private fields
 
@@ -55,20 +56,20 @@ namespace Rocks.Profiling.Data
         /// <summary>
         ///     Operation name.
         /// </summary>
-        [NotNull]
+        [NotNull, DataMember]
         public string Name { get; }
 
         /// <summary>
         ///     Operation category.
         /// </summary>
-        [CanBeNull]
+        [CanBeNull, DataMember]
         public string Category { get; }
 
         /// <summary>
         ///     Additional data about operation.
         ///     The key is case sensitive.
         /// </summary>
-        [CanBeNull]
+        [CanBeNull, DataMember]
         public IDictionary<string, object> Data { get; set; }
 
         /// <summary>
@@ -78,8 +79,17 @@ namespace Rocks.Profiling.Data
         public object this[[CanBeNull] string dataKey]
         {
             get { return this.Data?[dataKey]; }
-            // ReSharper disable once AssignNullToNotNullAttribute
-            set { this.Add(dataKey, value); }
+
+            set
+            {
+                if (string.IsNullOrEmpty(dataKey))
+                    throw new ArgumentException("Argument is null or empty", nameof(dataKey));
+
+                if (this.Data == null)
+                    this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
+
+                this.Data[dataKey] = value;
+            }
         }
 
         /// <summary>
@@ -105,6 +115,13 @@ namespace Rocks.Profiling.Data
         public TimeSpan? EndTime { get; internal set; }
 
         /// <summary>
+        ///     Gets the total duration of the operation.
+        ///     This property returns time passed between <see cref="StartTime"/> and <see cref="EndTime"/>.
+        /// </summary>
+        [DataMember]
+        public TimeSpan Duration => this.EndTime - this.StartTime ?? TimeSpan.Zero;
+
+        /// <summary>
         ///     Parent node.
         /// </summary>
         [CanBeNull]
@@ -113,7 +130,7 @@ namespace Rocks.Profiling.Data
         /// <summary>
         ///     A list of child nodes.
         /// </summary>
-        [CanBeNull]
+        [CanBeNull, DataMember (Name = "Operations")]
         public IEnumerable<ProfileOperation> ChildNodes => this.childNodes;
 
         /// <summary>
@@ -136,45 +153,6 @@ namespace Rocks.Profiling.Data
         #region Public methods
 
         /// <summary>
-        ///     Adds new data.
-        ///     Overwrite previous value with the same <paramref name="dataKey" />.
-        ///     The key is case sensitive.
-        /// </summary>
-        public void Add([NotNull] string dataKey, [CanBeNull] object dataValue)
-        {
-            if (string.IsNullOrEmpty(dataKey))
-                throw new ArgumentException("Argument is null or empty", nameof(dataKey));
-
-            if (this.Data == null)
-                this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            this.Data[dataKey] = dataValue;
-        }
-
-
-        /// <summary>
-        ///     Gets total duration of child nodes.
-        /// </summary>
-        public TimeSpan GetTotalDuration()
-        {
-            if (this.childNodes == null)
-                return TimeSpan.Zero;
-
-            var total_ticks = 0L;
-
-            foreach (var operation in this.childNodes)
-            {
-                if (operation.EndTime == null)
-                    continue;
-
-                total_ticks += (operation.EndTime.Value - operation.StartTime).Ticks;
-            }
-
-            return new TimeSpan(total_ticks);
-        }
-
-
-        /// <summary>
         ///     Returns a string that represents the current object.
         /// </summary>
         /// <returns>
@@ -187,7 +165,7 @@ namespace Rocks.Profiling.Data
             if (this.Category != null)
                 result = $"[{this.Category}] ";
 
-            result += this.Name;
+            result += $"{this.Name} ({this.Count} operations)";
 
             return result;
         }
@@ -211,39 +189,6 @@ namespace Rocks.Profiling.Data
 
         #endregion
 
-        #region IEnumerable<ProfileOperation> Members
-
-        /// <summary>
-        ///     Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>
-        ///     An enumerator that can be used to iterate through the collection.
-        /// </returns>
-        public IEnumerator<ProfileOperation> GetEnumerator()
-        {
-            if (this.childNodes == null)
-                return ((IEnumerable<ProfileOperation>) new ProfileOperation[0]).GetEnumerator();
-
-            return this.childNodes.GetEnumerator();
-        }
-
-
-        /// <summary>
-        ///     Returns an enumerator that iterates through a collection.
-        /// </summary>
-        /// <returns>
-        ///     An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
-        /// </returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            if (this.childNodes == null)
-                return new ProfileOperation[0].GetEnumerator();
-
-            return ((IEnumerable) this.childNodes).GetEnumerator();
-        }
-
-        #endregion
-
         #region Protected methods
 
         /// <summary>
@@ -258,6 +203,30 @@ namespace Rocks.Profiling.Data
                 this.childNodes = new List<ProfileOperation>();
 
             this.childNodes.Add(operation);
+        }
+
+        #endregion
+    }
+
+
+    public static class ProfileOperationExtensions
+    {
+        #region Static methods
+
+        /// <summary>
+        ///     Sets new data value if <paramref name="operation"/> is not null.
+        ///     Overwrite previous value with the same <paramref name="dataKey" />.
+        ///     The key is case sensitive.
+        /// </summary>
+        [CanBeNull]
+        public static ProfileOperation WithOperationData([CanBeNull] this ProfileOperation operation,
+                                                         [NotNull] string dataKey,
+                                                         [CanBeNull] object dataValue)
+        {
+            if (operation != null)
+                operation[dataKey] = dataValue;
+
+            return operation;
         }
 
         #endregion
