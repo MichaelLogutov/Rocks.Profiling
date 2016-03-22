@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Rocks.Profiling.Data;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling
 {
@@ -28,14 +28,12 @@ namespace Rocks.Profiling
 
         /// <summary>
         ///     Starts new scope that will measure execution time of the operation
-        ///     with specified <paramref name="name"/>, <paramref name="category"/> and additional <paramref name="data"/>.<br />
+        ///     with specified <paramref name="specification"/>.<br />
         ///     Uppon disposing will store the results of measurement in the current session.<br />
         ///     If there is no session started - returns dummy operation that will do nothing.
         /// </summary>
         [CanBeNull, MustUseReturnValue]
-        ProfileOperation Profile([NotNull] string name,
-                                 [CanBeNull] string category = null,
-                                 [CanBeNull] IDictionary<string, object> data = null);
+        ProfileOperation Profile([NotNull] ProfileOperationSpecification specification);
 
 
         /// <summary>

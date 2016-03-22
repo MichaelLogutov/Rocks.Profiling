@@ -1,6 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Rocks.Profiling.Data;
+using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 
 namespace Rocks.Profiling.Internal.Implementation
@@ -42,6 +42,10 @@ namespace Rocks.Profiling.Internal.Implementation
                 throw new ArgumentNullException(nameof(completedSessionInfo));
 
             var session = completedSessionInfo.Session;
+
+            if (session.HasOperationLongerThanNormal)
+                return true;
+
             if (session.OperationsTreeRoot.IsEmpty)
                 return false;
 

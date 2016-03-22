@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using JetBrains.Annotations;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal.Implementation
 {
@@ -79,16 +79,15 @@ namespace Rocks.Profiling.Internal.Implementation
 
         /// <summary>
         ///     Starts new scope that will measure execution time of the operation
-        ///     with specified <paramref name="name"/>, <paramref name="category"/> and additional <paramref name="data"/>.<br />
+        ///     with specified <paramref name="specification"/>.<br />
         ///     Uppon disposing will store the results of measurement in the current session.<br />
-        ///     If there is no session started - will do nothing on disposing.<br />
-        ///     Any exceptions this method throws are swallowed and logged to <see cref="IProfilerLogger"/>.
+        ///     If there is no session started - returns dummy operation that will do nothing.
         /// </summary>
-        public ProfileOperation Profile(string name, string category = null, IDictionary<string, object> data = null)
+        public ProfileOperation Profile(ProfileOperationSpecification specification)
         {
             try
             {
-                var operation = CurrentSession.Value?.StartMeasure(name, category, data);
+                var operation = CurrentSession.Value?.StartMeasure(specification);
 
                 return operation;
             }

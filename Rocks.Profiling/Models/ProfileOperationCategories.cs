@@ -1,4 +1,4 @@
-﻿namespace Rocks.Profiling.Data
+﻿namespace Rocks.Profiling.Models
 {
     /// <summary>
     ///     Predefined categories of profile operations.

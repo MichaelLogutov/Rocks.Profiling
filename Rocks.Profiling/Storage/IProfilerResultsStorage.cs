@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using Rocks.Profiling.Data;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Storage
 {

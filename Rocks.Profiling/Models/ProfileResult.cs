@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using Rocks.Profiling.Internal.Implementation;
 
-namespace Rocks.Profiling.Data
+namespace Rocks.Profiling.Models
 {
     /// <summary>
     ///     Represents a profiled session result.

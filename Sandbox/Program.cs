@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Rocks.Helpers;
 using Rocks.Profiling;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 
 namespace Sandbox

@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
 
-namespace Rocks.Profiling.Data
+namespace Rocks.Profiling.Models
 {
     /// <summary>
     ///     Represents a stream of profile events.
@@ -42,7 +42,8 @@ namespace Rocks.Profiling.Data
             this.Profiler = profiler;
             this.logger = logger;
 
-            this.OperationsTreeRoot = new ProfileOperation(this, ProfileOperationNames.ProfileSessionRoot);
+            this.OperationsTreeRoot = new ProfileOperation(this,
+                                                           new ProfileOperationSpecification(ProfileOperationNames.ProfileSessionRoot));
 
             this.currentOperation = this.OperationsTreeRoot;
         }
@@ -76,6 +77,12 @@ namespace Rocks.Profiling.Data
         /// </summary>
         public ProfileOperation OperationsTreeRoot { get; }
 
+        /// <summary>
+        ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration"/>
+        ///     greater or equal to it's <see cref="ProfileOperation.NormalDuration"/>.
+        /// </summary>
+        public bool HasOperationLongerThanNormal { get; private set; }
+
         #endregion
 
         #region Protected methods
@@ -84,15 +91,14 @@ namespace Rocks.Profiling.Data
         ///     Starts new operation measure.
         /// </summary>
         [NotNull, MustUseReturnValue]
-        internal ProfileOperation StartMeasure([NotNull] string name,
-                                               [CanBeNull] string category = null,
-                                               [CanBeNull] IDictionary<string, object> data = null)
+        internal ProfileOperation StartMeasure([NotNull] ProfileOperationSpecification specification)
         {
+            if (specification == null)
+                throw new ArgumentNullException(nameof(specification));
+
             var operation = new ProfileOperation(session: this,
-                                                 name: name,
-                                                 category: category,
-                                                 parent: this.currentOperation,
-                                                 data: data);
+                                                 specification: specification,
+                                                 parent: this.currentOperation);
 
             this.currentOperation.Add(operation);
             this.currentOperation = operation;
@@ -123,6 +129,10 @@ namespace Rocks.Profiling.Data
                     throw new OperationsOutOfOrderProfillingException();
 
                 this.OperationsTreeRoot.EndTime = this.currentOperation.EndTime = this.Time;
+
+                if (operation.Duration >= operation.NormalDuration)
+                    this.HasOperationLongerThanNormal = true;
+
                 this.currentOperation = this.currentOperation.Parent;
             }
             catch (Exception ex)

@@ -4,6 +4,7 @@ using FluentAssertions;
 using Rocks.Helpers;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Models;
 using Xunit;
 
 // ReSharper disable ThrowingSystemException
@@ -53,7 +54,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
             {
                 var name = $"{namePrefix}_{k}";
 
-                using (profiler.Profile(name))
+                using (profiler.Profile(new ProfileOperationSpecification(name)))
                 {
                     if (level < 5 && RandomizationExtensions.Random.NextBool())
                         await OperationAsync(name, level + 1).ConfigureAwait(false);

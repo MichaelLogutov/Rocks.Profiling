@@ -5,8 +5,8 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {
@@ -205,7 +205,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         private IDisposable Profile(string name)
         {
             var operation = this.profiler
-                                .Profile(name, ProfileOperationCategories.Sql)
+                                .Profile(new ProfileOperationSpecification(name) { Category = ProfileOperationCategories.Sql })
                                 .WithOperationData("Sql", this.InnerCommand.CommandText);
 
             return operation;

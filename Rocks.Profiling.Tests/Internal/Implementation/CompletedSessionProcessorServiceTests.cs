@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Ploeh.AutoFixture;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Models;
 using Xunit;
 
 namespace Rocks.Profiling.Tests.Internal.Implementation
@@ -40,7 +40,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
 
             var session = fixture.Create<ProfileSession>();
-            using (session.StartMeasure("test"))
+            using (session.StartMeasure(new ProfileOperationSpecification("test")))
             {
             }
 
@@ -63,8 +63,30 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             var session = fixture.Create<ProfileSession>();
 
-            using (session.StartMeasure("test"))
+            using (session.StartMeasure(new ProfileOperationSpecification("test")))
                 await Task.Delay(101).ConfigureAwait(false);
+
+
+            // act
+            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
+
+
+            // assert
+            result.Should().BeTrue();
+        }
+
+
+        [Fact]
+        public async Task ShouldProcess_SessionHasTotalTimeLessThanMinimum_ButHasOperationLongerThanNormalDuration_ReturnsTrue()
+        {
+            // arrange
+            var fixture = new FixtureBuilder().Build();
+
+            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(10));
+
+            var session = fixture.Create<ProfileSession>();
+            using (session.StartMeasure(new ProfileOperationSpecification("test") { NormalDuration = TimeSpan.FromMilliseconds(1) }))
+                await Task.Delay(10).ConfigureAwait(false);
 
 
             // act

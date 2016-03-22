@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
-namespace Rocks.Profiling.Data
+namespace Rocks.Profiling.Models
 {
     /// <summary>
     ///     Represents information about some arbitrary operation during profiling (for example, method execution).
@@ -24,29 +24,28 @@ namespace Rocks.Profiling.Data
         ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.
         /// </summary>
         internal ProfileOperation([NotNull] ProfileSession session,
-                                  [NotNull] string name,
-                                  string category = null,
-                                  [CanBeNull] ProfileOperation parent = null,
-                                  IDictionary<string, object> data = null)
+                                  [NotNull] ProfileOperationSpecification specification,
+                                  [CanBeNull] ProfileOperation parent = null)
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            if (string.IsNullOrEmpty(name))
-                throw new ArgumentException("Argument is null or empty", nameof(name));
+            if (specification == null)
+                throw new ArgumentNullException(nameof(specification));
 
             this.Session = session;
 
             this.Profiler = this.Session.Profiler;
             this.StartTime = this.Session.Time;
 
-            this.Name = name;
-            this.Category = category;
+            this.Name = specification.Name;
+            this.Category = specification.Category;
+            this.NormalDuration = specification.NormalDuration;
 
             this.Parent = parent;
 
-            if (data != null)
-                this.Data = new Dictionary<string, object>(data, StringComparer.Ordinal);
+            if (specification.Data != null)
+                this.Data = new Dictionary<string, object>(specification.Data, StringComparer.Ordinal);
         }
 
         #endregion
@@ -120,6 +119,11 @@ namespace Rocks.Profiling.Data
         /// </summary>
         [DataMember]
         public TimeSpan Duration => this.EndTime - this.StartTime ?? TimeSpan.Zero;
+
+        /// <summary>
+        ///     Gets the duration which considered "normal" for this operation.
+        /// </summary>
+        public TimeSpan? NormalDuration { get; }
 
         /// <summary>
         ///     Parent node.

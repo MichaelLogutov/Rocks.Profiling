@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture;
-using Rocks.Profiling.Data;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Models;
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -30,7 +30,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // act
             Action act = () =>
                          {
-                             using (fixture.Create<Profiler>().Profile("test"))
+                             using (fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test")))
                              {
                              }
                          };
@@ -72,7 +72,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // act
             sut.Start();
-            using (sut.Profile("test"))
+            using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
             sut.Stop(additional_session_data);
@@ -125,7 +125,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                     Task.Run(() =>
                              {
                                  sut.Start();
-                                 using (sut.Profile("a"))
+                                 using (sut.Profile(new ProfileOperationSpecification("a")))
                                  {
                                  }
                                  sut.Stop();
@@ -133,7 +133,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                     Task.Run(() =>
                              {
                                  sut.Start();
-                                 using (sut.Profile("b"))
+                                 using (sut.Profile(new ProfileOperationSpecification("b")))
                                  {
                                  }
                                  sut.Stop();
@@ -165,7 +165,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var t1 = new Thread(() =>
                                 {
                                     sut.Start();
-                                    using (sut.Profile("a"))
+                                    using (sut.Profile(new ProfileOperationSpecification("a")))
                                     {
                                     }
                                     sut.Stop();
@@ -174,7 +174,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var t2 = new Thread(() =>
                                 {
                                     sut.Start();
-                                    using (sut.Profile("b"))
+                                    using (sut.Profile(new ProfileOperationSpecification("b")))
                                     {
                                     }
                                     sut.Stop();
@@ -213,8 +213,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // act
             sut.Start();
 
-            using (sut.Profile("a"))
-            using (sut.Profile("b"))
+            using (sut.Profile(new ProfileOperationSpecification("a")))
+            using (sut.Profile(new ProfileOperationSpecification("b")))
             {
             }
 
@@ -244,9 +244,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             Action act = () =>
                          {
-                             using (sut.Profile("a"))
+                             using (sut.Profile(new ProfileOperationSpecification("a")))
                                  // ReSharper disable once MustUseReturnValue
-                                 sut.Profile("b");
+                                 sut.Profile(new ProfileOperationSpecification("b"));
                          };
 
 

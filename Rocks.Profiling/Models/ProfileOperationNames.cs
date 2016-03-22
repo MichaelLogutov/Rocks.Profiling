@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace Rocks.Profiling.Data
+namespace Rocks.Profiling.Models
 {
     /// <summary>
     ///     Predefined names of profile operations.
