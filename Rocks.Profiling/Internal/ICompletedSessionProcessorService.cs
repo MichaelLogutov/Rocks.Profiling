@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal
 {
@@ -11,12 +11,12 @@ namespace Rocks.Profiling.Internal
         /// <summary>
         ///     Determines if completed session is needs to be processed.
         /// </summary>
-        bool ShouldProcess([NotNull] CompletedSessionInfo completedSessionInfo);
+        bool ShouldProcess([NotNull] ProfileSession session);
 
 
         /// <summary>
         ///     Perform processing of completed session (like, storing the result).
         /// </summary>
-        void Process([NotNull] CompletedSessionInfo completedSessionInfo);
+        void Process([NotNull] ProfileSession session);
     }
 }

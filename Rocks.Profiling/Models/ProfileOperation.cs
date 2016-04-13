@@ -134,7 +134,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     A list of child nodes.
         /// </summary>
-        [CanBeNull, DataMember (Name = "Operations")]
+        [CanBeNull, DataMember(Name = "Operations")]
         public IEnumerable<ProfileOperation> ChildNodes => this.childNodes;
 
         /// <summary>
@@ -207,30 +207,6 @@ namespace Rocks.Profiling.Models
                 this.childNodes = new List<ProfileOperation>();
 
             this.childNodes.Add(operation);
-        }
-
-        #endregion
-    }
-
-
-    public static class ProfileOperationExtensions
-    {
-        #region Static methods
-
-        /// <summary>
-        ///     Sets new data value if <paramref name="operation"/> is not null.
-        ///     Overwrite previous value with the same <paramref name="dataKey" />.
-        ///     The key is case sensitive.
-        /// </summary>
-        [CanBeNull]
-        public static ProfileOperation WithOperationData([CanBeNull] this ProfileOperation operation,
-                                                         [NotNull] string dataKey,
-                                                         [CanBeNull] object dataValue)
-        {
-            if (operation != null)
-                operation[dataKey] = dataValue;
-
-            return operation;
         }
 
         #endregion

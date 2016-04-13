@@ -36,8 +36,8 @@
       <HintPath>..\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=10.1.4.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.1.4\lib\net20\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Rocks.Helpers, Version=1.5.3.6, Culture=neutral, processorArchitecture=MSIL">
@@ -69,7 +69,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
+    <Compile Include="Internal\ICurrentSessionProvider.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />
+    <Compile Include="Models\ProfileOperationExtensions.cs" />
     <Compile Include="Models\ProfileOperationSpecification.cs" />
     <Compile Include="Models\ProfileResult.cs" />
     <Compile Include="Exceptions\OperationFromAnotherSessionProfilingException.cs" />
@@ -77,7 +80,6 @@
     <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />
     <Compile Include="Internal\ICompletedSessionProcessorService.cs" />
-    <Compile Include="Internal\Implementation\CompletedSessionInfo.cs" />
     <Compile Include="Internal\IProfilerServiceOverride.cs" />
     <Compile Include="Models\ProfileSession.cs" />
     <Compile Include="Models\ProfileOperation.cs" />

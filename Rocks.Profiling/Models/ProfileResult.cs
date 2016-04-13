@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
-using Rocks.Profiling.Internal.Implementation;
 
 namespace Rocks.Profiling.Models
 {
@@ -25,13 +24,13 @@ namespace Rocks.Profiling.Models
         public IDictionary<string, object> SessionData { get; set; }
 
 
-        internal ProfileResult([NotNull] CompletedSessionInfo completedSessionInfo)
+        public ProfileResult([NotNull] ProfileSession session)
         {
-            if (completedSessionInfo == null)
-                throw new ArgumentNullException(nameof(completedSessionInfo));
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
-            this.SessionData = completedSessionInfo.AdditionalData;
-            this.OperationsRoot = completedSessionInfo.Session.OperationsTreeRoot;
+            this.SessionData = session.AdditionalData;
+            this.OperationsRoot = session.OperationsTreeRoot;
         }
     }
 }

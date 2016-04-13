@@ -60,7 +60,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Additional data associated with the session.
         /// </summary>
-        public IDictionary<string, object> AdditionalData { get; set; }
+        public IDictionary<string, object> AdditionalData { get; private set; }
 
         /// <summary>
         ///     Current time in session.
@@ -78,10 +78,29 @@ namespace Rocks.Profiling.Models
         public ProfileOperation OperationsTreeRoot { get; }
 
         /// <summary>
-        ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration"/>
-        ///     greater or equal to it's <see cref="ProfileOperation.NormalDuration"/>.
+        ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration" />
+        ///     greater or equal to it's <see cref="ProfileOperation.NormalDuration" />.
         /// </summary>
         public bool HasOperationLongerThanNormal { get; private set; }
+
+        #endregion
+
+        #region Public methods
+
+        /// <summary>
+        ///     Adds new additional data to the <see cref="AdditionalData" /> dictionary.
+        /// </summary>
+        public void AddAdditionalData([NotNull] IDictionary<string, object> additionalSessionData)
+        {
+            if (additionalSessionData == null)
+                throw new ArgumentNullException(nameof(additionalSessionData));
+
+            if (this.AdditionalData == null)
+                this.AdditionalData = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            foreach (var kv in additionalSessionData)
+                this.AdditionalData[kv.Key] = kv.Value;
+        }
 
         #endregion
 
@@ -110,7 +129,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Stops operation measure.
         ///     This method should not be called directly - it will be called automatically
-        ///     uppon disposing of <see cref="ProfileOperation"/> returned from <see cref="StartMeasure"/>.
+        ///     uppon disposing of <see cref="ProfileOperation" /> returned from <see cref="StartMeasure" />.
         /// </summary>
         internal void StopMeasure([NotNull] ProfileOperation operation)
         {

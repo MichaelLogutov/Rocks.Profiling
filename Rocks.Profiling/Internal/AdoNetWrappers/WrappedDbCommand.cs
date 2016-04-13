@@ -204,9 +204,17 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         [CanBeNull]
         private IDisposable Profile(string name)
         {
-            var operation = this.profiler
-                                .Profile(new ProfileOperationSpecification(name) { Category = ProfileOperationCategories.Sql })
-                                .WithOperationData("Sql", this.InnerCommand.CommandText);
+            var specification = new ProfileOperationSpecification(name);
+            specification.Category = ProfileOperationCategories.Sql;
+
+            var operation = this.profiler.Profile(specification);
+
+            if (operation != null)
+            {
+                operation["Server"] = this.InnerCommand.Connection.DataSource;
+                operation["Database"] = this.InnerCommand.Connection.Database;
+                operation["Sql"] = this.InnerCommand.CommandText;
+            }
 
             return operation;
         }

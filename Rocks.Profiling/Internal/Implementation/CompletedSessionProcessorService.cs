@@ -36,12 +36,10 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Determines if completed session is needs to be processed.
         /// </summary>
-        public bool ShouldProcess(CompletedSessionInfo completedSessionInfo)
+        public bool ShouldProcess(ProfileSession session)
         {
-            if (completedSessionInfo == null)
-                throw new ArgumentNullException(nameof(completedSessionInfo));
-
-            var session = completedSessionInfo.Session;
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             if (session.HasOperationLongerThanNormal)
                 return true;
@@ -59,12 +57,12 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Perform processing of completed session (like, storing the result).
         /// </summary>
-        public void Process(CompletedSessionInfo completedSessionInfo)
+        public void Process(ProfileSession session)
         {
-            if (completedSessionInfo == null)
-                throw new ArgumentNullException(nameof(completedSessionInfo));
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
-            var result = new ProfileResult(completedSessionInfo);
+            var result = new ProfileResult(session);
 
             this.resultsStorage.Add(result);
         }

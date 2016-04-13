@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
 
 namespace Rocks.Profiling.Internal.Implementation
@@ -20,7 +21,7 @@ namespace Rocks.Profiling.Internal.Implementation
         private readonly ICompletedSessionProcessorService processorService;
 
         [ThreadSafe]
-        private readonly BlockingCollection<CompletedSessionInfo> dataToProcess;
+        private readonly BlockingCollection<ProfileSession> dataToProcess;
 
         [ThreadSafe]
         private readonly CancellationTokenSource cancellationTokenSource;
@@ -52,7 +53,7 @@ namespace Rocks.Profiling.Internal.Implementation
             this.processorService = processorService;
             this.logger = logger;
 
-            this.dataToProcess = new BlockingCollection<CompletedSessionInfo>(configuration.ResultsBufferSize);
+            this.dataToProcess = new BlockingCollection<ProfileSession>(configuration.ResultsBufferSize);
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -84,17 +85,17 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     Add results from completed profiling session.
         /// </summary>
         /// <exception cref="ResultsProcessorOverflowProfilingException">Results buffer size limit reached.</exception>
-        public void Add(CompletedSessionInfo completedSessionInfo)
+        public void Add(ProfileSession session)
         {
-            if (completedSessionInfo == null)
-                throw new ArgumentNullException(nameof(completedSessionInfo));
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
 
             if (this.dataToProcess.IsAddingCompleted)
                 return;
 
             this.EnsureProcessingTaskStarted();
 
-            if (!this.dataToProcess.TryAdd(completedSessionInfo))
+            if (!this.dataToProcess.TryAdd(session))
                 throw new ResultsProcessorOverflowProfilingException();
         }
 
@@ -119,10 +120,10 @@ namespace Rocks.Profiling.Internal.Implementation
                          {
                              try
                              {
-                                 var completed_session_info = this.dataToProcess.Take();
+                                 var session = this.dataToProcess.Take();
 
-                                 if (this.processorService.ShouldProcess(completed_session_info))
-                                     this.processorService.Process(completed_session_info);
+                                 if (this.processorService.ShouldProcess(session))
+                                     this.processorService.Process(session);
                              }
                              catch (Exception ex)
                              {

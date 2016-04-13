@@ -23,7 +23,7 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Creates new profile session.
         /// </summary>
-        void Start();
+        void Start([CanBeNull] IDictionary<string, object> additionalSessionData = null);
 
 
         /// <summary>

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture;
@@ -18,19 +16,38 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 {
     public class ProfilerTests
     {
+        #region Private readonly fields
+
+        private readonly IFixture fixture;
+        private readonly ICurrentSessionProvider currentSessionProvider;
+
+        #endregion
+
+        #region Construct
+
+        public ProfilerTests()
+        {
+            this.fixture = new FixtureBuilder().Build();
+
+            this.currentSessionProvider = this.fixture.Freeze<ICurrentSessionProvider>();
+            this.currentSessionProvider.Get().Returns(this.fixture.Create<ProfileSession>());
+        }
+
+        #endregion
+
         #region Public methods
 
         [Fact]
         public void NoSession_Profile_DoesNotThrow()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            this.currentSessionProvider.Get().Returns((ProfileSession) null);
 
 
             // act
             Action act = () =>
                          {
-                             using (fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test")))
+                             using (this.fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test")))
                              {
                              }
                          };
@@ -45,11 +62,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Stop_NoSessionActive_Throws()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            this.currentSessionProvider.Get().Returns((ProfileSession) null);
 
 
             // act
-            Action act = () => fixture.Create<Profiler>().Stop();
+            Action act = () => this.fixture.Create<Profiler>().Stop();
 
 
             // assert
@@ -58,24 +75,35 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
-        public void Profile_ThenStop_HasActiveSession_SendsTheSessionWithEventToResultsProcessor()
+        public void Start_SetsCurrentSession()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
-
-            var additional_session_data = new Dictionary<string, object>();
-
-            var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
-
-            var sut = fixture.Create<Profiler>();
+            this.currentSessionProvider.Get().Returns((ProfileSession) null);
 
 
             // act
-            sut.Start();
+            this.fixture.Create<Profiler>().Start();
+
+
+            // assert
+            this.currentSessionProvider.Received(1).Set(Arg.Is<ProfileSession>(x => x != null));
+        }
+
+
+        [Fact]
+        public void Stop_HasActiveSession_SendsTheSessionWithEventToResultsProcessor()
+        {
+            // arrange
+            var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
+
+            var sut = this.fixture.Create<Profiler>();
+
+
+            // act
             using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
-            sut.Stop(additional_session_data);
+            sut.Stop();
 
 
             // assert
@@ -85,114 +113,29 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
-        public void Stop_HasActiveSession_SendsAdditionalSessionDataToResultsProcessor()
+        public void Stop_HasActiveSession_SendsCombinedAdditionalDataToResultsProcessor()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            var session = this.fixture.Create<ProfileSession>();
+            this.currentSessionProvider.Get().Returns(session);
 
-            var additional_session_data = new Dictionary<string, object>();
-            var results_processor = fixture.Freeze<ICompletedSessionsProcessorQueue>();
+            session.AddAdditionalData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
 
-            var sut = fixture.Create<Profiler>();
+            var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
+
+            var sut = this.fixture.Create<Profiler>();
 
 
             // act
-            sut.Start();
-            sut.Stop(additional_session_data);
+            using (sut.Profile(new ProfileOperationSpecification("test")))
+            {
+            }
+            sut.Stop(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2 });
 
 
             // assert
-            results_processor
-                .Received(1)
-                .Add(Arg.Is<CompletedSessionInfo>(x => x != null && x.AdditionalData == additional_session_data));
-        }
-
-
-        [Fact]
-        public async Task Start_Profile_Stop_InParallelTasks_SendsDifferentResults()
-        {
-            // arrange
-            var fixture = new FixtureBuilder().Build();
-
-            var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
-
-            var sut = fixture.Create<Profiler>();
-
-
-            // act
-            await Task.WhenAll
-                (
-                    Task.Run(() =>
-                             {
-                                 sut.Start();
-                                 using (sut.Profile(new ProfileOperationSpecification("a")))
-                                 {
-                                 }
-                                 sut.Stop();
-                             }),
-                    Task.Run(() =>
-                             {
-                                 sut.Start();
-                                 using (sut.Profile(new ProfileOperationSpecification("b")))
-                                 {
-                                 }
-                                 sut.Stop();
-                             })
-                ).ConfigureAwait(false);
-
-
-            // assert
-            results.Should().HaveCount(2);
-
-            results
-                .SelectMany(x => x.OperationsTreeRoot.ChildNodes.Select(n => n.Name))
-                .Should().BeEquivalentTo("a", "b");
-        }
-
-
-        [Fact]
-        public void Start_Profile_Stop_InParallelThreads_SendsDifferentResults()
-        {
-            // arrange
-            var fixture = new FixtureBuilder().Build();
-
-            var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
-
-            var sut = fixture.Create<Profiler>();
-
-
-            // act
-            var t1 = new Thread(() =>
-                                {
-                                    sut.Start();
-                                    using (sut.Profile(new ProfileOperationSpecification("a")))
-                                    {
-                                    }
-                                    sut.Stop();
-                                });
-
-            var t2 = new Thread(() =>
-                                {
-                                    sut.Start();
-                                    using (sut.Profile(new ProfileOperationSpecification("b")))
-                                    {
-                                    }
-                                    sut.Stop();
-                                });
-
-            t1.Start();
-            t2.Start();
-
-            t1.Join();
-            t2.Join();
-
-
-            // assert
-            results.Should().HaveCount(2);
-
-            results
-                .SelectMany(x => x.OperationsTreeRoot.ChildNodes.Select(n => n.Name))
-                .Should().BeEquivalentTo("a", "b");
+            results.Should().HaveCount(1);
+            results[0].AdditionalData.ShouldBeEquivalentTo(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2, ["c"] = 3 });
         }
 
 
@@ -200,19 +143,14 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Measure_NestedOperations_CorrectlyBuildsHierarchy()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
-
-
             var additional_session_data = new Dictionary<string, object>();
 
-            var results = CaptureProfileSessionAddedToTheResultsProcessor(fixture);
+            var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
 
-            var sut = fixture.Create<Profiler>();
+            var sut = this.fixture.Create<Profiler>();
 
 
             // act
-            sut.Start();
-
             using (sut.Profile(new ProfileOperationSpecification("a")))
             using (sut.Profile(new ProfileOperationSpecification("b")))
             {
@@ -234,14 +172,10 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Profile_OperationsDisposedOutOfOrder_Throws()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
-
-            var sut = fixture.Create<Profiler>();
+            var sut = this.fixture.Create<Profiler>();
 
 
             // act
-            sut.Start();
-
             Action act = () =>
                          {
                              using (sut.Profile(new ProfileOperationSpecification("a")))
@@ -264,7 +198,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             fixture.Freeze<ICompletedSessionsProcessorQueue>()
                    .WhenForAnyArgs(x => x.Add(null))
-                   .Do(x => results.Add(x.Arg<CompletedSessionInfo>().Session));
+                   .Do(x => results.Add(x.Arg<ProfileSession>()));
 
             return results;
         }

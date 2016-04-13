@@ -32,7 +32,7 @@ namespace Rocks.Profiling
             if (externalContainer == null)
                 externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
 
-            RegisterAll(externalContainer, configure);
+            RegisterAll(httpContextFactory, externalContainer, configure);
 
             Container = externalContainer;
             HttpContextFactory = httpContextFactory;
@@ -76,14 +76,16 @@ namespace Rocks.Profiling
 
         #region Private methods
 
-        private static void RegisterAll(Container c, [CanBeNull] Action<ProfilerConfiguration> configure)
+        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c, [CanBeNull] Action<ProfilerConfiguration> configure)
         {
             var configuration = ProfilerConfiguration.FromAppConfig();
             configure?.Invoke(configuration);
 
+            c.RegisterSingleton<Func<HttpContextBase>>(httpContextFactory);
             c.RegisterSingleton(configuration);
 
-            c.Register<IProfiler, Profiler>();
+            c.RegisterSingleton<ICurrentSessionProvider, CurrentSessionProvider>();
+            c.RegisterSingleton<IProfiler, Profiler>();
             c.RegisterSingleton<IProfilerLogger, NullProfilerLogger>();
 
             c.RegisterSingleton<ICompletedSessionsProcessorQueue, CompletedSessionsProcessorQueue>();

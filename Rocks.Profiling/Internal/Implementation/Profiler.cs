@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
@@ -10,14 +9,9 @@ namespace Rocks.Profiling.Internal.Implementation
 {
     internal class Profiler : IProfiler
     {
-        #region Static fields
-
-        private static readonly AsyncLocal<ProfileSession> CurrentSession = new AsyncLocal<ProfileSession>();
-
-        #endregion
-
         #region Private readonly fields
 
+        private readonly ICurrentSessionProvider currentSession;
         private readonly IProfilerLogger logger;
         private readonly ICompletedSessionsProcessorQueue completedSessionsProcessorQueue;
 
@@ -26,11 +20,15 @@ namespace Rocks.Profiling.Internal.Implementation
         #region Construct
 
         public Profiler([NotNull] ProfilerConfiguration configuration,
+                        [NotNull] ICurrentSessionProvider currentSession,
                         [NotNull] IProfilerLogger logger,
                         [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
+
+            if (currentSession == null)
+                throw new ArgumentNullException(nameof(currentSession));
 
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
@@ -39,6 +37,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
 
             this.Configuration = configuration;
+            this.currentSession = currentSession;
             this.logger = logger;
             this.completedSessionsProcessorQueue = completedSessionsProcessorQueue;
         }
@@ -61,14 +60,19 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     If there was already session started - throws an exception.<br />
         ///     Any exceptions this method throws are swallowed and logged to <see cref="IProfilerLogger"/>.
         /// </summary>
-        public void Start()
+        public void Start(IDictionary<string, object> additionalSessionData = null)
         {
             try
             {
-                if (CurrentSession.Value != null)
+                if (this.currentSession.Get() != null)
                     throw new SessionAlreadyStartedProfilingException();
 
-                CurrentSession.Value = new ProfileSession(this, this.logger);
+                var session = new ProfileSession(this, this.logger);
+
+                if (additionalSessionData != null)
+                    session.AddAdditionalData(additionalSessionData);
+
+                this.currentSession.Set(session);
             }
             catch (Exception ex)
             {
@@ -87,7 +91,8 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             try
             {
-                var operation = CurrentSession.Value?.StartMeasure(specification);
+                var session = this.currentSession.Get();
+                var operation = session?.StartMeasure(specification);
 
                 return operation;
             }
@@ -108,13 +113,16 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             try
             {
-                var session = CurrentSession.Value;
+                var session = this.currentSession.Get();
                 if (session == null)
                     throw new NoCurrentSessionProfilingException();
 
-                this.completedSessionsProcessorQueue.Add(new CompletedSessionInfo(session, additionalSessionData));
+                if (additionalSessionData != null)
+                    session.AddAdditionalData(additionalSessionData);
 
-                CurrentSession.Value = null;
+                this.completedSessionsProcessorQueue.Add(session);
+
+                this.currentSession.Delete();
             }
             catch (Exception ex)
             {

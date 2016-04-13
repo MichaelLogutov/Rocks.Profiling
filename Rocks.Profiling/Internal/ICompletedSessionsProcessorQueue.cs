@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal
 {
@@ -11,6 +11,6 @@ namespace Rocks.Profiling.Internal
         /// <summary>
         ///     Add results from completed profiling session.
         /// </summary>
-        void Add([NotNull] CompletedSessionInfo completedSessionInfo);
+        void Add([NotNull] ProfileSession session);
     }
 }

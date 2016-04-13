@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoNSubstitute;
 using Ploeh.AutoFixture.Kernel;
@@ -38,9 +39,10 @@ namespace Rocks.Profiling.Tests
         {
             var fixture = new Fixture();
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            fixture.Customize(new AutoConfiguredNSubstituteCustomization());
+            fixture.Customize(new AutoNSubstituteCustomization());
 
             fixture.Inject<IProfilerLogger>(new RethrowProfilerLogger());
+            fixture.Inject<Func<HttpContextBase>>(() => null);
 
             {
                 var container = new Container { Options = { AllowOverridingRegistrations = true } };

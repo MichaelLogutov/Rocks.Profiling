@@ -23,7 +23,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
+            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -45,7 +45,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             }
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
+            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -68,7 +68,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
+            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -90,7 +90,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(new CompletedSessionInfo(session));
+            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
