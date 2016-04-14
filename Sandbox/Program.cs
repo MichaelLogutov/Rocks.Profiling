@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Sandbox
             /// <summary>
             ///     Adds new profile <paramref name="result"/> to the storage.
             /// </summary>
-            public void Add(ProfileResult result)
+            public Task AddAsync(ProfileResult result, CancellationToken cancellationToken = new CancellationToken())
             {
                 var json = JsonConvert.SerializeObject(result,
                                                        new JsonSerializerSettings
@@ -30,6 +31,8 @@ namespace Sandbox
                                                        });
 
                 Console.WriteLine("\n" + json);
+
+                return Task.CompletedTask;
             }
         }
 
