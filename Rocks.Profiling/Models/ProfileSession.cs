@@ -25,6 +25,8 @@ namespace Rocks.Profiling.Models
         [NotNull]
         private ProfileOperation currentOperation;
 
+        private int newId = 1;
+
         #endregion
 
         #region Construct
@@ -42,7 +44,8 @@ namespace Rocks.Profiling.Models
             this.Profiler = profiler;
             this.logger = logger;
 
-            this.OperationsTreeRoot = new ProfileOperation(this,
+            this.OperationsTreeRoot = new ProfileOperation(this.newId++,
+                                                           this,
                                                            new ProfileOperationSpecification(ProfileOperationNames.ProfileSessionRoot));
 
             this.currentOperation = this.OperationsTreeRoot;
@@ -115,7 +118,8 @@ namespace Rocks.Profiling.Models
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
-            var operation = new ProfileOperation(session: this,
+            var operation = new ProfileOperation(id: this.newId++,
+                                                 session: this,
                                                  specification: specification,
                                                  parent: this.currentOperation);
 

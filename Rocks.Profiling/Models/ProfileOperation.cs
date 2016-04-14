@@ -23,7 +23,8 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.
         /// </summary>
-        internal ProfileOperation([NotNull] ProfileSession session,
+        internal ProfileOperation(int id,
+                                  [NotNull] ProfileSession session,
                                   [NotNull] ProfileOperationSpecification specification,
                                   [CanBeNull] ProfileOperation parent = null)
         {
@@ -33,6 +34,7 @@ namespace Rocks.Profiling.Models
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
+            this.Id = id;
             this.Session = session;
 
             this.Profiler = this.Session.Profiler;
@@ -51,6 +53,12 @@ namespace Rocks.Profiling.Models
         #endregion
 
         #region Public properties
+
+        /// <summary>
+        ///     Id of the operation inside <see cref="Session"/>.
+        /// </summary>
+        [DataMember]
+        public int Id { get; }
 
         /// <summary>
         ///     Operation name.
@@ -155,6 +163,25 @@ namespace Rocks.Profiling.Models
         #endregion
 
         #region Public methods
+
+        /// <summary>
+        ///     Returns all descendants and current node.
+        /// </summary>
+        [NotNull]
+        public IEnumerable<ProfileOperation> GetDescendantsAndSelf()
+        {
+            yield return this;
+
+            if (this.ChildNodes == null)
+                yield break;
+
+            foreach (var node in this.ChildNodes)
+            {
+                foreach (var subnode in node.GetDescendantsAndSelf())
+                    yield return subnode;
+            }
+        }
+
 
         /// <summary>
         ///     Returns a string that represents the current object.

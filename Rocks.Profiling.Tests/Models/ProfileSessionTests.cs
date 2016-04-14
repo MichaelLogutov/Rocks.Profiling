@@ -9,13 +9,20 @@ namespace Rocks.Profiling.Tests.Models
 {
     public class ProfileSessionTests
     {
+        private readonly IFixture fixture;
+
+
+        public ProfileSessionTests()
+        {
+            this.fixture = new FixtureBuilder().Build();
+        }
+
+
         [Fact]
         public async Task StartAndStop_CorrectlySetsTheTimeOfTheRootOperation()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
-
-            var sut = fixture.Create<ProfileSession>();
+            var sut = this.fixture.Create<ProfileSession>();
 
 
             // act

@@ -152,8 +152,15 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // act
             using (sut.Profile(new ProfileOperationSpecification("a")))
-            using (sut.Profile(new ProfileOperationSpecification("b")))
             {
+                using (sut.Profile(new ProfileOperationSpecification("b")))
+                using (sut.Profile(new ProfileOperationSpecification("c")))
+                {
+                }
+
+                using (sut.Profile(new ProfileOperationSpecification("d")))
+                {
+                }
             }
 
             sut.Stop(additional_session_data);
@@ -161,10 +168,23 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
+            results[0].OperationsTreeRoot.Id.Should().Be(1);
+            results[0].OperationsTreeRoot.Name.Should().Be(ProfileOperationNames.ProfileSessionRoot);
+
             results[0].OperationsTreeRoot.ChildNodes.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.First().Name.Should().Be("a");
-            results[0].OperationsTreeRoot.ChildNodes.First().ChildNodes.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.First().ChildNodes.First().Name.Should().Be("b");
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).Name.Should().Be("a");
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).Id.Should().Be(2);
+
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.Should().HaveCount(2);
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Name.Should().Be("b");
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Id.Should().Be(3);
+
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.Should().HaveCount(1);
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Name.Should().Be("c");
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Id.Should().Be(4);
+
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(1).Name.Should().Be("d");
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(1).Id.Should().Be(5);
         }
 
 

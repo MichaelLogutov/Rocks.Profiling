@@ -101,6 +101,7 @@
     <Compile Include="FixtureBuilder.cs" />
     <Compile Include="IntegrationTests\ProfilerMultithreadStressTest.cs" />
     <Compile Include="Internal\Implementation\CurrentSessionProviderTests.cs" />
+    <Compile Include="Models\ProfileOperationTests.cs" />
     <Compile Include="Models\ProfileSessionTests.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorServiceTests.cs" />
     <Compile Include="Internal\Implementation\ProfilerTests.cs" />
