@@ -52,9 +52,9 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Starts new profile session on the current profile.
         /// </summary>
-        public static void StartProfiling()
+        public static void StartProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
         {
-            ProfilerFactory.GetCurrentProfiler().Start();
+            ProfilerFactory.GetCurrentProfiler().Start(additionalSessionData);
         }
 
 
