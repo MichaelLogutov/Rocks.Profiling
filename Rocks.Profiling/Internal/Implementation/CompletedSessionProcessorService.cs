@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
@@ -57,14 +59,14 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Perform processing of completed session (like, storing the result).
         /// </summary>
-        public void Process(ProfileSession session)
+        public Task ProcessAsync(ProfileSession session, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
             var result = new ProfileResult(session);
 
-            this.resultsStorage.Add(result);
+            return this.resultsStorage.AddAsync(result, cancellationToken);
         }
 
         #endregion

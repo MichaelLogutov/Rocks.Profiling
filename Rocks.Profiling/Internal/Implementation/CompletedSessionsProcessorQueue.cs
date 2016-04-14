@@ -113,25 +113,26 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (this.processingTask != null)
                     return;
 
-                this.processingTask = Task.Run
-                    (() =>
-                     {
-                         while (!this.cancellationTokenSource.IsCancellationRequested)
-                         {
-                             try
-                             {
-                                 var session = this.dataToProcess.Take();
+                this.processingTask = Task.Run(this.ProcessAsync, this.cancellationTokenSource.Token);
+            }
+        }
 
-                                 if (this.processorService.ShouldProcess(session))
-                                     this.processorService.Process(session);
-                             }
-                             catch (Exception ex)
-                             {
-                                 this.logger.LogError(ex);
-                             }
-                         }
-                     },
-                     this.cancellationTokenSource.Token);
+
+        private async Task ProcessAsync()
+        {
+            while (!this.cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    var session = this.dataToProcess.Take();
+
+                    if (this.processorService.ShouldProcess(session))
+                        await this.processorService.ProcessAsync(session, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex);
+                }
             }
         }
 

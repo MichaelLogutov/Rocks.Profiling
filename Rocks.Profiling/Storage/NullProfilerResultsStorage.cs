@@ -1,4 +1,6 @@
-﻿using Rocks.Profiling.Models;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Storage
 {
@@ -10,8 +12,9 @@ namespace Rocks.Profiling.Storage
         /// <summary>
         ///     Adds new profile <paramref name="result"/> to the storage.
         /// </summary>
-        public void Add(ProfileResult result)
+        public Task AddAsync(ProfileResult result, CancellationToken cancellationToken = default(CancellationToken))
         {
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using NSubstitute;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Internal;
@@ -26,11 +27,13 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // act
             fixture.Create<CompletedSessionsProcessorQueue>().Add(session);
+            await Task.Delay(100).ConfigureAwait(false); // wait background processing task
 
 
             // assert
-            await Task.Delay(100).ConfigureAwait(false); // wait background processing task
-            processor_service.Received(1).Process(session);
+            await processor_service.Received(1)
+                                   .ProcessAsync(session, Arg.Any<CancellationToken>())
+                                   .ConfigureAwait(false);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Storage
@@ -11,6 +13,6 @@ namespace Rocks.Profiling.Storage
         /// <summary>
         ///     Adds new profile <paramref name="result"/> to the storage.
         /// </summary>
-        void Add([NotNull] ProfileResult result);
+        Task AddAsync([NotNull] ProfileResult result, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

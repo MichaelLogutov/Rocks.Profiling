@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal
@@ -17,6 +19,6 @@ namespace Rocks.Profiling.Internal
         /// <summary>
         ///     Perform processing of completed session (like, storing the result).
         /// </summary>
-        void Process([NotNull] ProfileSession session);
+        Task ProcessAsync([NotNull] ProfileSession session, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
