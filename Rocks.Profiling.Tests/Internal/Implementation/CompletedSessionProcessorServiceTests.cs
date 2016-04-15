@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NSubstitute;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
@@ -10,20 +11,32 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 {
     public class CompletedSessionProcessorServiceTests
     {
+        #region Private readonly fields
+
+        private readonly IFixture fixture;
+
+        #endregion
+
+        #region Construct
+
+        public CompletedSessionProcessorServiceTests()
+        {
+            this.fixture = new FixtureBuilder().Build();
+        }
+
+        #endregion
+
         #region Public methods
 
         [Fact]
         public void ShouldProcess_SessionHasNoOperations_ReturnsFalse()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
-
-
-            var session = fixture.Create<ProfileSession>();
+            var session = this.fixture.Create<ProfileSession>();
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
+            var result = this.fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -35,17 +48,15 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void ShouldProcess_SessionHasTotalTimeLessThanMinimum_ReturnsFalse()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            this.ConfigureSessionMinimalDuration(TimeSpan.FromSeconds(1));
 
-            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(1));
-
-            var session = fixture.Create<ProfileSession>();
+            var session = this.fixture.Create<ProfileSession>();
             using (session.StartMeasure(new ProfileOperationSpecification("test")))
             {
             }
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
+            var result = this.fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -57,18 +68,16 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task ShouldProcess_SessionHasTotalTimeMoreThanMinimum_ReturnsTrue()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            this.ConfigureSessionMinimalDuration(TimeSpan.FromMilliseconds(100));
 
-            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromMilliseconds(100));
-
-            var session = fixture.Create<ProfileSession>();
+            var session = this.fixture.Create<ProfileSession>();
 
             using (session.StartMeasure(new ProfileOperationSpecification("test")))
                 await Task.Delay(101).ConfigureAwait(false);
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
+            var result = this.fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -80,17 +89,15 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task ShouldProcess_SessionHasTotalTimeLessThanMinimum_ButHasOperationLongerThanNormalDuration_ReturnsTrue()
         {
             // arrange
-            var fixture = new FixtureBuilder().Build();
+            this.ConfigureSessionMinimalDuration(TimeSpan.FromSeconds(10));
 
-            ConfigureSessionMinimalDuration(fixture, TimeSpan.FromSeconds(10));
-
-            var session = fixture.Create<ProfileSession>();
+            var session = this.fixture.Create<ProfileSession>();
             using (session.StartMeasure(new ProfileOperationSpecification("test") { NormalDuration = TimeSpan.FromMilliseconds(1) }))
                 await Task.Delay(10).ConfigureAwait(false);
 
 
             // act
-            var result = fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
+            var result = this.fixture.Create<CompletedSessionProcessorService>().ShouldProcess(session);
 
 
             // assert
@@ -101,9 +108,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
         #region Private methods
 
-        private static void ConfigureSessionMinimalDuration(IFixture fixture, TimeSpan duration)
+        private void ConfigureSessionMinimalDuration(TimeSpan duration)
         {
-            var configuration = fixture.Freeze<ProfilerConfiguration>();
+            var configuration = this.fixture.Freeze<ProfilerConfiguration>();
             configuration.SessionMinimalDuration = duration;
         }
 

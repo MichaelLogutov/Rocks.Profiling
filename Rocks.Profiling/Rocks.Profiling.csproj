@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\Helpers\StackTraceExtensions.cs" />
     <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
     <Compile Include="ICurrentSessionProvider.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />

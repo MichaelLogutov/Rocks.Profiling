@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Ploeh.AutoFixture;
+using Rocks.Helpers;
 using Rocks.Profiling.Exceptions;
-using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
@@ -19,6 +21,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         #region Private readonly fields
 
         private readonly IFixture fixture;
+        private readonly ProfilerConfiguration configuration;
         private readonly ICurrentSessionProvider currentSessionProvider;
 
         #endregion
@@ -29,8 +32,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             this.fixture = new FixtureBuilder().Build();
 
+            this.configuration = this.fixture.Freeze<ProfilerConfiguration>();
             this.currentSessionProvider = this.fixture.Freeze<ICurrentSessionProvider>();
-            this.currentSessionProvider.Get().Returns(this.fixture.Create<ProfileSession>());
+
+            var session = this.fixture.Create<ProfileSession>();
+            this.currentSessionProvider.Get().Returns(session);
         }
 
         #endregion
@@ -41,7 +47,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void NoSession_Profile_DoesNotThrow()
         {
             // arrange
-            this.currentSessionProvider.Get().Returns((ProfileSession) null);
+            this.currentSessionProvider.Get().ReturnsNull();
 
 
             // act
@@ -62,7 +68,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Stop_NoSessionActive_Throws()
         {
             // arrange
-            this.currentSessionProvider.Get().Returns((ProfileSession) null);
+            this.currentSessionProvider.Get().ReturnsNull();
 
 
             // act
@@ -140,7 +146,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
-        public void Measure_NestedOperations_CorrectlyBuildsHierarchy()
+        public void Profile_NestedOperations_CorrectlyBuildsHierarchy()
         {
             // arrange
             var additional_session_data = new Dictionary<string, object>();
@@ -206,6 +212,34 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             act.ShouldThrow<OperationsOutOfOrderProfillingException>();
+        }
+
+
+        [Fact, MethodImpl(MethodImplOptions.NoInlining)]
+        public void Profile_WithCaptureCallStacks_FillsOperationCallStackProperty()
+        {
+            // arrange
+            this.configuration.CaptureCallStacks = true;
+
+            var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
+
+            var sut = this.fixture.Create<Profiler>();
+
+
+            // act
+            using (sut.Profile(new ProfileOperationSpecification("a")))
+            {
+            }
+
+            sut.Stop();
+
+
+            // assert
+            results.Should().HaveCount(1);
+            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0)
+                      .CallStack.SplitNullSafe('\n')
+                      .First()
+                      .Should().Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
         }
 
         #endregion

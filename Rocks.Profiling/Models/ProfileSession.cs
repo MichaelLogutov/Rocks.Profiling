@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
+using Rocks.Helpers;
 using Rocks.Profiling.Exceptions;
+using Rocks.Profiling.Internal.Helpers;
 using Rocks.Profiling.Loggers;
 
 namespace Rocks.Profiling.Models
@@ -132,6 +135,12 @@ namespace Rocks.Profiling.Models
                                                  session: this,
                                                  specification: specification,
                                                  parent: this.currentOperation);
+
+            if (this.Profiler.Configuration.CaptureCallStacks)
+            {
+                var current_assembly = this.GetType().Assembly;
+                operation.CallStack = new StackTrace(true).ToAsyncString(x => x.DeclaringType?.Assembly != current_assembly);
+            }
 
             this.currentOperation.Add(operation);
             this.currentOperation = operation;

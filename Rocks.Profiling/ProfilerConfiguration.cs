@@ -54,6 +54,13 @@ namespace Rocks.Profiling
         /// </summary>
         public TimeSpan SessionMinimalDuration { get; set; }
 
+        /// <summary>
+        ///     Specifies if operations needs to capture current call stack when started.<br />
+        ///     Value can be specified in application config key "Profiling.CaptureCallStacks".<br />
+        ///     Default is false.
+        /// </summary>
+        public bool CaptureCallStacks { get; set; }
+
         #endregion
 
         #region Static methods
@@ -67,6 +74,8 @@ namespace Rocks.Profiling
 
             result.SessionMinimalDuration = ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
                                             TimeSpan.FromMilliseconds(500);
+
+            result.CaptureCallStacks = ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ?? false;
 
             return result;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
+using NSubstitute;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoNSubstitute;
 using Ploeh.AutoFixture.Kernel;
@@ -54,6 +55,17 @@ namespace Rocks.Profiling.Tests
 
                 fixture.Inject(container);
             }
+
+            fixture.Customize<IProfiler>
+                (c => c.FromFactory(() =>
+                                    {
+                                        var profiler = Substitute.For<IProfiler>();
+                                        var configuration = (ProfilerConfiguration) new SpecimenContext(fixture).Resolve
+                                                                                        (new SeededRequest(typeof (ProfilerConfiguration), null));
+                                        profiler.Configuration.ReturnsForAnyArgs(configuration);
+
+                                        return profiler;
+                                    }));
 
             foreach (var initializer in this.additionalInitializers)
                 initializer(fixture);

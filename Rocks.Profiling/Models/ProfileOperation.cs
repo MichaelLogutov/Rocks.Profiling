@@ -163,6 +163,13 @@ namespace Rocks.Profiling.Models
         /// </summary>
         public bool IsCompleted { get; private set; }
 
+        /// <summary>
+        ///     Returns call stack of the operation start.<br />
+        ///     This property filled only if <see cref="ProfilerConfiguration.CaptureCallStacks"/> is <see langword="true" />.
+        /// </summary>
+        [CanBeNull, DataMember(Name = "CallStack", EmitDefaultValue = false)]
+        public string CallStack { get; internal set; }
+
         #endregion
 
         #region Public methods
