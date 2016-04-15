@@ -10,9 +10,9 @@ namespace Rocks.Profiling.Storage
     public class NullProfilerResultsStorage : IProfilerResultsStorage
     {
         /// <summary>
-        ///     Adds new profile <paramref name="result"/> to the storage.
+        ///     Adds new profile <paramref name="session"/> to the storage.
         /// </summary>
-        public Task AddAsync(ProfileResult result, CancellationToken cancellationToken = default(CancellationToken))
+        public Task AddAsync(ProfileSession session, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.CompletedTask;
         }

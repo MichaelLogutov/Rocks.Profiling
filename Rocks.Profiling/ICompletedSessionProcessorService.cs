@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 
-namespace Rocks.Profiling.Internal
+namespace Rocks.Profiling
 {
     /// <summary>
     ///     Handles the routines used for processing completed profile sessions.
     /// </summary>
-    internal interface ICompletedSessionProcessorService
+    public interface ICompletedSessionProcessorService
     {
         /// <summary>
         ///     Determines if completed session is needs to be processed.

@@ -19,11 +19,11 @@ namespace Sandbox
         public class ConsoleProfileResultsStorage : IProfilerResultsStorage
         {
             /// <summary>
-            ///     Adds new profile <paramref name="result"/> to the storage.
+            ///     Adds new profile <paramref name="session"/> to the storage.
             /// </summary>
-            public Task AddAsync(ProfileResult result, CancellationToken cancellationToken = new CancellationToken())
+            public Task AddAsync(ProfileSession session, CancellationToken cancellationToken = new CancellationToken())
             {
-                var json = JsonConvert.SerializeObject(result,
+                var json = JsonConvert.SerializeObject(session,
                                                        new JsonSerializerSettings
                                                        {
                                                            Formatting = Formatting.Indented,

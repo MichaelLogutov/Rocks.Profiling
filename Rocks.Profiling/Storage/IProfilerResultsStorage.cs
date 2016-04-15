@@ -11,8 +11,8 @@ namespace Rocks.Profiling.Storage
     public interface IProfilerResultsStorage
     {
         /// <summary>
-        ///     Adds new profile <paramref name="result"/> to the storage.
+        ///     Adds new profile <paramref name="session"/> to the storage.
         /// </summary>
-        Task AddAsync([NotNull] ProfileResult result, CancellationToken cancellationToken = default(CancellationToken));
+        Task AddAsync([NotNull] ProfileSession session, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

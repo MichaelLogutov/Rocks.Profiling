@@ -68,9 +68,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            var result = new ProfileResult(session);
-
-            return this.resultsStorage.AddAsync(result, cancellationToken);
+            return this.resultsStorage.AddAsync(session, cancellationToken);
         }
 
         #endregion

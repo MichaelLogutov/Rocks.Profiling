@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
@@ -11,6 +12,7 @@ namespace Rocks.Profiling.Models
     ///     Represents a stream of profile events.
     ///     This class is not thread safe.
     /// </summary>
+    [DataContract]
     public sealed class ProfileSession
     {
         #region Private readonly fields
@@ -65,6 +67,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Additional data associated with the session.
         /// </summary>
+        [DataMember(Name = "Data", EmitDefaultValue = false)]
         public IDictionary<string, object> AdditionalData { get; private set; }
 
         /// <summary>
@@ -75,17 +78,20 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Get the total duration of the operations in the session.
         /// </summary>
+        [DataMember]
         public TimeSpan Duration => this.OperationsTreeRoot.Duration;
 
         /// <summary>
         ///     The root of the session operations tree.
         /// </summary>
+        [DataMember(Name = "Operations", EmitDefaultValue = false)]
         public ProfileOperation OperationsTreeRoot { get; }
 
         /// <summary>
         ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration" />
         ///     greater or equal to it's <see cref="ProfileOperation.NormalDuration" />.
         /// </summary>
+        [DataMember]
         public bool HasOperationLongerThanNormal { get; private set; }
 
         #endregion

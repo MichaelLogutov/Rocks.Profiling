@@ -1,9 +1,9 @@
 ﻿using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 
-namespace Rocks.Profiling.Internal
+namespace Rocks.Profiling
 {
-    internal interface ICurrentSessionProvider
+    public interface ICurrentSessionProvider
     {
         /// <summary>
         ///     Returns current profile session instance.<br />

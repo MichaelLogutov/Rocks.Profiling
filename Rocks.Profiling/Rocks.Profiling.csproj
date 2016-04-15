@@ -70,16 +70,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
-    <Compile Include="Internal\ICurrentSessionProvider.cs" />
+    <Compile Include="ICurrentSessionProvider.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />
     <Compile Include="Models\ProfileOperationExtensions.cs" />
     <Compile Include="Models\ProfileOperationSpecification.cs" />
-    <Compile Include="Models\ProfileResult.cs" />
     <Compile Include="Exceptions\OperationFromAnotherSessionProfilingException.cs" />
     <Compile Include="Exceptions\OperationsOutOfOrderProfillingException.cs" />
     <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />
-    <Compile Include="Internal\ICompletedSessionProcessorService.cs" />
+    <Compile Include="ICompletedSessionProcessorService.cs" />
     <Compile Include="Internal\IProfilerServiceOverride.cs" />
     <Compile Include="Models\ProfileSession.cs" />
     <Compile Include="Models\ProfileOperation.cs" />
@@ -91,7 +90,7 @@
     <Compile Include="Internal\AdoNetWrappers\WrappedDbConnection.cs" />
     <Compile Include="Internal\AdoNetWrappers\WrappedDbProviderFactory.cs" />
     <Compile Include="Models\ProfileOperationNames.cs" />
-    <Compile Include="Internal\ICompletedSessionsProcessorQueue.cs" />
+    <Compile Include="ICompletedSessionsProcessorQueue.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionsProcessorQueue.cs" />
     <Compile Include="IProfiler.cs" />
     <Compile Include="Internal\Implementation\Profiler.cs" />

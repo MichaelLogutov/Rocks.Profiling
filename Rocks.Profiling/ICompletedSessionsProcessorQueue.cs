@@ -1,12 +1,12 @@
 ﻿using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 
-namespace Rocks.Profiling.Internal
+namespace Rocks.Profiling
 {
     /// <summary>
     ///     A queue for the completed profile session, which will handles the processing.
     /// </summary>
-    internal interface ICompletedSessionsProcessorQueue
+    public interface ICompletedSessionsProcessorQueue
     {
         /// <summary>
         ///     Add results from completed profiling session.
