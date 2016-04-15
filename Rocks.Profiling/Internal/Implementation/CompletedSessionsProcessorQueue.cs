@@ -97,10 +97,17 @@ namespace Rocks.Profiling.Internal.Implementation
             if (this.dataToProcess.IsAddingCompleted)
                 return;
 
-            this.EnsureProcessingTaskStarted();
+            try
+            {
+                this.EnsureProcessingTaskStarted();
 
-            if (!this.dataToProcess.TryAdd(session))
-                throw new ResultsProcessorOverflowProfilingException();
+                if (!this.dataToProcess.TryAdd(session))
+                    throw new ResultsProcessorOverflowProfilingException();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
+            }
         }
 
         #endregion
@@ -124,14 +131,20 @@ namespace Rocks.Profiling.Internal.Implementation
 
         private async Task ProcessAsync()
         {
-            while (!this.cancellationTokenSource.IsCancellationRequested)
+            while (!this.cancellationTokenSource.IsCancellationRequested && !this.dataToProcess.IsCompleted)
             {
                 try
                 {
-                    var session = this.dataToProcess.Take();
+                    var session = this.dataToProcess.Take(this.cancellationTokenSource.Token);
+                    if (session == null)
+                        break;
 
                     if (this.processorService.ShouldProcess(session))
                         await this.processorService.ProcessAsync(session, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {

@@ -20,7 +20,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Additional session data passed to <see cref="IProfiler.Stop"/> method.
         /// </summary>
-        [CanBeNull, DataMember]
+        [CanBeNull, DataMember(EmitDefaultValue = false)]
         public IDictionary<string, object> SessionData { get; set; }
 
 
