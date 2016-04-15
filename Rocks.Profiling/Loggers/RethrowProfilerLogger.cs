@@ -11,6 +11,7 @@ namespace Rocks.Profiling.Loggers
         ///     Will be called on unhandled exceptions during profiling.<br />
         ///     The implementation must be thread safe.
         /// </summary>
+        /// <exception cref="Exception">Always thrown.</exception>
         public void LogError(Exception ex)
         {
             // ReSharper disable once ThrowingSystemException

@@ -24,6 +24,7 @@ namespace Rocks.Profiling.Models
         public IDictionary<string, object> SessionData { get; set; }
 
 
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public ProfileResult([NotNull] ProfileSession session)
         {
             if (session == null)

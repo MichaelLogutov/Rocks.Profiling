@@ -11,6 +11,7 @@ namespace Rocks.Profiling.Models
     {
         #region Construct
 
+        /// <exception cref="ArgumentException">Argument <paramref name="name"/> is null or whitespace</exception>
         public ProfileOperationSpecification([NotNull] string name)
         {
             if (string.IsNullOrWhiteSpace(name))

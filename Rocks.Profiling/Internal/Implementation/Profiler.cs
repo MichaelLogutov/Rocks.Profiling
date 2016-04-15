@@ -19,6 +19,10 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
+        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="currentSession"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="completedSessionsProcessorQueue"/> is <see langword="null" />.</exception>
         public Profiler([NotNull] ProfilerConfiguration configuration,
                         [NotNull] ICurrentSessionProvider currentSession,
                         [NotNull] IProfilerLogger logger,

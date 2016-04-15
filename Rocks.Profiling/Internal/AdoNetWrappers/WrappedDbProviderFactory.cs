@@ -26,13 +26,16 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Construct
 
+        /// <exception cref="NotSupportedException">Provider doesn't have Instance property.</exception>
         public WrappedDbProviderFactory()
         {
             var field = typeof (TProviderFactory).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
             if (field == null)
                 throw new NotSupportedException("Provider doesn't have Instance property.");
 
+            // ReSharper disable ExceptionNotDocumented
             this.innerFactory = (TProviderFactory) field.GetValue(null);
+            // ReSharper restore ExceptionNotDocumented
         }
 
         #endregion

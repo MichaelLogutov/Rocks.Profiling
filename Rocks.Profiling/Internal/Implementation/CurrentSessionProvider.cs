@@ -40,6 +40,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Sets current profile session.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public void Set(ProfileSession session)
         {
             if (session == null)

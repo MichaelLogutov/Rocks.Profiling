@@ -77,6 +77,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
+        /// <exception cref="DbException">The connection-level error that occurred while opening the connection. </exception>
         public override void Close()
         {
             this.InnerConnection.Close();

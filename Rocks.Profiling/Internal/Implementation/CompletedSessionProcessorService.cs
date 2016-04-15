@@ -18,6 +18,8 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
+        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="resultsStorage"/> is <see langword="null" />.</exception>
         public CompletedSessionProcessorService([NotNull] ProfilerConfiguration configuration,
                                                 [NotNull] IProfilerResultsStorage resultsStorage)
         {
@@ -38,6 +40,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Determines if completed session is needs to be processed.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public bool ShouldProcess(ProfileSession session)
         {
             if (session == null)
@@ -59,6 +62,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Perform processing of completed session (like, storing the result).
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public Task ProcessAsync(ProfileSession session, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (session == null)

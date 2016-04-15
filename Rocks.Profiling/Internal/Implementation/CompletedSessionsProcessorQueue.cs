@@ -37,6 +37,9 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
+        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="processorService"/> is <see langword="null" />.</exception>
         public CompletedSessionsProcessorQueue([NotNull] ProfilerConfiguration configuration,
                                                [NotNull] IProfilerLogger logger,
                                                [NotNull] ICompletedSessionProcessorService processorService)
@@ -85,6 +88,7 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     Add results from completed profiling session.
         /// </summary>
         /// <exception cref="ResultsProcessorOverflowProfilingException">Results buffer size limit reached.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public void Add(ProfileSession session)
         {
             if (session == null)

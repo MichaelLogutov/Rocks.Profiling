@@ -23,6 +23,8 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="specification"/> is <see langword="null" />.</exception>
         internal ProfileOperation(int id,
                                   [NotNull] ProfileSession session,
                                   [NotNull] ProfileOperationSpecification specification,
@@ -83,6 +85,7 @@ namespace Rocks.Profiling.Models
         ///     Gets or sets additional data for this operation by key.
         ///     The key is case sensitive.
         /// </summary>
+        /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey"/> is null or empty</exception>
         public object this[[CanBeNull] string dataKey]
         {
             get { return this.Data?[dataKey]; }
@@ -225,6 +228,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Adds new child node.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="operation"/> is <see langword="null" />.</exception>
         internal void Add([NotNull] ProfileOperation operation)
         {
             if (operation == null)

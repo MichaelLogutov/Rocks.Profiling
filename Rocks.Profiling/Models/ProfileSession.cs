@@ -31,6 +31,8 @@ namespace Rocks.Profiling.Models
 
         #region Construct
 
+        /// <exception cref="ArgumentNullException"><paramref name="profiler"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
         public ProfileSession([NotNull] IProfiler profiler, [NotNull] IProfilerLogger logger)
         {
             if (profiler == null)
@@ -93,6 +95,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Adds new additional data to the <see cref="AdditionalData" /> dictionary.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="additionalSessionData"/> is <see langword="null" />.</exception>
         public void AddAdditionalData([NotNull] IDictionary<string, object> additionalSessionData)
         {
             if (additionalSessionData == null)
@@ -112,6 +115,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Starts new operation measure.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="specification"/> is <see langword="null" />.</exception>
         [NotNull, MustUseReturnValue]
         internal ProfileOperation StartMeasure([NotNull] ProfileOperationSpecification specification)
         {
@@ -135,6 +139,7 @@ namespace Rocks.Profiling.Models
         ///     This method should not be called directly - it will be called automatically
         ///     uppon disposing of <see cref="ProfileOperation" /> returned from <see cref="StartMeasure" />.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="operation"/> is <see langword="null" />.</exception>
         internal void StopMeasure([NotNull] ProfileOperation operation)
         {
             if (operation == null)

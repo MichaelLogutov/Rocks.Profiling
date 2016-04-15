@@ -101,6 +101,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
+        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteNonQueryAsync))
@@ -119,6 +120,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
+        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteScalarAsync))
@@ -169,6 +171,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
+        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteReaderAsync))
