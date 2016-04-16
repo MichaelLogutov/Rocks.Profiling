@@ -21,14 +21,16 @@ namespace Rocks.Profiling.Models
         #region Construct
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.
+        ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.<br />
+        ///     This method indended to be called from <see cref="ProfileSession"/>
+        ///     and should not be called manually.
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="specification"/> is <see langword="null" />.</exception>
-        internal ProfileOperation(int id,
-                                  [NotNull] ProfileSession session,
-                                  [NotNull] ProfileOperationSpecification specification,
-                                  [CanBeNull] ProfileOperation parent = null)
+        /// <exception cref="ArgumentNullException"><paramref name="session" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="specification" /> is <see langword="null" />.</exception>
+        public ProfileOperation(int id,
+                                [NotNull] ProfileSession session,
+                                [NotNull] ProfileOperationSpecification specification,
+                                [CanBeNull] ProfileOperation parent = null)
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
@@ -57,7 +59,7 @@ namespace Rocks.Profiling.Models
         #region Public properties
 
         /// <summary>
-        ///     Id of the operation inside <see cref="Session"/>.
+        ///     Id of the operation inside <see cref="Session" />.
         /// </summary>
         [DataMember]
         public int Id { get; }
@@ -85,7 +87,7 @@ namespace Rocks.Profiling.Models
         ///     Gets or sets additional data for this operation by key.
         ///     The key is case sensitive.
         /// </summary>
-        /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey"/> is null or empty</exception>
+        /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey" /> is null or empty</exception>
         public object this[[CanBeNull] string dataKey]
         {
             get { return this.Data?[dataKey]; }
@@ -126,7 +128,7 @@ namespace Rocks.Profiling.Models
 
         /// <summary>
         ///     Gets the total duration of the operation.
-        ///     This property returns time passed between <see cref="StartTime"/> and <see cref="EndTime"/>.
+        ///     This property returns time passed between <see cref="StartTime" /> and <see cref="EndTime" />.
         /// </summary>
         [DataMember]
         public TimeSpan Duration => this.EndTime - this.StartTime ?? TimeSpan.Zero;
@@ -165,7 +167,7 @@ namespace Rocks.Profiling.Models
 
         /// <summary>
         ///     Returns call stack of the operation start.<br />
-        ///     This property filled only if <see cref="ProfilerConfiguration.CaptureCallStacks"/> is <see langword="true" />.
+        ///     This property filled only if <see cref="ProfilerConfiguration.CaptureCallStacks" /> is <see langword="true" />.
         /// </summary>
         [CanBeNull, DataMember(Name = "CallStack", EmitDefaultValue = false)]
         public string CallStack { get; internal set; }
@@ -173,6 +175,24 @@ namespace Rocks.Profiling.Models
         #endregion
 
         #region Public methods
+
+        /// <summary>
+        ///     Adds new child operation node.<br />
+        ///     This method indended to be called from <see cref="ProfileSession" />
+        ///     and should not be called manually.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="operation" /> is <see langword="null" />.</exception>
+        public void Add([NotNull] ProfileOperation operation)
+        {
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
+            if (this.childNodes == null)
+                this.childNodes = new List<ProfileOperation>();
+
+            this.childNodes.Add(operation);
+        }
+
 
         /// <summary>
         ///     Returns all descendants and current node.
@@ -226,25 +246,6 @@ namespace Rocks.Profiling.Models
             this.Session?.StopMeasure(this);
 
             this.IsCompleted = true;
-        }
-
-        #endregion
-
-        #region Protected methods
-
-        /// <summary>
-        ///     Adds new child node.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="operation"/> is <see langword="null" />.</exception>
-        internal void Add([NotNull] ProfileOperation operation)
-        {
-            if (operation == null)
-                throw new ArgumentNullException(nameof(operation));
-
-            if (this.childNodes == null)
-                this.childNodes = new List<ProfileOperation>();
-
-            this.childNodes.Add(operation);
         }
 
         #endregion

@@ -1,7 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -14,11 +12,6 @@ namespace Rocks.Profiling.Internal.Helpers
     /// </summary>
     public static class StackTraceExtensions
     {
-        private const string AtString = "at";
-        private const string LineFormat = "in {0}:line {1}";
-        private const string AsyncMethodPrefix = "async ";
-
-
         /// <summary>
         /// Produces an async-friendly readable representation of the stack trace.
         /// </summary>
@@ -57,7 +50,8 @@ namespace Rocks.Profiling.Internal.Helpers
                     firstFrame = false;
                 else
                     stringBuilder.Append(Environment.NewLine);
-                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "   {0} ", AtString);
+
+                stringBuilder.Append("   at ");
 
                 var declaringType = method.DeclaringType;
                 var isAsync = FormatMethodName(stringBuilder, declaringType);
@@ -73,12 +67,12 @@ namespace Rocks.Profiling.Internal.Helpers
                     // ReSharper disable once PossibleNullReferenceException
                     FormatGenericArguments(stringBuilder, declaringType.GetGenericArguments());
                 }
-                stringBuilder.Append("(");
+                stringBuilder.Append('(');
                 if (isAsync)
-                    stringBuilder.Append("?");
+                    stringBuilder.Append('?');
                 else
                     FormatParameters(stringBuilder, method);
-                stringBuilder.Append(")");
+                stringBuilder.Append(')');
                 displayFilenames = FormatFileName(displayFilenames, frame, stringBuilder);
             }
             return stringBuilder.ToString();
@@ -94,7 +88,7 @@ namespace Rocks.Profiling.Internal.Helpers
             if (typeof (IAsyncStateMachine).IsAssignableFrom(declaringType))
             {
                 isAsync = true;
-                stringBuilder.Append(AsyncMethodPrefix);
+                stringBuilder.Append("async ");
                 var start = fullName.LastIndexOf('<');
                 var end = fullName.LastIndexOf('>');
                 if (start >= 0 && end >= 0)
@@ -105,7 +99,7 @@ namespace Rocks.Profiling.Internal.Helpers
             else
             {
                 stringBuilder.Append(fullName);
-                stringBuilder.Append(".");
+                stringBuilder.Append('.');
             }
             return isAsync;
         }
@@ -130,8 +124,10 @@ namespace Rocks.Profiling.Internal.Helpers
                 }
                 if (text != null)
                 {
-                    stringBuilder.Append(' ');
-                    stringBuilder.AppendFormat(CultureInfo.InvariantCulture, LineFormat, text, frame.GetFileLineNumber());
+                    stringBuilder.Append(" in ");
+                    stringBuilder.Append(text);
+                    stringBuilder.Append(":line ");
+                    stringBuilder.Append(frame.GetFileLineNumber());
                 }
             }
             return displayFilenames;
@@ -151,26 +147,28 @@ namespace Rocks.Profiling.Internal.Helpers
                 // ReSharper disable once ConstantConditionalAccessQualifier
                 // ReSharper disable once ConstantNullCoalescingCondition
                 var typeName = t.ParameterType?.Name ?? "<UnknownType>";
-                stringBuilder.Append(typeName + " " + t.Name);
+                stringBuilder.Append(typeName);
+                stringBuilder.Append(' ');
+                stringBuilder.Append(t.Name);
             }
         }
 
 
         private static void FormatGenericArguments(StringBuilder stringBuilder, Type[] genericArguments)
         {
-            stringBuilder.Append("[");
+            stringBuilder.Append('[');
             var k = 0;
             var firstTypeParam = true;
             while (k < genericArguments.Length)
             {
                 if (!firstTypeParam)
-                    stringBuilder.Append(",");
+                    stringBuilder.Append(',');
                 else
                     firstTypeParam = false;
                 stringBuilder.Append(genericArguments[k].Name);
                 k++;
             }
-            stringBuilder.Append("]");
+            stringBuilder.Append(']');
         }
     }
 }
