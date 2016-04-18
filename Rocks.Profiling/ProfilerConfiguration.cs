@@ -56,19 +56,19 @@ namespace Rocks.Profiling
 
 
         /// <summary>
-        ///     Time to hold off writes sessions to storage and accumulate the batch of them.<br />
-        ///     Value can be specified in application config key "ProfilingConfiguration.StorageWriteBatchDelay".<br />
+        ///     Time to hold off processing resulting sessions to accumulate the batch of them.<br />
+        ///     Value can be specified in application config key "ProfilingConfiguration.ResultsProcessBatchDelay".<br />
         ///     Default is 1 second.
         /// </summary>
-        public TimeSpan StorageWriteBatchDelay { get; set; }
+        public TimeSpan ResultsProcessBatchDelay { get; set; }
 
 
         /// <summary>
-        ///     Maximum sessions batch size that can be written to storage.<br />
-        ///     Value can be specified in application config key "ProfilingConfiguration.StorageWriteMaxBatchSize".<br />
+        ///     Maximum sessions batch size that can be processed at one time.<br />
+        ///     Value can be specified in application config key "ProfilingConfiguration.ResultsProcessMaxBatchSize".<br />
         ///     Default is 10.
         /// </summary>
-        public int StorageWriteMaxBatchSize { get; set; }
+        public int ResultsProcessMaxBatchSize { get; set; }
 
 
         /// <summary>
@@ -95,11 +95,11 @@ namespace Rocks.Profiling
             result.ResultsBufferSize = (ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ??
                                         10000).RequiredGreaterThan(0, nameof(result.ResultsBufferSize));
 
-            result.StorageWriteBatchDelay = ConfigurationManager.AppSettings["Profiling.StorageWriteBatchDelay"].ToTime()
+            result.ResultsProcessBatchDelay = ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"].ToTime()
                                             ?? TimeSpan.FromSeconds(1);
 
-            result.StorageWriteMaxBatchSize = (ConfigurationManager.AppSettings["Profiling.StorageWriteMaxBatchSize"].ToInt() ??
-                                               10).RequiredGreaterThan(0, nameof(result.StorageWriteMaxBatchSize));
+            result.ResultsProcessMaxBatchSize = (ConfigurationManager.AppSettings["Profiling.ResultsProcessMaxBatchSize"].ToInt() ??
+                                               10).RequiredGreaterThan(0, nameof(result.ResultsProcessMaxBatchSize));
 
             result.CaptureCallStacks = ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ??
                                        false;

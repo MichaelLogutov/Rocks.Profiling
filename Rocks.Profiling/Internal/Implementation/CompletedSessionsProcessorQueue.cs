@@ -134,17 +134,17 @@ namespace Rocks.Profiling.Internal.Implementation
 
         private async Task ProcessAsync()
         {
-            var sessions = new List<ProfileSession>(this.configuration.StorageWriteMaxBatchSize);
+            var sessions = new List<ProfileSession>(this.configuration.ResultsProcessMaxBatchSize);
 
             while (!this.cancellationTokenSource.IsCancellationRequested && !this.dataToProcess.IsCompleted)
             {
                 try
                 {
-                    while (sessions.Count < this.configuration.StorageWriteMaxBatchSize)
+                    while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize)
                     {
                         ProfileSession session;
                         if (!this.dataToProcess.TryTake(out session,
-                                                        (int) this.configuration.StorageWriteBatchDelay.TotalMilliseconds,
+                                                        (int) this.configuration.ResultsProcessBatchDelay.TotalMilliseconds,
                                                         this.cancellationTokenSource.Token))
                             break;
 

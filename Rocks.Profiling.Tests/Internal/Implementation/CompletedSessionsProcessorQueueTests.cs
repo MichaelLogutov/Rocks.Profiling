@@ -37,7 +37,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_One_ThenDelay_ThenAnother_WaitsForBatchTimeForTheSecond()
         {
             // arrange
-            this.configuration.StorageWriteBatchDelay = TimeSpan.FromMilliseconds(800);
+            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(1000);
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -49,13 +49,12 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // act
             sut.Add(session1);
+            await Task.Delay(300).ConfigureAwait(false);
             var result1 = stored_sessions.ToArray();
-
-            await Task.Delay(400).ConfigureAwait(false);
 
             sut.Add(session2);
 
-            await Task.Delay(1000).ConfigureAwait(false);
+            await Task.Delay(1200).ConfigureAwait(false);
             var result2 = stored_sessions.ToArray();
 
 
@@ -69,8 +68,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_ThreeTimesInARow_WithMaxBatchSizeTwo_ProcessTwoFirstSessions()
         {
             // arrange
-            this.configuration.StorageWriteBatchDelay = TimeSpan.FromMilliseconds(500);
-            this.configuration.StorageWriteMaxBatchSize = 2;
+            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(500);
+            this.configuration.ResultsProcessMaxBatchSize = 2;
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -105,7 +104,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_Ones_WaitsForBatchTimeAndProcessOne()
         {
             // arrange
-            this.configuration.StorageWriteBatchDelay = TimeSpan.FromMilliseconds(300);
+            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(300);
 
             var session = this.CreateSession(1);
 
