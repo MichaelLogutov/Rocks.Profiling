@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Models;
@@ -13,12 +15,15 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Determines if completed session is needs to be processed.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         bool ShouldProcess([NotNull] ProfileSession session);
 
 
         /// <summary>
-        ///     Perform processing of completed session (like, storing the result).
+        ///     Perform processing of completed sessions (like, storing the result).
         /// </summary>
-        Task ProcessAsync([NotNull] ProfileSession session, CancellationToken cancellationToken = default(CancellationToken));
+        /// <exception cref="ArgumentNullException"><paramref name="sessions"/> is <see langword="null" />.</exception>
+        Task ProcessAsync([NotNull] IReadOnlyList<ProfileSession> sessions,
+                          CancellationToken cancellationToken = default(CancellationToken));
     }
 }

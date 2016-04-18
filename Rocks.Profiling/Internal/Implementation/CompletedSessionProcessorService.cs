@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -40,7 +41,6 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Determines if completed session is needs to be processed.
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
         public bool ShouldProcess(ProfileSession session)
         {
             if (session == null)
@@ -60,15 +60,18 @@ namespace Rocks.Profiling.Internal.Implementation
 
 
         /// <summary>
-        ///     Perform processing of completed session (like, storing the result).
+        ///     Perform processing of completed sessions (like, storing the result).
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
-        public Task ProcessAsync(ProfileSession session, CancellationToken cancellationToken = default(CancellationToken))
+        public Task ProcessAsync(IReadOnlyList<ProfileSession> sessions,
+                                 CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (session == null)
-                throw new ArgumentNullException(nameof(session));
+            if (sessions == null)
+                throw new ArgumentNullException(nameof(sessions));
 
-            return this.resultsStorage.AddAsync(session, cancellationToken);
+            if (sessions.Count == 0)
+                return Task.CompletedTask;
+
+            return this.resultsStorage.AddAsync(sessions, cancellationToken);
         }
 
         #endregion

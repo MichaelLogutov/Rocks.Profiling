@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -17,6 +18,7 @@ namespace Rocks.Profiling.Internal.Implementation
         [ThreadSafe]
         private readonly object processingTaskInitializationLock = new object();
 
+        private readonly ProfilerConfiguration configuration;
         private readonly IProfilerLogger logger;
         private readonly ICompletedSessionProcessorService processorService;
 
@@ -53,10 +55,11 @@ namespace Rocks.Profiling.Internal.Implementation
             if (processorService == null)
                 throw new ArgumentNullException(nameof(processorService));
 
+            this.configuration = configuration;
             this.processorService = processorService;
             this.logger = logger;
 
-            this.dataToProcess = new BlockingCollection<ProfileSession>(configuration.ResultsBufferSize);
+            this.dataToProcess = new BlockingCollection<ProfileSession>(this.configuration.ResultsBufferSize);
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -131,16 +134,29 @@ namespace Rocks.Profiling.Internal.Implementation
 
         private async Task ProcessAsync()
         {
+            var sessions = new List<ProfileSession>(this.configuration.StorageWriteMaxBatchSize);
+
             while (!this.cancellationTokenSource.IsCancellationRequested && !this.dataToProcess.IsCompleted)
             {
                 try
                 {
-                    var session = this.dataToProcess.Take(this.cancellationTokenSource.Token);
-                    if (session == null)
-                        break;
+                    while (sessions.Count < this.configuration.StorageWriteMaxBatchSize)
+                    {
+                        ProfileSession session;
+                        if (!this.dataToProcess.TryTake(out session,
+                                                        (int) this.configuration.StorageWriteBatchDelay.TotalMilliseconds,
+                                                        this.cancellationTokenSource.Token))
+                            break;
 
-                    if (this.processorService.ShouldProcess(session))
-                        await this.processorService.ProcessAsync(session, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                        if (this.processorService.ShouldProcess(session))
+                            sessions.Add(session);
+                    }
+
+                    if (sessions.Count > 0)
+                    {
+                        await this.processorService.ProcessAsync(sessions, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                        sessions.Clear();
+                    }
                 }
                 catch (OperationCanceledException)
                 {

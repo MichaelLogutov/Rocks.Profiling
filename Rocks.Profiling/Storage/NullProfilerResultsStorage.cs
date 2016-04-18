@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Rocks.Profiling.Models;
 
@@ -10,9 +11,9 @@ namespace Rocks.Profiling.Storage
     public class NullProfilerResultsStorage : IProfilerResultsStorage
     {
         /// <summary>
-        ///     Adds new profile <paramref name="session"/> to the storage.
+        ///     Adds new profile <paramref name="sessions"/> to the storage.
         /// </summary>
-        public Task AddAsync(ProfileSession session, CancellationToken cancellationToken = default(CancellationToken))
+        public Task AddAsync(IReadOnlyList<ProfileSession> sessions, CancellationToken cancellationToken = default(CancellationToken))
         {
             return Task.CompletedTask;
         }

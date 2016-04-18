@@ -39,6 +39,14 @@ namespace Rocks.Profiling
 
 
         /// <summary>
+        ///     Any sessions with total operation duration less than specified will be ignored.<br />
+        ///     Value can be specified in application config key "Profiling.SessionMinimalDuration".<br />
+        ///     Default value is 500 ms.
+        /// </summary>
+        public TimeSpan SessionMinimalDuration { get; set; }
+
+
+        /// <summary>
         ///     Size of the buffer which will hold completed profile session results before it can be processed.<br />
         ///     If there is no room in buffer for new session results - they will be discarded.<br />
         ///     Value can be specified in application config key "Profiling.ResultsBufferSize".<br />
@@ -48,11 +56,20 @@ namespace Rocks.Profiling
 
 
         /// <summary>
-        ///     Any sessions with total operation duration less than specified will be ignored.<br />
-        ///     Value can be specified in application config key "Profiling.SessionMinimalDuration".<br />
-        ///     Default value is 500 ms.
+        ///     Time to hold off writes sessions to storage and accumulate the batch of them.<br />
+        ///     Value can be specified in application config key "ProfilingConfiguration.StorageWriteBatchDelay".<br />
+        ///     Default is 1 second.
         /// </summary>
-        public TimeSpan SessionMinimalDuration { get; set; }
+        public TimeSpan StorageWriteBatchDelay { get; set; }
+
+
+        /// <summary>
+        ///     Maximum sessions batch size that can be written to storage.<br />
+        ///     Value can be specified in application config key "ProfilingConfiguration.StorageWriteMaxBatchSize".<br />
+        ///     Default is 10.
+        /// </summary>
+        public int StorageWriteMaxBatchSize { get; set; }
+
 
         /// <summary>
         ///     Specifies if operations needs to capture current call stack when started.<br />
@@ -69,13 +86,23 @@ namespace Rocks.Profiling
         {
             var result = new ProfilerConfiguration();
 
-            result.ProfilingEnabled = ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ?? true;
-            result.ResultsBufferSize = ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ?? 10000;
-
             result.SessionMinimalDuration = ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
                                             TimeSpan.FromMilliseconds(500);
 
-            result.CaptureCallStacks = ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ?? false;
+            result.ProfilingEnabled = ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ??
+                                      true;
+
+            result.ResultsBufferSize = (ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ??
+                                        10000).RequiredGreaterThan(0, nameof(result.ResultsBufferSize));
+
+            result.StorageWriteBatchDelay = ConfigurationManager.AppSettings["Profiling.StorageWriteBatchDelay"].ToTime()
+                                            ?? TimeSpan.FromSeconds(1);
+
+            result.StorageWriteMaxBatchSize = (ConfigurationManager.AppSettings["Profiling.StorageWriteMaxBatchSize"].ToInt() ??
+                                               10).RequiredGreaterThan(0, nameof(result.StorageWriteMaxBatchSize));
+
+            result.CaptureCallStacks = ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ??
+                                       false;
 
             return result;
         }
