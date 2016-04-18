@@ -214,8 +214,12 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
             if (operation != null)
             {
-                operation["Server"] = this.InnerCommand.Connection.DataSource;
-                operation["Database"] = this.InnerCommand.Connection.Database;
+                var server = this.InnerCommand.Connection.DataSource;
+                var database = this.InnerCommand.Connection.Database;
+
+                operation.Resource = server + " - " + database;
+                operation["Server"] = server;
+                operation["Database"] = database;
                 operation["Sql"] = this.InnerCommand.CommandText;
             }
 

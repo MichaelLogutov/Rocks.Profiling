@@ -77,6 +77,13 @@ namespace Rocks.Profiling.Models
         public string Category { get; }
 
         /// <summary>
+        ///     The resource which current operation is workgin with.<br />
+        ///     For example, "MyDbServer - MyDatabase".
+        /// </summary>
+        [CanBeNull, DataMember]
+        public string Resource { get; set; }
+
+        /// <summary>
         ///     Additional data about operation.
         ///     The key is case sensitive.
         /// </summary>
