@@ -140,16 +140,28 @@ namespace Rocks.Profiling.Internal.Implementation
             {
                 try
                 {
-                    while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize)
+                    if (this.configuration.ResultsProcessMaxBatchSize == 1)
                     {
-                        ProfileSession session;
-                        if (!this.dataToProcess.TryTake(out session,
-                                                        (int) this.configuration.ResultsProcessBatchDelay.TotalMilliseconds,
-                                                        this.cancellationTokenSource.Token))
+                        // shortcut for particular case
+                        var session = this.dataToProcess.Take(this.cancellationTokenSource.Token);
+                        if (session == null)
                             break;
 
-                        if (this.processorService.ShouldProcess(session))
-                            sessions.Add(session);
+                        sessions.Add(session);
+                    }
+                    else
+                    {
+                        while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize)
+                        {
+                            ProfileSession session;
+                            if (!this.dataToProcess.TryTake(out session,
+                                                            (int) this.configuration.ResultsProcessBatchDelay.TotalMilliseconds,
+                                                            this.cancellationTokenSource.Token))
+                                break;
+
+                            if (this.processorService.ShouldProcess(session))
+                                sessions.Add(session);
+                        }
                     }
 
                     if (sessions.Count > 0)

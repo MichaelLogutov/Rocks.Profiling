@@ -126,6 +126,33 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         }
 
 
+        [Fact]
+        public async Task Add_Ones_BatchSizeOne_ProcessOne()
+        {
+            // arrange
+            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(400);
+            this.configuration.ResultsProcessMaxBatchSize = 1;
+
+            var session = this.CreateSession(1);
+
+            var stored_sessions = this.CaptureStoredSessions();
+
+
+            // act
+            this.fixture.Create<CompletedSessionsProcessorQueue>().Add(session);
+            var result1 = stored_sessions.ToList();
+
+            await Task.Delay(200).ConfigureAwait(false);
+
+            var result2 = stored_sessions.ToList();
+
+
+            // assert
+            result1.Should().BeEmpty();
+            result2.Should().Equal("1");
+        }
+
+
         private ProfileSession CreateSession(int id)
         {
             var session = this.fixture.Create<ProfileSession>();
