@@ -156,7 +156,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         private ProfileSession CreateSession(int id)
         {
             var session = this.fixture.Create<ProfileSession>();
-            session.AddAdditionalData(new Dictionary<string, object> { ["id"] = id });
+            session["id"] = id;
 
             return session;
         }
@@ -171,7 +171,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                 .Do(x =>
                     {
                         var sessions = x.Arg<IReadOnlyList<ProfileSession>>();
-                        result.Enqueue(string.Join(", ", sessions.Select(s => s.AdditionalData["id"])));
+                        result.Enqueue(string.Join(", ", sessions.Select(s => s["id"])));
                     });
 
             return result;

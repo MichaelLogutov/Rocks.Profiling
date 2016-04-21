@@ -141,7 +141,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].AdditionalData.ShouldBeEquivalentTo(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2, ["c"] = 3 });
+            results[0].Data.ShouldBeEquivalentTo(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2, ["c"] = 3 });
         }
 
 

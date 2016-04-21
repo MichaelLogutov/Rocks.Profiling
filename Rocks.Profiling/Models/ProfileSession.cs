@@ -69,7 +69,28 @@ namespace Rocks.Profiling.Models
         ///     Additional data associated with the session.
         /// </summary>
         [DataMember(Name = "Data", EmitDefaultValue = false)]
-        public IDictionary<string, object> AdditionalData { get; private set; }
+        public IDictionary<string, object> Data { get; private set; }
+
+        /// <summary>
+        ///     Gets or sets additional data for this session by key.
+        ///     The key is case sensitive.
+        /// </summary>
+        /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey" /> is null or empty</exception>
+        public object this[[CanBeNull] string dataKey]
+        {
+            get { return this.Data?[dataKey]; }
+
+            set
+            {
+                if (string.IsNullOrEmpty(dataKey))
+                    throw new ArgumentException("Argument is null or empty", nameof(dataKey));
+
+                if (this.Data == null)
+                    this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
+
+                this.Data[dataKey] = value;
+            }
+        }
 
         /// <summary>
         ///     Current time in session.
@@ -100,7 +121,7 @@ namespace Rocks.Profiling.Models
         #region Public methods
 
         /// <summary>
-        ///     Adds new additional data to the <see cref="AdditionalData" /> dictionary.
+        ///     Adds new additional data to the <see cref="Data" /> dictionary.
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="additionalSessionData"/> is <see langword="null" />.</exception>
         public void AddAdditionalData([NotNull] IDictionary<string, object> additionalSessionData)
@@ -108,11 +129,11 @@ namespace Rocks.Profiling.Models
             if (additionalSessionData == null)
                 throw new ArgumentNullException(nameof(additionalSessionData));
 
-            if (this.AdditionalData == null)
-                this.AdditionalData = new Dictionary<string, object>(StringComparer.Ordinal);
+            if (this.Data == null)
+                this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
 
             foreach (var kv in additionalSessionData)
-                this.AdditionalData[kv.Key] = kv.Value;
+                this.Data[kv.Key] = kv.Value;
         }
 
         #endregion

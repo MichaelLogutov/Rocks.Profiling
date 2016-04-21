@@ -14,15 +14,15 @@ namespace Rocks.Profiling.Internal.Implementation
 
         private readonly ProfilerConfiguration configuration;
         private readonly IProfilerResultsStorage resultsStorage;
+        private readonly ICompletedSessionProcessingFilter completedSessionFilter;
 
         #endregion
 
         #region Construct
 
-        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="resultsStorage"/> is <see langword="null" />.</exception>
         public CompletedSessionProcessorService([NotNull] ProfilerConfiguration configuration,
-                                                [NotNull] IProfilerResultsStorage resultsStorage)
+                                                [NotNull] IProfilerResultsStorage resultsStorage,
+                                                [NotNull] ICompletedSessionProcessingFilter completedSessionFilter)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
@@ -30,8 +30,12 @@ namespace Rocks.Profiling.Internal.Implementation
             if (resultsStorage == null)
                 throw new ArgumentNullException(nameof(resultsStorage));
 
+            if (completedSessionFilter == null)
+                throw new ArgumentNullException(nameof(completedSessionFilter));
+
             this.configuration = configuration;
             this.resultsStorage = resultsStorage;
+            this.completedSessionFilter = completedSessionFilter;
         }
 
         #endregion
@@ -46,11 +50,14 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            if (session.HasOperationLongerThanNormal)
-                return true;
-
             if (session.OperationsTreeRoot.IsEmpty)
                 return false;
+
+            if (!this.completedSessionFilter.ShouldProcess(session))
+                return false;
+
+            if (session.HasOperationLongerThanNormal)
+                return true;
 
             if (session.Duration < this.configuration.SessionMinimalDuration)
                 return false;

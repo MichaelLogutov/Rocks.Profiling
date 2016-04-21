@@ -70,8 +70,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internal\Helpers\StackTraceExtensions.cs" />
+    <Compile Include="Internal\Implementation\CompletedSessionProcessingFilter.cs" />
     <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
     <Compile Include="ICurrentSessionProvider.cs" />
+    <Compile Include="ICompletedSessionProcessingFilter.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />
     <Compile Include="Models\ProfileOperationExtensions.cs" />
     <Compile Include="Models\ProfileOperationSpecification.cs" />
