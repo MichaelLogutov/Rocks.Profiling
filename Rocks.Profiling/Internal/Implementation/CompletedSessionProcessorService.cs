@@ -50,7 +50,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            if (session.OperationsTreeRoot.IsEmpty)
+            if (session.Operations.Count == 0)
                 return false;
 
             if (!this.completedSessionFilter.ShouldProcess(session))

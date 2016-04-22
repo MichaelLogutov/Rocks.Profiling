@@ -19,7 +19,7 @@ namespace Rocks.Profiling.Tests.Models
 
 
         [Fact]
-        public async Task StartAndStop_CorrectlySetsTheTimeOfTheRootOperation()
+        public async Task StartAndStop_CorrectlySetsSessionDuration()
         {
             // arrange
             var sut = this.fixture.Create<ProfileSession>();
@@ -31,7 +31,7 @@ namespace Rocks.Profiling.Tests.Models
 
 
             // assert
-            sut.OperationsTreeRoot.Duration.Should().BeGreaterThan(TimeSpan.Zero);
+            sut.Duration.Should().BeGreaterThan(TimeSpan.Zero);
         }
     }
 }

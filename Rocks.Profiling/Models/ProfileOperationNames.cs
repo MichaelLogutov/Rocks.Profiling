@@ -8,11 +8,6 @@ namespace Rocks.Profiling.Models
     public static class ProfileOperationNames
     {
         /// <summary>
-        ///     The root of the session operations tree.
-        /// </summary>
-        public static string ProfileSessionRoot = "Root";
-
-        /// <summary>
         ///     Execution of <see cref="DbCommand.ExecuteNonQuery"/> method.
         /// </summary>
         public static string DbCommandExecuteNonQuery = "DbCommand_ExecuteNonQuery";

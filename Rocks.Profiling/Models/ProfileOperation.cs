@@ -11,13 +11,6 @@ namespace Rocks.Profiling.Models
     [DataContract]
     public class ProfileOperation : IDisposable
     {
-        #region Private fields
-
-        [CanBeNull]
-        private IList<ProfileOperation> childNodes;
-
-        #endregion
-
         #region Construct
 
         /// <summary>
@@ -84,6 +77,28 @@ namespace Rocks.Profiling.Models
         public string Resource { get; set; }
 
         /// <summary>
+        ///     Represents a concatination of <see cref="Category"/>, <see cref="Name"/>
+        ///     and <see cref="Resource"/> properties.
+        /// </summary>
+        private string FullName
+        {
+            get
+            {
+                string result = null;
+
+                if (this.Category != null)
+                    result = $"{this.Category}, ";
+
+                result += this.Name;
+
+                if (this.Resource != null)
+                    result += $", {this.Resource}";
+
+                return result;
+            }
+        }
+
+        /// <summary>
         ///     Additional data about operation.
         ///     The key is case sensitive.
         /// </summary>
@@ -146,26 +161,10 @@ namespace Rocks.Profiling.Models
         public TimeSpan? NormalDuration { get; }
 
         /// <summary>
-        ///     Parent node.
+        ///     Parent node. Will be null for root nodes.
         /// </summary>
         [CanBeNull]
         public ProfileOperation Parent { get; }
-
-        /// <summary>
-        ///     A list of child nodes.
-        /// </summary>
-        [CanBeNull, DataMember(Name = "Operations")]
-        public IEnumerable<ProfileOperation> ChildNodes => this.childNodes;
-
-        /// <summary>
-        ///     Returns true if <see cref="ChildNodes" /> is null or empty.
-        /// </summary>
-        public bool IsEmpty => this.childNodes == null || this.childNodes.Count == 0;
-
-        /// <summary>
-        ///     Returns count of the child nodes.
-        /// </summary>
-        public int Count => this.childNodes?.Count ?? 0;
 
         /// <summary>
         ///     Returns true if current profile scope has been completed.
@@ -184,43 +183,6 @@ namespace Rocks.Profiling.Models
         #region Public methods
 
         /// <summary>
-        ///     Adds new child operation node.<br />
-        ///     This method indended to be called from <see cref="ProfileSession" />
-        ///     and should not be called manually.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="operation" /> is <see langword="null" />.</exception>
-        public void Add([NotNull] ProfileOperation operation)
-        {
-            if (operation == null)
-                throw new ArgumentNullException(nameof(operation));
-
-            if (this.childNodes == null)
-                this.childNodes = new List<ProfileOperation>();
-
-            this.childNodes.Add(operation);
-        }
-
-
-        /// <summary>
-        ///     Returns all descendants and current node.
-        /// </summary>
-        [NotNull]
-        public IEnumerable<ProfileOperation> GetDescendantsAndSelf()
-        {
-            yield return this;
-
-            if (this.ChildNodes == null)
-                yield break;
-
-            foreach (var node in this.ChildNodes)
-            {
-                foreach (var subnode in node.GetDescendantsAndSelf())
-                    yield return subnode;
-            }
-        }
-
-
-        /// <summary>
         ///     Returns a string that represents the current object.
         /// </summary>
         /// <returns>
@@ -228,14 +190,7 @@ namespace Rocks.Profiling.Models
         /// </returns>
         public override string ToString()
         {
-            string result = null;
-
-            if (this.Category != null)
-                result = $"[{this.Category}] ";
-
-            result += $"{this.Name} ({this.Count} operations)";
-
-            return result;
+            return this.FullName;
         }
 
         #endregion

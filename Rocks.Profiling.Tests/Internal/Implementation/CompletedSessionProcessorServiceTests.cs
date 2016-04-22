@@ -6,6 +6,7 @@ using Ploeh.AutoFixture;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Rocks.Profiling.Tests.Internal.Implementation
 {
@@ -22,6 +23,10 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public CompletedSessionProcessorServiceTests()
         {
             this.fixture = new FixtureBuilder().Build();
+
+            this.fixture.Freeze<ICompletedSessionProcessingFilter>()
+                .ShouldProcess(null)
+                .ReturnsForAnyArgs(true);
         }
 
         #endregion

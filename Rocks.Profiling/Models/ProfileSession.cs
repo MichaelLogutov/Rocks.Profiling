@@ -20,15 +20,10 @@ namespace Rocks.Profiling.Models
 
         private readonly Stopwatch stopwatch;
         private readonly IProfilerLogger logger;
+        private readonly List<ProfileOperation> operations;
+        private readonly Stack<ProfileOperation> operationsStack;
 
-        #endregion
-
-        #region Private fields
-
-        [NotNull]
-        private ProfileOperation currentOperation;
-
-        private int newId = 1;
+        private int newId;
 
         #endregion
 
@@ -49,11 +44,9 @@ namespace Rocks.Profiling.Models
             this.Profiler = profiler;
             this.logger = logger;
 
-            this.OperationsTreeRoot = new ProfileOperation(this.newId++,
-                                                           this,
-                                                           new ProfileOperationSpecification(ProfileOperationNames.ProfileSessionRoot));
-
-            this.currentOperation = this.OperationsTreeRoot;
+            this.operations = new List<ProfileOperation>();
+            this.operationsStack = new Stack<ProfileOperation>();
+            this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
         #endregion
@@ -69,7 +62,7 @@ namespace Rocks.Profiling.Models
         ///     Additional data associated with the session.
         /// </summary>
         [DataMember(Name = "Data", EmitDefaultValue = false)]
-        public IDictionary<string, object> Data { get; private set; }
+        public IDictionary<string, object> Data { get; }
 
         /// <summary>
         ///     Gets or sets additional data for this session by key.
@@ -85,9 +78,6 @@ namespace Rocks.Profiling.Models
                 if (string.IsNullOrEmpty(dataKey))
                     throw new ArgumentException("Argument is null or empty", nameof(dataKey));
 
-                if (this.Data == null)
-                    this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
-
                 this.Data[dataKey] = value;
             }
         }
@@ -98,16 +88,16 @@ namespace Rocks.Profiling.Models
         public TimeSpan Time => this.stopwatch.Elapsed;
 
         /// <summary>
-        ///     Get the total duration of the operations in the session.
+        ///     Get the total duration of all operations in the session.
         /// </summary>
         [DataMember]
-        public TimeSpan Duration => this.OperationsTreeRoot.Duration;
+        public TimeSpan Duration { get; private set; }
 
         /// <summary>
-        ///     The root of the session operations tree.
+        ///     The list of all operations in the session.
         /// </summary>
         [DataMember(Name = "Operations", EmitDefaultValue = false)]
-        public ProfileOperation OperationsTreeRoot { get; }
+        public IReadOnlyList<ProfileOperation> Operations => this.operations;
 
         /// <summary>
         ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration" />
@@ -123,16 +113,13 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Adds new additional data to the <see cref="Data" /> dictionary.
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="additionalSessionData"/> is <see langword="null" />.</exception>
-        public void AddAdditionalData([NotNull] IDictionary<string, object> additionalSessionData)
+        /// <exception cref="ArgumentNullException"><paramref name="additionalData"/> is <see langword="null" />.</exception>
+        public void AddData([NotNull] IDictionary<string, object> additionalData)
         {
-            if (additionalSessionData == null)
-                throw new ArgumentNullException(nameof(additionalSessionData));
+            if (additionalData == null)
+                throw new ArgumentNullException(nameof(additionalData));
 
-            if (this.Data == null)
-                this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            foreach (var kv in additionalSessionData)
+            foreach (var kv in additionalData)
                 this.Data[kv.Key] = kv.Value;
         }
 
@@ -150,10 +137,14 @@ namespace Rocks.Profiling.Models
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
-            var operation = new ProfileOperation(id: this.newId++,
+            var last_operation = this.operationsStack.Count > 0 ? this.operationsStack.Peek() : null;
+
+            this.newId++;
+
+            var operation = new ProfileOperation(id: this.newId,
                                                  session: this,
                                                  specification: specification,
-                                                 parent: this.currentOperation);
+                                                 parent: last_operation);
 
             if (this.Profiler.Configuration.CaptureCallStacks)
             {
@@ -161,8 +152,8 @@ namespace Rocks.Profiling.Models
                 operation.CallStack = new StackTrace(true).ToAsyncString(x => x.DeclaringType?.Assembly != current_assembly);
             }
 
-            this.currentOperation.Add(operation);
-            this.currentOperation = operation;
+            this.operations.Add(operation);
+            this.operationsStack.Push(operation);
 
             return operation;
         }
@@ -184,18 +175,20 @@ namespace Rocks.Profiling.Models
                 if (operation.Session != this)
                     throw new OperationFromAnotherSessionProfilingException();
 
-                if (this.currentOperation != operation)
+                var current_operation = this.operationsStack.Pop();
+                if (current_operation != operation)
                     throw new OperationsOutOfOrderProfillingException();
 
-                if (this.currentOperation.Parent == null)
+                var parent_operation = this.operationsStack.Count > 0 ? this.operationsStack.Peek() : null;
+                if (parent_operation != operation.Parent)
                     throw new OperationsOutOfOrderProfillingException();
 
-                this.OperationsTreeRoot.EndTime = this.currentOperation.EndTime = this.Time;
+                operation.EndTime = this.Time;
+
+                this.Duration += operation.Duration;
 
                 if (operation.Duration >= operation.NormalDuration)
                     this.HasOperationLongerThanNormal = true;
-
-                this.currentOperation = this.currentOperation.Parent;
             }
             catch (Exception ex)
             {

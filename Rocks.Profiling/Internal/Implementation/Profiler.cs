@@ -74,7 +74,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 var session = new ProfileSession(this, this.logger);
 
                 if (additionalSessionData != null)
-                    session.AddAdditionalData(additionalSessionData);
+                    session.AddData(additionalSessionData);
 
                 this.currentSession.Set(session);
             }
@@ -122,7 +122,7 @@ namespace Rocks.Profiling.Internal.Implementation
                     throw new NoCurrentSessionProfilingException();
 
                 if (additionalSessionData != null)
-                    session.AddAdditionalData(additionalSessionData);
+                    session.AddData(additionalSessionData);
 
                 this.completedSessionsProcessorQueue.Add(session);
 

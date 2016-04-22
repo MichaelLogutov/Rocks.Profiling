@@ -114,7 +114,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.Select(x => x.Name).Should().Equal("test");
+            results[0].Operations.Select(x => x.Name).Should().Equal("test");
         }
 
 
@@ -125,7 +125,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var session = this.fixture.Create<ProfileSession>();
             this.currentSessionProvider.Get().Returns(session);
 
-            session.AddAdditionalData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
+            session.AddData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
 
@@ -169,28 +169,27 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                 }
             }
 
+            using (sut.Profile(new ProfileOperationSpecification("e")))
+            using (sut.Profile(new ProfileOperationSpecification("f")))
+            {
+            }
+
             sut.Stop(additional_session_data);
 
 
             // assert
             results.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.Id.Should().Be(1);
-            results[0].OperationsTreeRoot.Name.Should().Be(ProfileOperationNames.ProfileSessionRoot);
-
-            results[0].OperationsTreeRoot.ChildNodes.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).Name.Should().Be("a");
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).Id.Should().Be(2);
-
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.Should().HaveCount(2);
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Name.Should().Be("b");
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Id.Should().Be(3);
-
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Name.Should().Be("c");
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Id.Should().Be(4);
-
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(1).Name.Should().Be("d");
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0).ChildNodes.ElementAt(1).Id.Should().Be(5);
+            results[0].Operations.ShouldAllBeEquivalentTo
+                (new object[]
+                 {
+                     new { Id = 1, Name = "a", ParentId = (int?) null },
+                     new { Id = 2, Name = "b", ParentId = 1 },
+                     new { Id = 3, Name = "c", ParentId = 2 },
+                     new { Id = 4, Name = "d", ParentId = 1 },
+                     new { Id = 5, Name = "e", ParentId = (int?) null },
+                     new { Id = 6, Name = "f", ParentId = 5 }
+                 },
+                 o => o.ExcludingMissingMembers());
         }
 
 
@@ -207,6 +206,27 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                              using (sut.Profile(new ProfileOperationSpecification("a")))
                                  // ReSharper disable once MustUseReturnValue
                                  sut.Profile(new ProfileOperationSpecification("b"));
+                         };
+
+
+            // assert
+            act.ShouldThrow<OperationsOutOfOrderProfillingException>();
+        }
+
+
+        [Fact]
+        public void Profile_OperationHasWrongParent_Throws()
+        {
+            // arrange
+            var sut = this.fixture.Create<Profiler>();
+
+
+            // act
+            Action act = () =>
+                         {
+                             using (sut.Profile(new ProfileOperationSpecification("a")))
+                             using (var operation = sut.Profile(new ProfileOperationSpecification("b")))
+                                 operation.SetPropertyValue(x => x.Parent, null);
                          };
 
 
@@ -236,10 +256,10 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].OperationsTreeRoot.ChildNodes.ElementAt(0)
-                      .CallStack.SplitNullSafe('\n')
-                      .First()
-                      .Should().Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
+            results[0].Operations[0]
+                .CallStack.SplitNullSafe('\n')
+                .First()
+                .Should().Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
         }
 
         #endregion
