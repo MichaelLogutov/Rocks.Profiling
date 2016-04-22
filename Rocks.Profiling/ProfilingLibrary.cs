@@ -91,6 +91,7 @@ namespace Rocks.Profiling
             c.RegisterSingleton<ICompletedSessionsProcessorQueue, CompletedSessionsProcessorQueue>();
             c.RegisterSingleton<ICompletedSessionProcessorService, CompletedSessionProcessorService>();
             c.RegisterSingleton<IProfilerResultsStorage, NullProfilerResultsStorage>();
+            c.RegisterSingleton<ICompletedSessionProcessingFilter, NullCompletedSessionProcessingFilter>();
 
             ReplaceProviderFactories();
 
