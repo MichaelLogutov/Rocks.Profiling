@@ -80,7 +80,8 @@ namespace Rocks.Profiling.Models
         ///     Represents a concatination of <see cref="Category"/>, <see cref="Name"/>
         ///     and <see cref="Resource"/> properties.
         /// </summary>
-        private string FullName
+        [NotNull]
+        public string FullName
         {
             get
             {
