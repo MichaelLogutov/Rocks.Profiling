@@ -61,7 +61,7 @@ namespace Rocks.Profiling.Models
         /// <summary>
         ///     Additional data associated with the session.
         /// </summary>
-        [DataMember(Name = "Data", EmitDefaultValue = false)]
+        [NotNull, DataMember(Name = "Data", EmitDefaultValue = false)]
         public IDictionary<string, object> Data { get; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Rocks.Profiling.Models
         /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey" /> is null or empty</exception>
         public object this[[CanBeNull] string dataKey]
         {
-            get { return this.Data?[dataKey]; }
+            get { return this.Data[dataKey]; }
 
             set
             {
