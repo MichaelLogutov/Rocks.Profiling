@@ -88,12 +88,12 @@ namespace Rocks.Profiling.Models
                 string result = null;
 
                 if (this.Category != null)
-                    result = $"{this.Category} :: ";
+                    result = $"{this.Category}::";
 
                 result += this.Name;
 
                 if (this.Resource != null)
-                    result += $" :: {this.Resource}";
+                    result += $"::{this.Resource}";
 
                 return result;
             }
