@@ -6,10 +6,10 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using JetBrains.Annotations;
-using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
 
@@ -43,28 +43,32 @@ namespace Rocks.Profiling
         ///     Gets the current profiler instance.
         /// </summary>
         [NotNull]
-        public static IProfiler GetCurrentProfiler()
-        {
-            return ProfilerFactory.GetCurrentProfiler();
-        }
+        public static IProfiler GetCurrentProfiler() => ProfilerFactory.GetCurrentProfiler();
 
 
         /// <summary>
-        ///     Starts new profile session on the current profile.
+        ///     Creates new profile session.
         /// </summary>
         public static void StartProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
-        {
-            ProfilerFactory.GetCurrentProfiler().Start(additionalSessionData);
-        }
+            => ProfilerFactory.GetCurrentProfiler().Start(additionalSessionData);
 
 
         /// <summary>
-        ///     Starts new profile session on the current profile.
+        ///     Starts new scope that will measure execution time of the operation
+        ///     with specified <paramref name="specification"/>.<br />
+        ///     Uppon disposing will store the results of measurement in the current session.<br />
+        ///     If there is no session started - returns dummy operation that will do nothing.
+        /// </summary>
+        [CanBeNull, MustUseReturnValue]
+        public static ProfileOperation Profile([NotNull] ProfileOperationSpecification specification)
+            => ProfilerFactory.GetCurrentProfiler().Profile(specification);
+
+
+        /// <summary>
+        ///     Stops current profile session and stores the results.
         /// </summary>
         public static void StopProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
-        {
-            ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
-        }
+            => ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
 
         #endregion
 
