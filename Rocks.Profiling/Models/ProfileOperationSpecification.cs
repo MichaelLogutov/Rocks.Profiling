@@ -20,6 +20,22 @@ namespace Rocks.Profiling.Models
             this.Name = name;
         }
 
+
+        /// <exception cref="ArgumentException">Argument <paramref name="name"/> is null or whitespace</exception>
+        public ProfileOperationSpecification([CanBeNull] string category, [NotNull] string name)
+            : this(name)
+        {
+            this.Category = category;
+        }
+
+
+        /// <exception cref="ArgumentException">Argument <paramref name="name"/> is null or whitespace</exception>
+        public ProfileOperationSpecification([CanBeNull] string category, [NotNull] string name, [CanBeNull] string resource)
+            : this(category, name)
+        {
+            this.Resource = resource;
+        }
+
         #endregion
 
         #region Public properties
@@ -38,6 +54,13 @@ namespace Rocks.Profiling.Models
         /// </summary>
         [CanBeNull]
         public string Category { get; set; }
+
+        /// <summary>
+        ///     The resource which current operation is workgin with.<br />
+        ///     For example, "MyDbServer - MyDatabase".
+        /// </summary>
+        [CanBeNull]
+        public string Resource { get; set; }
 
         /// <summary>
         ///     Additional data that will be stored with the operation (for example, SQL text).<br />

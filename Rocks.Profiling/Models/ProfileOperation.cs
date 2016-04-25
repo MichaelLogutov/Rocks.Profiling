@@ -39,6 +39,7 @@ namespace Rocks.Profiling.Models
 
             this.Name = specification.Name;
             this.Category = specification.Category;
+            this.Resource = specification.Resource;
             this.NormalDuration = specification.NormalDuration;
 
             this.Parent = parent;
