@@ -11,7 +11,7 @@ namespace Rocks.Profiling
     /// <summary>
     ///     Profiler configuration.
     /// </summary>
-    public sealed class ProfilerConfiguration
+    public class ProfilerConfiguration
     {
         #region Private readonly fields
 
@@ -86,23 +86,7 @@ namespace Rocks.Profiling
         {
             var result = new ProfilerConfiguration();
 
-            result.SessionMinimalDuration = ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
-                                            TimeSpan.FromMilliseconds(500);
-
-            result.ProfilingEnabled = ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ??
-                                      true;
-
-            result.ResultsBufferSize = (ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ??
-                                        10000).RequiredGreaterThan(0, nameof(result.ResultsBufferSize));
-
-            result.ResultsProcessBatchDelay = ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"].ToTime()
-                                            ?? TimeSpan.FromSeconds(1);
-
-            result.ResultsProcessMaxBatchSize = (ConfigurationManager.AppSettings["Profiling.ResultsProcessMaxBatchSize"].ToInt() ??
-                                               10).RequiredGreaterThan(0, nameof(result.ResultsProcessMaxBatchSize));
-
-            result.CaptureCallStacks = ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ??
-                                       false;
+            result.Load();
 
             return result;
         }
@@ -133,6 +117,38 @@ namespace Rocks.Profiling
         #endregion
 
         #region Protected methods
+
+        /// <summary>
+        ///     Loads configuration values.<br />
+        ///     Default implementation loads values from application settings.
+        /// </summary>
+        protected virtual void Load()
+        {
+            this.SessionMinimalDuration =
+                ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
+                TimeSpan.FromMilliseconds(500);
+
+            this.ProfilingEnabled =
+                ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ??
+                true;
+
+            this.ResultsBufferSize =
+                (ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ??
+                 10000).RequiredGreaterThan(0, nameof(this.ResultsBufferSize));
+
+            this.ResultsProcessBatchDelay =
+                ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"].ToTime()
+                ?? TimeSpan.FromSeconds(1);
+
+            this.ResultsProcessMaxBatchSize =
+                (ConfigurationManager.AppSettings["Profiling.ResultsProcessMaxBatchSize"].ToInt() ??
+                 10).RequiredGreaterThan(0, nameof(this.ResultsProcessMaxBatchSize));
+
+            this.CaptureCallStacks =
+                ConfigurationManager.AppSettings["Profiling.CaptureCallStacks"].ToBool() ??
+                false;
+        }
+
 
         /// <summary>
         ///     Performs configuration of the DI container based on configuration values.
