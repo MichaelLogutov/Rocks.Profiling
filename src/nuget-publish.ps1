@@ -2,7 +2,7 @@ cls
 
 cd $PSScriptRoot
 
-$id = ((Get-Item -Path ".\..").Name)
+$id = (Get-Item -Path ".\..").Name
 iex "nuget pack -build -Prop Configuration=Release -sym $id\$id.csproj"
 
 $package_file = @(Get-ChildItem "*.nupkg" -Exclude "*.symbols.*" | Sort-Object -Property CreationTime -Descending)[0]
