@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
     {
         private readonly IFixture fixture;
         private readonly ICompletedSessionProcessorService processorService;
-        private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerConfiguration configuration;
 
 
         public CompletedSessionsProcessorQueueTests()

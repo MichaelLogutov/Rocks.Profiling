@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Loggers;
@@ -27,7 +28,7 @@ namespace Rocks.Profiling
 
         public static void Setup(Func<HttpContextBase> httpContextFactory,
                                  Container externalContainer = null,
-                                 Action<ProfilerConfiguration> configure = null)
+                                 Action<IProfilerConfiguration> configure = null)
         {
             if (externalContainer == null)
                 externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
@@ -80,10 +81,12 @@ namespace Rocks.Profiling
 
         #region Private methods
 
-        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c, [CanBeNull] Action<ProfilerConfiguration> configure)
+        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c, [CanBeNull] Action<IProfilerConfiguration> configure)
         {
             var configuration = ProfilerConfiguration.FromAppConfig();
             configure?.Invoke(configuration);
+
+            c.RegisterSingleton<IProfilerConfiguration>(configuration);
 
             c.RegisterSingleton<Func<HttpContextBase>>(httpContextFactory);
             c.RegisterSingleton(configuration);

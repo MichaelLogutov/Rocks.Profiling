@@ -7,6 +7,7 @@ using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using Ploeh.AutoFixture;
 using Rocks.Helpers;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
@@ -21,7 +22,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         #region Private readonly fields
 
         private readonly IFixture fixture;
-        private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerConfiguration configuration;
         private readonly ICurrentSessionProvider currentSessionProvider;
 
         #endregion
@@ -32,7 +33,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             this.fixture = new FixtureBuilder().Build();
 
-            this.configuration = this.fixture.Freeze<ProfilerConfiguration>();
+            this.configuration = this.fixture.Freeze<IProfilerConfiguration>();
             this.currentSessionProvider = this.fixture.Freeze<ICurrentSessionProvider>();
 
             var session = this.fixture.Create<ProfileSession>();

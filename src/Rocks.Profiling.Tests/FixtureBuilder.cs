@@ -5,6 +5,7 @@ using NSubstitute;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoNSubstitute;
 using Ploeh.AutoFixture.Kernel;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
 using SimpleInjector;
 
@@ -60,8 +61,8 @@ namespace Rocks.Profiling.Tests
                 (c => c.FromFactory(() =>
                                     {
                                         var profiler = Substitute.For<IProfiler>();
-                                        var configuration = (ProfilerConfiguration) new SpecimenContext(fixture).Resolve
-                                                                                        (new SeededRequest(typeof (ProfilerConfiguration), null));
+                                        var configuration = (IProfilerConfiguration) new SpecimenContext(fixture).Resolve
+                                                                                        (new SeededRequest(typeof (IProfilerConfiguration), null));
                                         profiler.Configuration.ReturnsForAnyArgs(configuration);
 
                                         return profiler;

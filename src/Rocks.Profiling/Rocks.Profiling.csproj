@@ -78,6 +78,7 @@
     <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
     <Compile Include="ICurrentSessionProvider.cs" />
     <Compile Include="ICompletedSessionProcessingFilter.cs" />
+    <Compile Include="Configuration\IProfilerConfiguration.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />
     <Compile Include="Models\ProfileOperationExtensions.cs" />
     <Compile Include="Models\ProfileOperationSpecification.cs" />
@@ -109,7 +110,7 @@
     <Compile Include="Loggers\NullProfilerLogger.cs" />
     <Compile Include="Storage\NullProfilerResultsStorage.cs" />
     <Compile Include="Internal\Implementation\ProfilerFactory.cs" />
-    <Compile Include="ProfilerConfiguration.cs" />
+    <Compile Include="Configuration\ProfilerConfiguration.cs" />
     <Compile Include="ProfilingLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

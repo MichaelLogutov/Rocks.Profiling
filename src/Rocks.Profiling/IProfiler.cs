@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling
@@ -14,7 +15,7 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Current profiler configuration.
         /// </summary>
-        ProfilerConfiguration Configuration { get; }
+        IProfilerConfiguration Configuration { get; }
 
         #endregion
 

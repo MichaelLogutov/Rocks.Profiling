@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
@@ -23,7 +24,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <exception cref="ArgumentNullException"><paramref name="currentSession"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="completedSessionsProcessorQueue"/> is <see langword="null" />.</exception>
-        public Profiler([NotNull] ProfilerConfiguration configuration,
+        public Profiler([NotNull] IProfilerConfiguration configuration,
                         [NotNull] ICurrentSessionProvider currentSession,
                         [NotNull] IProfilerLogger logger,
                         [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue)
@@ -53,7 +54,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <summary>
         ///     Current profiler configuration.
         /// </summary>
-        public ProfilerConfiguration Configuration { get; }
+        public IProfilerConfiguration Configuration { get; }
 
         #endregion
 

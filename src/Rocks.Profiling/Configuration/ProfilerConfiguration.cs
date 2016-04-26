@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using JetBrains.Annotations;
 using Rocks.Helpers;
 using Rocks.Profiling.Internal;
 using Rocks.Profiling.Internal.Implementation;
 using SimpleInjector;
 
-namespace Rocks.Profiling
+namespace Rocks.Profiling.Configuration
 {
     /// <summary>
     ///     Profiler configuration.
     /// </summary>
-    public class ProfilerConfiguration
+    public class ProfilerConfiguration : IProfilerConfiguration
     {
         #region Private readonly fields
 
@@ -82,6 +83,7 @@ namespace Rocks.Profiling
 
         #region Static methods
 
+        [NotNull]
         public static ProfilerConfiguration FromAppConfig()
         {
             var result = new ProfilerConfiguration();
@@ -98,21 +100,16 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Overrides specified <typeparamref name="TService" /> implementation.
         /// </summary>
-        public ProfilerConfiguration OverrideService<TService, TImplementation>()
+        /// <param name="lifestyle">Lifestyle of the overriden sevice. If null - singleton will be used.</param>
+        public IProfilerConfiguration OverrideService<TService, TImplementation>(Lifestyle lifestyle = null)
             where TImplementation : TService
         {
-            this.serviceOverrides.Add(new ProfilerServiceOverride<TService, TImplementation>());
+            var service_override = new ProfilerServiceOverride<TService, TImplementation>(lifestyle ?? Lifestyle.Singleton);
+
+            this.serviceOverrides.Add(service_override);
+
             return this;
         }
-
-        #endregion
-
-        #region Protected properties
-
-        /// <summary>
-        ///     Returns true, if ADO.NET calls should be intercepted.
-        /// </summary>
-        internal bool ShouldInterceptAdoNet => this.ProfilingEnabled;
 
         #endregion
 

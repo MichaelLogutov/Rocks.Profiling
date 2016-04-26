@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 
@@ -12,7 +13,7 @@ namespace Rocks.Profiling.Internal.Implementation
     {
         #region Private readonly fields
 
-        private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerConfiguration configuration;
         private readonly IProfilerResultsStorage resultsStorage;
         private readonly ICompletedSessionProcessingFilter completedSessionFilter;
 
@@ -20,7 +21,7 @@ namespace Rocks.Profiling.Internal.Implementation
 
         #region Construct
 
-        public CompletedSessionProcessorService([NotNull] ProfilerConfiguration configuration,
+        public CompletedSessionProcessorService([NotNull] IProfilerConfiguration configuration,
                                                 [NotNull] IProfilerResultsStorage resultsStorage,
                                                 [NotNull] ICompletedSessionProcessingFilter completedSessionFilter)
         {

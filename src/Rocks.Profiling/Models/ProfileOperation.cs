@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 
 namespace Rocks.Profiling.Models
 {
@@ -175,7 +176,7 @@ namespace Rocks.Profiling.Models
 
         /// <summary>
         ///     Returns call stack of the operation start.<br />
-        ///     This property filled only if <see cref="ProfilerConfiguration.CaptureCallStacks" /> is <see langword="true" />.
+        ///     This property filled only if <see cref="IProfilerConfiguration.CaptureCallStacks" /> is <see langword="true" />.
         /// </summary>
         [CanBeNull, DataMember(Name = "CallStack", EmitDefaultValue = false)]
         public string CallStack { get; internal set; }

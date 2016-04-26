@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Ploeh.AutoFixture;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
@@ -115,7 +116,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
         private void ConfigureSessionMinimalDuration(TimeSpan duration)
         {
-            var configuration = this.fixture.Freeze<ProfilerConfiguration>();
+            var configuration = this.fixture.Freeze<IProfilerConfiguration>();
             configuration.SessionMinimalDuration = duration;
         }
 

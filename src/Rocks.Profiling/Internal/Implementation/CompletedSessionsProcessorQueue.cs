@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
@@ -18,7 +19,7 @@ namespace Rocks.Profiling.Internal.Implementation
         [ThreadSafe]
         private readonly object processingTaskInitializationLock = new object();
 
-        private readonly ProfilerConfiguration configuration;
+        private readonly IProfilerConfiguration configuration;
         private readonly IProfilerLogger logger;
         private readonly ICompletedSessionProcessorService processorService;
 
@@ -42,7 +43,7 @@ namespace Rocks.Profiling.Internal.Implementation
         /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="processorService"/> is <see langword="null" />.</exception>
-        public CompletedSessionsProcessorQueue([NotNull] ProfilerConfiguration configuration,
+        public CompletedSessionsProcessorQueue([NotNull] IProfilerConfiguration configuration,
                                                [NotNull] IProfilerLogger logger,
                                                [NotNull] ICompletedSessionProcessorService processorService)
         {
