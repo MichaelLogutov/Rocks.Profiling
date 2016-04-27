@@ -33,10 +33,10 @@ namespace Rocks.Profiling.Configuration
 
         /// <summary>
         ///     If true then enables profiling the most expensive stream of operations.<br />
-        ///     Value can be specified in application config key "Profiling.ProfilingEnabled".<br />
+        ///     Value can be specified in application config key "Profiling.Enabled".<br />
         ///     Default value is true.
         /// </summary>
-        public bool ProfilingEnabled { get; set; }
+        public bool Enabled { get; set; }
 
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace Rocks.Profiling.Configuration
                 ConfigurationManager.AppSettings["Profiling.SessionMinimalDuration"].ToTime() ??
                 TimeSpan.FromMilliseconds(500);
 
-            this.ProfilingEnabled =
-                ConfigurationManager.AppSettings["Profiling.ProfilingEnabled"].ToBool() ??
+            this.Enabled =
+                ConfigurationManager.AppSettings["Profiling.Enabled"].ToBool() ??
                 true;
 
             this.ResultsBufferSize =

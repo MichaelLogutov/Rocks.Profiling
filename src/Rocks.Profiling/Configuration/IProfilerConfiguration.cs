@@ -10,7 +10,7 @@ namespace Rocks.Profiling.Configuration
         ///     Value can be specified in application config key "Profiling.ProfilingEnabled".<br />
         ///     Default value is true.
         /// </summary>
-        bool ProfilingEnabled { get; set; }
+        bool Enabled { get; set; }
 
         /// <summary>
         ///     Any sessions with total operation duration less than specified will be ignored.<br />

@@ -52,7 +52,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         {
             var connection = this.innerFactory.CreateConnection();
 
-            if (!ProfilerFactory.GetCurrentProfiler().Configuration.ProfilingEnabled)
+            if (!ProfilerFactory.GetCurrentProfiler().Configuration.Enabled)
                 return connection;
 
             return new WrappedDbConnection(connection, this);
@@ -63,7 +63,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         {
             var command = this.innerFactory.CreateCommand();
 
-            if (!ProfilerFactory.GetCurrentProfiler().Configuration.ProfilingEnabled)
+            if (!ProfilerFactory.GetCurrentProfiler().Configuration.Enabled)
                 return command;
 
             return new WrappedDbCommand(command);
