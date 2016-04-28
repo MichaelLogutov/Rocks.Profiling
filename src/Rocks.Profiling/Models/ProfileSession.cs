@@ -69,9 +69,19 @@ namespace Rocks.Profiling.Models
         ///     The key is case sensitive.
         /// </summary>
         /// <exception cref="ArgumentException" accessor="set">Argument <paramref name="dataKey" /> is null or empty</exception>
-        public object this[[CanBeNull] string dataKey]
+        public object this[[NotNull] string dataKey]
         {
-            get { return this.Data[dataKey]; }
+            get
+            {
+                if (string.IsNullOrEmpty(dataKey))
+                    throw new ArgumentException("Argument is null or empty", nameof(dataKey));
+
+                object result;
+                if (!this.Data.TryGetValue(dataKey, out result))
+                    return null;
+
+                return result;
+            }
 
             set
             {
