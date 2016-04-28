@@ -6,7 +6,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     {
         public static DbProviderFactory TryGetProviderFactory(this DbConnection connection)
         {
-            var wrapped_db_connection = connection as WrappedDbConnection;
+            var wrapped_db_connection = connection as ProfiledDbConnection;
             if (wrapped_db_connection != null)
                 return wrapped_db_connection.InnerProviderFactory;
 

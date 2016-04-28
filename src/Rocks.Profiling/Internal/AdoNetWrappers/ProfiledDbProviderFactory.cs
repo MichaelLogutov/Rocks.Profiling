@@ -5,16 +5,16 @@ using Rocks.Profiling.Internal.Implementation;
 
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {
-    internal abstract class WrappedDbProviderFactory : DbProviderFactory
+    internal abstract class ProfiledDbProviderFactory : DbProviderFactory
     {
     }
 
-    internal class WrappedDbProviderFactory<TProviderFactory> : WrappedDbProviderFactory, IServiceProvider
+    internal class ProfiledDbProviderFactory<TProviderFactory> : ProfiledDbProviderFactory, IServiceProvider
         where TProviderFactory : DbProviderFactory
     {
         #region Constants
 
-        public static readonly WrappedDbProviderFactory<TProviderFactory> Instance = new WrappedDbProviderFactory<TProviderFactory>();
+        public static readonly ProfiledDbProviderFactory<TProviderFactory> Instance = new ProfiledDbProviderFactory<TProviderFactory>();
 
         #endregion
 
@@ -27,7 +27,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         #region Construct
 
         /// <exception cref="NotSupportedException">Provider doesn't have Instance property.</exception>
-        public WrappedDbProviderFactory()
+        public ProfiledDbProviderFactory()
         {
             var field = typeof (TProviderFactory).GetField("Instance", BindingFlags.Public | BindingFlags.Static);
             if (field == null)
@@ -55,7 +55,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             if (!ProfilerFactory.GetCurrentProfiler().Configuration.Enabled)
                 return connection;
 
-            return new WrappedDbConnection(connection, this);
+            return new ProfiledDbConnection(connection, this);
         }
 
 
@@ -66,7 +66,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             if (!ProfilerFactory.GetCurrentProfiler().Configuration.Enabled)
                 return command;
 
-            return new WrappedDbCommand(command);
+            return new ProfiledDbCommand(command);
         }
 
 

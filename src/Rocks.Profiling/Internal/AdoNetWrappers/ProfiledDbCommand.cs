@@ -11,7 +11,7 @@ using Rocks.Profiling.Models;
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {
     [DesignerCategory("")]
-    public class WrappedDbCommand : DbCommand
+    internal class ProfiledDbCommand : DbCommand
     {
         #region Private readonly fields
 
@@ -21,14 +21,14 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Construct
 
-        public WrappedDbCommand(DbCommand innerCommand)
+        public ProfiledDbCommand(DbCommand innerCommand)
         {
             this.InnerCommand = innerCommand;
             this.profiler = ProfilerFactory.GetCurrentProfiler();
         }
 
 
-        public WrappedDbCommand(DbCommand innerCommand, WrappedDbConnection innerConnection)
+        public ProfiledDbCommand(DbCommand innerCommand, ProfiledDbConnection innerConnection)
             : this(innerCommand)
         {
             this.InnerConnection = innerConnection;
@@ -38,9 +38,9 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Public properties
 
-        public DbCommand InnerCommand { get; set; }
-
-        public WrappedDbConnection InnerConnection { get; set; }
+        public DbCommand InnerCommand { get; private set; }
+        public ProfiledDbConnection InnerConnection { get; private set; }
+        public ProfiledDbTransaction InnerTransaction { get; private set; }
 
         public override string CommandText
         {
@@ -82,16 +82,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Public methods
 
-        public override void Cancel()
-        {
-            this.InnerCommand.Cancel();
-        }
-
-
-        public override void Prepare()
-        {
-            this.InnerCommand.Prepare();
-        }
+        public override void Cancel() => this.InnerCommand.Cancel();
+        public override void Prepare() => this.InnerCommand.Prepare();
 
 
         public override int ExecuteNonQuery()
@@ -137,18 +129,19 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override DbParameterCollection DbParameterCollection => this.InnerCommand.Parameters;
 
+
         protected override DbConnection DbConnection
         {
             get { return this.InnerConnection; }
 
             set
             {
-                this.InnerConnection = value as WrappedDbConnection;
+                this.InnerConnection = value as ProfiledDbConnection;
                 if (this.InnerConnection != null)
                     this.InnerCommand.Connection = this.InnerConnection.InnerConnection;
                 else
                 {
-                    this.InnerConnection = new WrappedDbConnection(value);
+                    this.InnerConnection = new ProfiledDbConnection(value);
                     this.InnerCommand.Connection = this.InnerConnection.InnerConnection;
                 }
             }
@@ -156,8 +149,15 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override DbTransaction DbTransaction
         {
-            get { return this.InnerCommand.Transaction; }
-            set { this.InnerCommand.Transaction = value; }
+            get { return this.InnerTransaction; }
+            set
+            {
+                this.InnerTransaction = value as ProfiledDbTransaction;
+                if (value != null && this.InnerTransaction == null)
+                    this.InnerTransaction = new ProfiledDbTransaction(value, this.InnerConnection);
+
+                this.InnerCommand.Transaction = this.InnerTransaction?.InnerTransaction;
+            }
         }
 
         #endregion
@@ -183,10 +183,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
-        protected override DbParameter CreateDbParameter()
-        {
-            return this.InnerCommand.CreateParameter();
-        }
+        protected override DbParameter CreateDbParameter() => this.InnerCommand.CreateParameter();
 
 
         protected override void Dispose(bool disposing)

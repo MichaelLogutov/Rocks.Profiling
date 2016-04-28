@@ -1,0 +1,1 @@
+create table TestRocksProfilingTable (Id int identity(1, 1), Data varchar(255), constraint [PK_TestRocksProfilingTable] primary key clustered (Id))

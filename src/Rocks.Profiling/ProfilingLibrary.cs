@@ -125,10 +125,10 @@ namespace Rocks.Profiling
                     continue;
                 }
 
-                if (factory is WrappedDbProviderFactory)
+                if (factory is ProfiledDbProviderFactory)
                     continue;
 
-                var proxy_type = typeof (WrappedDbProviderFactory<>).MakeGenericType(factory.GetType());
+                var proxy_type = typeof (ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType());
 
                 var wrapped_provider_row = table.NewRow();
                 wrapped_provider_row["Name"] = row["Name"];

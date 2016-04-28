@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -45,17 +46,38 @@ namespace Sandbox
                                        configure: x =>
                                                   {
                                                       x.SessionMinimalDuration = TimeSpan.FromMilliseconds(1);
+                                                      x.ResultsProcessBatchDelay = TimeSpan.Zero;
+                                                      x.ResultsBufferSize = 1;
                                                       x.OverrideService<IProfilerLogger, ConsoleProfilerLogger>();
                                                       x.OverrideService<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
                                                   });
 
                 ProfilingLibrary.StartProfiling();
 
+                using (var data_context = new LingToSqlDataContext(ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection()))
+                {
+                    var dto = new TestRocksProfilingTable { Data = "abc" };
+                    data_context.TestRocksProfilingTables.InsertOnSubmit(dto);
+                    data_context.SubmitChanges();
+
+                    Console.WriteLine("Inserted via Linq-to-sql: {0}", dto.Id);
+                }
+
+                using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                using (var data_context = new LingToSqlDataContext(ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection()))
+                {
+                    var dto = new TestRocksProfilingTable { Data = "abc" };
+                    data_context.TestRocksProfilingTables.InsertOnSubmit(dto);
+                    data_context.SubmitChanges();
+
+                    Console.WriteLine("Rollback via Linq-to-sql: {0}", dto.Id);
+                }
+
                 using (var connection = ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection())
                 {
-                    var id = connection.Query<int>("select top 1 object_id from sys.tables").FirstOrNull();
+                    var id = connection.Query<int>("select top 1 Id from TestRocksProfilingTable order by Id desc").FirstOrNull();
 
-                    Console.WriteLine("id: {0}", id);
+                    Console.WriteLine("Selected via ADO: {0}", id);
                 }
 
                 ProfilingLibrary.StopProfiling(new Dictionary<string, object>

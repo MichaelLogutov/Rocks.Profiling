@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="LingToSql">
+  <DataContextMoniker Name="/LingToSqlDataContext" />
+  <nestedChildShapes>
+    <classShape Id="84923b8b-6ea9-41a2-9713-4c7c90ff24f5" absoluteBounds="3.25, 1.875, 2, 1.1939925130208333">
+      <DataClassMoniker Name="/LingToSqlDataContext/TestRocksProfilingTable" />
+      <nestedChildShapes>
+        <elementListCompartment Id="cfcaa49c-f5fe-48bb-b105-7ff483a4306b" absoluteBounds="3.2649999999999997, 2.335, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

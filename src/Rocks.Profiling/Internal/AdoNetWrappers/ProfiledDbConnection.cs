@@ -8,17 +8,17 @@ using IsolationLevel = System.Data.IsolationLevel;
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {
     [DesignerCategory("")]
-    public class WrappedDbConnection : DbConnection
+    public class ProfiledDbConnection : DbConnection
     {
         #region Construct
 
-        public WrappedDbConnection(DbConnection connection)
+        public ProfiledDbConnection(DbConnection connection)
             : this(connection, connection.TryGetProviderFactory())
         {
         }
 
 
-        public WrappedDbConnection(DbConnection connection, DbProviderFactory innerProviderFactory)
+        public ProfiledDbConnection(DbConnection connection, DbProviderFactory innerProviderFactory)
         {
             this.InnerConnection = connection;
             this.InnerProviderFactory = innerProviderFactory;
@@ -71,47 +71,13 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         #region Public methods
 
-        public override void ChangeDatabase(string databaseName)
-        {
-            this.InnerConnection.ChangeDatabase(databaseName);
-        }
-
-
-        /// <exception cref="DbException">The connection-level error that occurred while opening the connection. </exception>
-        public override void Close()
-        {
-            this.InnerConnection.Close();
-        }
-
-
-        public override void Open()
-        {
-            this.InnerConnection.Open();
-        }
-
-
-        public override void EnlistTransaction(Transaction transaction)
-        {
-            this.InnerConnection.EnlistTransaction(transaction);
-        }
-
-
-        public override DataTable GetSchema()
-        {
-            return this.InnerConnection.GetSchema();
-        }
-
-
-        public override DataTable GetSchema(string collectionName)
-        {
-            return this.InnerConnection.GetSchema(collectionName);
-        }
-
-
-        public override DataTable GetSchema(string collectionName, string[] restrictionValues)
-        {
-            return this.InnerConnection.GetSchema(collectionName, restrictionValues);
-        }
+        public override void ChangeDatabase(string databaseName) => this.InnerConnection.ChangeDatabase(databaseName);
+        public override void Close() => this.InnerConnection.Close();
+        public override void Open() => this.InnerConnection.Open();
+        public override void EnlistTransaction(Transaction transaction) => this.InnerConnection.EnlistTransaction(transaction);
+        public override DataTable GetSchema() => this.InnerConnection.GetSchema();
+        public override DataTable GetSchema(string collectionName) => this.InnerConnection.GetSchema(collectionName);
+        public override DataTable GetSchema(string collectionName, string[] restrictionValues) => this.InnerConnection.GetSchema(collectionName, restrictionValues);
 
         #endregion
 
@@ -125,21 +91,17 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            return this.InnerConnection.BeginTransaction(isolationLevel);
+            var transaction = new ProfiledDbTransaction(this.InnerConnection.BeginTransaction(isolationLevel), this);
+
+            return transaction;
         }
 
 
-        protected override DbCommand CreateDbCommand()
-        {
-            return new WrappedDbCommand(this.InnerConnection.CreateCommand(), this);
-        }
+        protected override DbCommand CreateDbCommand() => new ProfiledDbCommand(this.InnerConnection.CreateCommand(), this);
 
 
-        protected override object GetService(Type service)
-        {
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            return ((IServiceProvider) this.InnerConnection).GetService(service);
-        }
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        protected override object GetService(Type service) => ((IServiceProvider) this.InnerConnection).GetService(service);
 
 
         protected override void Dispose(bool disposing)

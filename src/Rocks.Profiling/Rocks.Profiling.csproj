@@ -73,6 +73,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\AdoNetWrappers\ProfiledDbTransaction.cs" />
     <Compile Include="Internal\Helpers\StackTraceExtensions.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessingFilter.cs" />
     <Compile Include="Internal\Implementation\CurrentSessionProvider.cs" />
@@ -94,9 +95,9 @@
     <Compile Include="Exceptions\ProfilingException.cs" />
     <Compile Include="Exceptions\SessionAlreadyStartedProfilingException.cs" />
     <Compile Include="Internal\AdoNetWrappers\Helpers.cs" />
-    <Compile Include="Internal\AdoNetWrappers\WrappedDbCommand.cs" />
-    <Compile Include="Internal\AdoNetWrappers\WrappedDbConnection.cs" />
-    <Compile Include="Internal\AdoNetWrappers\WrappedDbProviderFactory.cs" />
+    <Compile Include="Internal\AdoNetWrappers\ProfiledDbCommand.cs" />
+    <Compile Include="Internal\AdoNetWrappers\ProfiledDbConnection.cs" />
+    <Compile Include="Internal\AdoNetWrappers\ProfiledDbProviderFactory.cs" />
     <Compile Include="Models\ProfileOperationNames.cs" />
     <Compile Include="ICompletedSessionsProcessorQueue.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionsProcessorQueue.cs" />

@@ -116,8 +116,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Rocks.Profiling\Rocks.Profiling.csproj">
       <Project>{B5D36831-D566-4F32-A7B6-4D052E122EB0}</Project>
-      <Name>Profiling</Name>
+      <Name>Rocks.Profiling</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
