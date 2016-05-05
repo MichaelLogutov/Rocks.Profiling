@@ -69,6 +69,9 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             try
             {
+                if (!this.Configuration.Enabled)
+                    return;
+
                 if (this.currentSession.Get() != null)
                     throw new SessionAlreadyStartedProfilingException();
 
@@ -96,6 +99,9 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             try
             {
+                if (!this.Configuration.Enabled)
+                    return null;
+
                 var session = this.currentSession.Get();
                 var operation = session?.StartMeasure(specification);
 
@@ -118,6 +124,9 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             try
             {
+                if (!this.Configuration.Enabled)
+                    return;
+
                 var session = this.currentSession.Get();
                 if (session == null)
                     throw new NoCurrentSessionProfilingException();

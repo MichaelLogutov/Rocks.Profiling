@@ -26,14 +26,12 @@ namespace Rocks.Profiling
 
         #region Static methods
 
-        public static void Setup(Func<HttpContextBase> httpContextFactory,
-                                 Container externalContainer = null,
-                                 Action<IProfilerConfiguration> configure = null)
+        public static void Setup(Func<HttpContextBase> httpContextFactory, Container externalContainer = null)
         {
             if (externalContainer == null)
                 externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
 
-            RegisterAll(httpContextFactory, externalContainer, configure);
+            RegisterAll(httpContextFactory, externalContainer);
 
             Container = externalContainer;
             HttpContextFactory = httpContextFactory;
@@ -81,15 +79,11 @@ namespace Rocks.Profiling
 
         #region Private methods
 
-        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c, [CanBeNull] Action<IProfilerConfiguration> configure)
+        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c)
         {
-            var configuration = ProfilerConfiguration.FromAppConfig();
-            configure?.Invoke(configuration);
-
-            c.RegisterSingleton<IProfilerConfiguration>(configuration);
+            c.RegisterSingleton<IProfilerConfiguration, ProfilerConfiguration>();
 
             c.RegisterSingleton<Func<HttpContextBase>>(httpContextFactory);
-            c.RegisterSingleton(configuration);
 
             c.RegisterSingleton<ICurrentSessionProvider, CurrentSessionProvider>();
             c.RegisterSingleton<IProfiler, Profiler>();
@@ -101,8 +95,6 @@ namespace Rocks.Profiling
             c.RegisterSingleton<ICompletedSessionProcessingFilter, NullCompletedSessionProcessingFilter>();
 
             ReplaceProviderFactories();
-
-            configuration.ConfigureServices(c);
         }
 
 

@@ -18,7 +18,8 @@ namespace Rocks.Profiling.Tests.IntegrationTests
         public void MultithreadStressTest_DoesNotThrow()
         {
             // arrange
-            ProfilingLibrary.Setup(() => null, configure: x => x.OverrideService<IProfilerLogger, RethrowProfilerLogger>());
+            ProfilingLibrary.Setup(() => null);
+            ProfilingLibrary.Container.RegisterSingleton<IProfilerLogger, RethrowProfilerLogger>();
 
 
             var tasks = Enumerable.Range(0, 10)

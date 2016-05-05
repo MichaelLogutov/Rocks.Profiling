@@ -240,7 +240,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Profile_WithCaptureCallStacks_FillsOperationCallStackProperty()
         {
             // arrange
-            this.configuration.CaptureCallStacks = true;
+            this.configuration.CaptureCallStacks.Returns(true);
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
 

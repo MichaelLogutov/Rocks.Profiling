@@ -10,9 +10,11 @@ namespace Rocks.Profiling
     public interface ICompletedSessionProcessingFilter
     {
         /// <summary>
-        ///     Determines if completed session is needs to be processed.
+        ///     Determines if completed session is needs to be processed.<br />
+        ///     The implementation of this method should be thread safe.<br />
+        ///     If <see langword="null" /> returned - the default filtering sequence will be performed.
         /// </summary>
         /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null" />.</exception>
-        bool ShouldProcess([NotNull] ProfileSession session);
+        bool? ShouldProcess([NotNull] ProfileSession session);
     }
 }

@@ -62,11 +62,15 @@ namespace Rocks.Profiling.Tests
                                     {
                                         var profiler = Substitute.For<IProfiler>();
                                         var configuration = (IProfilerConfiguration) new SpecimenContext(fixture).Resolve
-                                                                                        (new SeededRequest(typeof (IProfilerConfiguration), null));
+                                                                                         (new SeededRequest(typeof (IProfilerConfiguration), null));
                                         profiler.Configuration.ReturnsForAnyArgs(configuration);
 
                                         return profiler;
                                     }));
+
+
+            fixture.Customize<IProfilerConfiguration>
+                (c => c.FromFactory(() => Substitute.ForPartsOf<ProfilerConfiguration>()));
 
             foreach (var initializer in this.additionalInitializers)
                 initializer(fixture);

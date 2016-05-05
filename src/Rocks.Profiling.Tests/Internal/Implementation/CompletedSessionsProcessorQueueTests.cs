@@ -26,8 +26,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             this.fixture = new FixtureBuilder().Build();
 
-            this.configuration = ProfilerConfiguration.FromAppConfig();
-            this.fixture.Inject(this.configuration);
+            this.configuration = this.fixture.Freeze<IProfilerConfiguration>();
 
             this.processorService = this.fixture.Freeze<ICompletedSessionProcessorService>();
             this.processorService.ShouldProcess(null).ReturnsForAnyArgs(true);
@@ -38,7 +37,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_One_ThenDelay_ThenAnother_WaitsForBatchTimeForTheSecond()
         {
             // arrange
-            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(1000);
+            this.configuration.ResultsProcessBatchDelay.Returns(TimeSpan.FromMilliseconds(1000));
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -69,8 +68,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_ThreeTimesInARow_WithMaxBatchSizeTwo_ProcessTwoFirstSessions()
         {
             // arrange
-            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(500);
-            this.configuration.ResultsProcessMaxBatchSize = 2;
+            this.configuration.ResultsProcessBatchDelay.Returns(TimeSpan.FromMilliseconds(500));
+            this.configuration.ResultsProcessMaxBatchSize.Returns(2);
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -105,7 +104,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_Ones_WaitsForBatchTimeAndProcessOne()
         {
             // arrange
-            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(300);
+            this.configuration.ResultsProcessBatchDelay.Returns(TimeSpan.FromMilliseconds(300));
 
             var session = this.CreateSession(1);
 
@@ -131,8 +130,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_Ones_BatchSizeOne_ProcessOne()
         {
             // arrange
-            this.configuration.ResultsProcessBatchDelay = TimeSpan.FromMilliseconds(400);
-            this.configuration.ResultsProcessMaxBatchSize = 1;
+            this.configuration.ResultsProcessBatchDelay.Returns(TimeSpan.FromMilliseconds(400));
+            this.configuration.ResultsProcessMaxBatchSize.Returns(1);
 
             var session = this.CreateSession(1);
 

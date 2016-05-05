@@ -51,10 +51,11 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            if (session.Operations.Count == 0)
-                return false;
+            var should_process = this.completedSessionFilter.ShouldProcess(session);
+            if (should_process != null)
+                return should_process.Value;
 
-            if (!this.completedSessionFilter.ShouldProcess(session))
+            if (session.Operations.Count == 0)
                 return false;
 
             if (session.HasOperationLongerThanNormal)

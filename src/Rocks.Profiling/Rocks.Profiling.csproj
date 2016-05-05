@@ -51,8 +51,8 @@
     <Reference Include="Rocks.SimpleInjector">
       <HintPath>..\packages\Rocks.SimpleInjector.2.0.2.0\lib\net451\Rocks.SimpleInjector.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.1.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.1.2\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.1.3.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\..\..\CianMedia\csharp\packages\SimpleInjector.3.1.3\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -88,7 +88,6 @@
     <Compile Include="Exceptions\ResultsProcessorOverflowProfilingException.cs" />
     <Compile Include="Internal\Implementation\CompletedSessionProcessorService.cs" />
     <Compile Include="ICompletedSessionProcessorService.cs" />
-    <Compile Include="Internal\IProfilerServiceOverride.cs" />
     <Compile Include="Models\ProfileSession.cs" />
     <Compile Include="Models\ProfileOperation.cs" />
     <Compile Include="Exceptions\NoCurrentSessionProfilingException.cs" />
@@ -104,7 +103,6 @@
     <Compile Include="IProfiler.cs" />
     <Compile Include="Internal\Implementation\Profiler.cs" />
     <Compile Include="Loggers\IProfilerLogger.cs" />
-    <Compile Include="Internal\Implementation\ProfilerServiceOverride.cs" />
     <Compile Include="Storage\IProfilerResultsStorage.cs" />
     <Compile Include="Loggers\RethrowProfilerLogger.cs" />
     <Compile Include="Loggers\ConsoleProfilerLogger.cs" />
@@ -116,6 +114,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Package.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>

@@ -148,7 +148,8 @@ namespace Rocks.Profiling.Internal.Implementation
                         if (session == null)
                             break;
 
-                        sessions.Add(session);
+                        if (this.processorService.ShouldProcess(session))
+                            sessions.Add(session);
                     }
                     else
                     {
@@ -167,7 +168,9 @@ namespace Rocks.Profiling.Internal.Implementation
 
                     if (sessions.Count > 0)
                     {
-                        await this.processorService.ProcessAsync(sessions, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                        if (this.configuration.Enabled)
+                            await this.processorService.ProcessAsync(sessions, this.cancellationTokenSource.Token).ConfigureAwait(false);
+
                         sessions.Clear();
                     }
                 }

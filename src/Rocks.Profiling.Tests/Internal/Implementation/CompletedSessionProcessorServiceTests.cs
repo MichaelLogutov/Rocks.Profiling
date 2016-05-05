@@ -7,6 +7,7 @@ using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
+
 // ReSharper disable AssignNullToNotNullAttribute
 
 namespace Rocks.Profiling.Tests.Internal.Implementation
@@ -27,7 +28,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             this.fixture.Freeze<ICompletedSessionProcessingFilter>()
                 .ShouldProcess(null)
-                .ReturnsForAnyArgs(true);
+                .ReturnsForAnyArgs((bool?) null);
         }
 
         #endregion
@@ -117,7 +118,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         private void ConfigureSessionMinimalDuration(TimeSpan duration)
         {
             var configuration = this.fixture.Freeze<IProfilerConfiguration>();
-            configuration.SessionMinimalDuration = duration;
+            configuration.SessionMinimalDuration.Returns(duration);
         }
 
         #endregion
