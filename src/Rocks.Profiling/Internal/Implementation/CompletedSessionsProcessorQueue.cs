@@ -89,6 +89,9 @@ namespace Rocks.Profiling.Internal.Implementation
 
             try
             {
+                if (!this.processorService.ShouldProcess(session))
+                    return;
+
                 this.EnsureProcessingTaskStarted();
 
                 var retries = this.configuration.ResultsBufferAddRetriesCount;
@@ -145,8 +148,7 @@ namespace Rocks.Profiling.Internal.Implementation
                         if (session == null)
                             break;
 
-                        if (this.processorService.ShouldProcess(session))
-                            sessions.Add(session);
+                        sessions.Add(session);
                     }
                     else
                     {
@@ -167,8 +169,7 @@ namespace Rocks.Profiling.Internal.Implementation
                             if (!this.dataToProcess.TryTake(out session, (int) allowed_delay, this.cancellationTokenSource.Token))
                                 break;
 
-                            if (this.processorService.ShouldProcess(session))
-                                sessions.Add(session);
+                            sessions.Add(session);
                         }
                     }
 

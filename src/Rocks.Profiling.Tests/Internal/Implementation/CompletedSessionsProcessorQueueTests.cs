@@ -39,6 +39,29 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
+        public async Task Add_One_ShouldProcessReturnsFalse_DoesNotAddsItToTheQueue()
+        {
+            // arrange
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(100));
+            this.processorService.Setup(x => x.ShouldProcess(It.IsAny<ProfileSession>())).Returns(false);
+
+            var stored_sessions = this.CaptureStoredSessions();
+
+
+            // act
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(this.CreateSession(1));
+                await Task.Delay(300).ConfigureAwait(false);
+            }
+
+
+            // assert
+            stored_sessions.Should().BeEmpty();
+        }
+
+
+        [Fact]
         public async Task Add_One_ThenDelay_ThenAnother_WaitsForBatchTimeForTheSecond()
         {
             // arrange
@@ -150,7 +173,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_Ones_BatchSizeOne_ProcessOne()
         {
             // arrange
-            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(400));
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(100));
             this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
 
             var session = this.CreateSession(1);
@@ -159,20 +182,15 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            List<string> result;
-
             using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
             {
                 sut.Add(session);
-
-                await Task.Delay(200).ConfigureAwait(false);
-
-                result = stored_sessions.ToList();
+                await Task.Delay(400).ConfigureAwait(false);
             }
 
 
             // assert
-            result.Should().Equal("1");
+            stored_sessions.Should().Equal("1");
         }
 
 
