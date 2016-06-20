@@ -2,6 +2,8 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
+using Moq;
+using Ploeh.AutoFixture;
 
 namespace Rocks.Profiling.Tests
 {
@@ -50,6 +52,14 @@ namespace Rocks.Profiling.Tests
 
                 backing_field.SetValue(obj, value);
             }
+        }
+
+
+        public static Mock<T> FreezeMock<T>(this IFixture fixture) where T : class
+        {
+            var mock = fixture.Freeze<T>();
+
+            return Mock.Get(mock);
         }
     }
 }

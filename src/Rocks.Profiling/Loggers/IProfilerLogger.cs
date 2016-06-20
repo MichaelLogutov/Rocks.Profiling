@@ -9,6 +9,13 @@ namespace Rocks.Profiling.Loggers
     public interface IProfilerLogger
     {
         /// <summary>
+        ///     Will be called on warnings during profiling.<br />
+        ///     The implementation must be thread safe.
+        /// </summary>
+        void LogWarning([NotNull] string message, [CanBeNull] Exception ex = null);
+
+
+        /// <summary>
         ///     Will be called on unhandled exceptions during profiling.<br />
         ///     The implementation must be thread safe.
         /// </summary>

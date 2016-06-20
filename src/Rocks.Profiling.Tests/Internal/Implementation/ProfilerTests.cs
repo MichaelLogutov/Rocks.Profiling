@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
-using NSubstitute;
-using NSubstitute.ReturnsExtensions;
+using Moq;
 using Ploeh.AutoFixture;
 using Rocks.Helpers;
 using Rocks.Profiling.Configuration;
@@ -19,36 +18,28 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 {
     public class ProfilerTests
     {
-        #region Private readonly fields
-
         private readonly IFixture fixture;
-        private readonly IProfilerConfiguration configuration;
-        private readonly ICurrentSessionProvider currentSessionProvider;
+        private readonly Mock<IProfilerConfiguration> configuration;
+        private readonly Mock<ICurrentSessionProvider> currentSessionProvider;
 
-        #endregion
-
-        #region Construct
 
         public ProfilerTests()
         {
             this.fixture = new FixtureBuilder().Build();
 
-            this.configuration = this.fixture.Freeze<IProfilerConfiguration>();
-            this.currentSessionProvider = this.fixture.Freeze<ICurrentSessionProvider>();
+            this.configuration = this.fixture.FreezeMock<IProfilerConfiguration>();
+            this.currentSessionProvider = this.fixture.FreezeMock<ICurrentSessionProvider>();
 
             var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Get().Returns(session);
+            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
         }
 
-        #endregion
-
-        #region Public methods
 
         [Fact]
         public void NoSession_Profile_DoesNotThrow()
         {
             // arrange
-            this.currentSessionProvider.Get().ReturnsNull();
+            this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
 
 
             // act
@@ -69,7 +60,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Stop_NoSessionActive_Throws()
         {
             // arrange
-            this.currentSessionProvider.Get().ReturnsNull();
+            this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
 
 
             // act
@@ -85,7 +76,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Start_SetsCurrentSession()
         {
             // arrange
-            this.currentSessionProvider.Get().Returns((ProfileSession) null);
+            this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
 
 
             // act
@@ -93,7 +84,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            this.currentSessionProvider.Received(1).Set(Arg.Is<ProfileSession>(x => x != null));
+            this.currentSessionProvider.Verify(m => m.Set(It.Is<ProfileSession>(x => x != null)));
         }
 
 
@@ -124,7 +115,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         {
             // arrange
             var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Get().Returns(session);
+            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
 
             session.AddData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
 
@@ -240,7 +231,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Profile_WithCaptureCallStacks_FillsOperationCallStackProperty()
         {
             // arrange
-            this.configuration.CaptureCallStacks.Returns(true);
+            this.configuration.Setup(x => x.CaptureCallStacks).Returns(true);
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
 
@@ -263,21 +254,16 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                 .Should().Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
         }
 
-        #endregion
-
-        #region Private methods
 
         private static IList<ProfileSession> CaptureProfileSessionAddedToTheResultsProcessor(IFixture fixture)
         {
             var results = new List<ProfileSession>();
 
-            fixture.Freeze<ICompletedSessionsProcessorQueue>()
-                   .WhenForAnyArgs(x => x.Add(null))
-                   .Do(x => results.Add(x.Arg<ProfileSession>()));
+            fixture.FreezeMock<ICompletedSessionsProcessorQueue>()
+                   .Setup(x => x.Add(It.IsAny<ProfileSession>()))
+                   .Callback<ProfileSession>(x => results.Add(x));
 
             return results;
         }
-
-        #endregion
     }
 }

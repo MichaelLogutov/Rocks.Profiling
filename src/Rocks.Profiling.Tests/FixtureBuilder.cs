@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
-using NSubstitute;
+using Moq;
 using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoNSubstitute;
+using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
@@ -13,22 +13,14 @@ namespace Rocks.Profiling.Tests
 {
     public class FixtureBuilder
     {
-        #region Private readonly fields
-
         private readonly IList<Action<IFixture>> additionalInitializers;
 
-        #endregion
-
-        #region Construct
 
         public FixtureBuilder()
         {
             this.additionalInitializers = new List<Action<IFixture>>();
         }
 
-        #endregion
-
-        #region Public methods
 
         public FixtureBuilder With(Action<IFixture> initializer)
         {
@@ -41,7 +33,7 @@ namespace Rocks.Profiling.Tests
         {
             var fixture = new Fixture();
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            fixture.Customize(new AutoNSubstituteCustomization());
+            fixture.Customize(new AutoConfiguredMoqCustomization());
 
             fixture.Inject<IProfilerLogger>(new RethrowProfilerLogger());
             fixture.Inject<Func<HttpContextBase>>(() => null);
@@ -60,24 +52,32 @@ namespace Rocks.Profiling.Tests
             fixture.Customize<IProfiler>
                 (c => c.FromFactory(() =>
                                     {
-                                        var profiler = Substitute.For<IProfiler>();
+                                        var profiler = new Mock<IProfiler>();
                                         var configuration = (IProfilerConfiguration) new SpecimenContext(fixture).Resolve
-                                                                                         (new SeededRequest(typeof (IProfilerConfiguration), null));
-                                        profiler.Configuration.ReturnsForAnyArgs(configuration);
+                                                                                         (new SeededRequest(typeof(IProfilerConfiguration), null));
 
-                                        return profiler;
-                                    }));
+                                        profiler.Setup(x => x.Configuration).Returns(configuration);
+
+                                        return profiler.Object;
+                                    })
+                       .OmitAutoProperties());
 
 
             fixture.Customize<IProfilerConfiguration>
-                (c => c.FromFactory(() => Substitute.ForPartsOf<ProfilerConfiguration>()));
+                (c => c.FromFactory(() =>
+                                    {
+                                        var mock = new Mock<ProfilerConfiguration>();
+                                        mock.CallBase = true;
+                                        mock.SetReturnsDefault(new ProfilerConfiguration());
+
+                                        return mock.Object;
+                                    })
+                       .OmitAutoProperties());
 
             foreach (var initializer in this.additionalInitializers)
                 initializer(fixture);
 
             return fixture;
         }
-
-        #endregion
     }
 }

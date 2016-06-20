@@ -12,6 +12,7 @@ using Rocks.Profiling;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
+using SimpleInjector;
 
 namespace Sandbox
 {
@@ -42,15 +43,18 @@ namespace Sandbox
         {
             try
             {
-                ProfilingLibrary.Setup(() => null,
-                                       configure: x =>
-                                                  {
-                                                      x.SessionMinimalDuration = TimeSpan.FromMilliseconds(1);
-                                                      x.ResultsProcessBatchDelay = TimeSpan.Zero;
-                                                      x.ResultsBufferSize = 1;
-                                                      x.OverrideService<IProfilerLogger, ConsoleProfilerLogger>();
-                                                      x.OverrideService<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
-                                                  });
+                ConfigurationManager.AppSettings["Profiling.Enabled"] = "00:00:00.001";
+                ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"] = "00:00:00";
+                ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"] = "1";
+
+                var container = new Container { Options = { AllowOverridingRegistrations = true } };
+                ProfilingLibrary.Setup(() => null, container);
+
+                container.RegisterSingleton<IProfilerLogger, ConsoleProfilerLogger>();
+                container.RegisterSingleton<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
+
+                container.Verify();
+
 
                 ProfilingLibrary.StartProfiling();
 

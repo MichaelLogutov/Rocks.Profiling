@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using NSubstitute;
+using Moq;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.Implementation;
@@ -14,26 +14,18 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 {
     public class CompletedSessionProcessorServiceTests
     {
-        #region Private readonly fields
-
         private readonly IFixture fixture;
 
-        #endregion
-
-        #region Construct
 
         public CompletedSessionProcessorServiceTests()
         {
             this.fixture = new FixtureBuilder().Build();
 
-            this.fixture.Freeze<ICompletedSessionProcessingFilter>()
-                .ShouldProcess(null)
-                .ReturnsForAnyArgs((bool?) null);
+            this.fixture.FreezeMock<ICompletedSessionProcessingFilter>()
+                .Setup(x => x.ShouldProcess(It.IsAny<ProfileSession>()))
+                .Returns((bool?) null);
         }
 
-        #endregion
-
-        #region Public methods
 
         [Fact]
         public void ShouldProcess_SessionHasNoOperations_ReturnsFalse()
@@ -111,16 +103,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             result.Should().BeTrue();
         }
 
-        #endregion
-
-        #region Private methods
 
         private void ConfigureSessionMinimalDuration(TimeSpan duration)
         {
-            var configuration = this.fixture.Freeze<IProfilerConfiguration>();
-            configuration.SessionMinimalDuration.Returns(duration);
+            var configuration = this.fixture.FreezeMock<IProfilerConfiguration>();
+            configuration.Setup(x => x.SessionMinimalDuration).Returns(duration);
         }
-
-        #endregion
     }
 }
