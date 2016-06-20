@@ -23,6 +23,10 @@ namespace Rocks.Profiling.Configuration
                 (ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"].ToInt() ??
                  10000).RequiredGreaterThan(0, nameof(this.ResultsBufferSize));
 
+            this.ResultsBufferAddRetriesCount =
+                (ConfigurationManager.AppSettings["Profiling.ResultsBufferAddRetriesCount"].ToInt() ??
+                 3).RequiredNotLessThan(0, nameof(this.ResultsBufferAddRetriesCount));
+
             this.ResultsProcessBatchDelay =
                 ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"].ToTime()
                 ?? TimeSpan.FromSeconds(1);
@@ -60,6 +64,16 @@ namespace Rocks.Profiling.Configuration
         ///     Default value is 10000.
         /// </summary>
         public virtual int ResultsBufferSize { get; }
+
+        /// <summary>
+        ///     Amount of attempts completed profile session result tried to be added to the overflowed results buffer
+        ///     before throwing an exception.<br />
+        ///     Before each attempt one oldest item will be removed from the overflowing buffer.<br />
+        ///     If zero - retries will be disabled.<br />
+        ///     Value can be specified in application config key "Profiling.ResultsBufferAddRetriesCount".<br />
+        ///     Default value is 3.
+        /// </summary>
+        public int ResultsBufferAddRetriesCount { get; }
 
 
         /// <summary>

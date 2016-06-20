@@ -27,6 +27,16 @@ namespace Rocks.Profiling.Configuration
         int ResultsBufferSize { get; }
 
         /// <summary>
+        ///     Amount of attempts completed profile session result tried to be added to the overflowed results buffer
+        ///     before throwing an exception.<br />
+        ///     Before each attempt one oldest item will be removed from the overflowing buffer.<br />
+        ///     If zero - retries will be disabled.<br />
+        ///     Value can be specified in application config key "Profiling.ResultsBufferAddRetriesCount".<br />
+        ///     Default value is 3.
+        /// </summary>
+        int ResultsBufferAddRetriesCount { get; }
+
+        /// <summary>
         ///     Time to hold off processing resulting sessions to accumulate the batch of them.<br />
         ///     Value can be specified in application config key "ProfilingConfiguration.ResultsProcessBatchDelay".<br />
         ///     Default is 1 second.
@@ -39,6 +49,7 @@ namespace Rocks.Profiling.Configuration
         ///     Default is 10.
         /// </summary>
         int ResultsProcessMaxBatchSize { get; }
+
 
         /// <summary>
         ///     Specifies if operations needs to capture current call stack when started.<br />

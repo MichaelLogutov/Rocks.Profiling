@@ -35,7 +35,12 @@ namespace Rocks.Profiling.Tests
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
             fixture.Customize(new AutoConfiguredMoqCustomization());
 
-            fixture.Inject<IProfilerLogger>(new RethrowProfilerLogger());
+            {
+                var logger_mock = new Mock<RethrowProfilerLogger>();
+                logger_mock.CallBase = true;
+                fixture.Inject<IProfilerLogger>(logger_mock.Object);
+            }
+
             fixture.Inject<Func<HttpContextBase>>(() => null);
 
             {
@@ -68,7 +73,6 @@ namespace Rocks.Profiling.Tests
                                     {
                                         var mock = new Mock<ProfilerConfiguration>();
                                         mock.CallBase = true;
-                                        mock.SetReturnsDefault(new ProfilerConfiguration());
 
                                         return mock.Object;
                                     })

@@ -8,9 +8,13 @@ using FluentAssertions;
 using Moq;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Configuration;
+using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Internal.Implementation;
+using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
 using Xunit;
+
+// ReSharper disable AccessToDisposedClosure
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -45,18 +49,22 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             var stored_sessions = this.CaptureStoredSessions();
 
-            var sut = this.fixture.Create<CompletedSessionsProcessorQueue>();
-
 
             // act
-            sut.Add(session1);
-            await Task.Delay(300).ConfigureAwait(false);
-            var result1 = stored_sessions.ToArray();
+            string[] result1;
+            string[] result2;
 
-            sut.Add(session2);
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session1);
+                await Task.Delay(300).ConfigureAwait(false);
+                result1 = stored_sessions.ToArray();
 
-            await Task.Delay(1200).ConfigureAwait(false);
-            var result2 = stored_sessions.ToArray();
+                sut.Add(session2);
+
+                await Task.Delay(700).ConfigureAwait(false);
+                result2 = stored_sessions.ToArray();
+            }
 
 
             // assert
@@ -78,20 +86,25 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             var stored_sessions = this.CaptureStoredSessions();
 
-            var sut = this.fixture.Create<CompletedSessionsProcessorQueue>();
-
 
             // act
-            sut.Add(session1);
-            var result1 = stored_sessions.ToList();
+            List<string> result1;
+            List<string> result2;
+            List<string> result3;
 
-            sut.Add(session2);
-            await Task.Delay(200).ConfigureAwait(false);
-            var result2 = stored_sessions.ToList();
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session1);
+                result1 = stored_sessions.ToList();
 
-            sut.Add(session3);
-            await Task.Delay(100).ConfigureAwait(false);
-            var result3 = stored_sessions.ToList();
+                sut.Add(session2);
+                await Task.Delay(200).ConfigureAwait(false);
+                result2 = stored_sessions.ToList();
+
+                sut.Add(session3);
+                await Task.Delay(100).ConfigureAwait(false);
+                result3 = stored_sessions.ToList();
+            }
 
 
             // assert
@@ -113,12 +126,18 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            this.fixture.Create<CompletedSessionsProcessorQueue>().Add(session);
-            var result1 = stored_sessions.ToList();
+            List<string> result1;
+            List<string> result2;
 
-            await Task.Delay(400).ConfigureAwait(false);
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session);
+                result1 = stored_sessions.ToList();
 
-            var result2 = stored_sessions.ToList();
+                await Task.Delay(400).ConfigureAwait(false);
+
+                result2 = stored_sessions.ToList();
+            }
 
 
             // assert
@@ -140,49 +159,100 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            this.fixture.Create<CompletedSessionsProcessorQueue>().Add(session);
-            var result1 = stored_sessions.ToList();
+            List<string> result;
 
-            await Task.Delay(200).ConfigureAwait(false);
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session);
 
-            var result2 = stored_sessions.ToList();
+                await Task.Delay(200).ConfigureAwait(false);
+
+                result = stored_sessions.ToList();
+            }
 
 
             // assert
-            result1.Should().BeEmpty();
-            result2.Should().Equal("1");
+            result.Should().Equal("1");
         }
 
 
-        //[Fact]
-        //public async Task Add_QueueIsFull_LogsWarning()
-        //{
-        //    // arrange
-        //    this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(1000));
+        [Fact]
+        public void Add_QueueIsFull_LogsWarning()
+        {
+            // arrange
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(5000));
+            this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
 
-        //    var session1 = this.CreateSession(1);
-        //    var session2 = this.CreateSession(2);
+            var session1 = this.CreateSession(1);
+            var session2 = this.CreateSession(2);
 
-        //    var stored_sessions = this.CaptureStoredSessions();
-
-        //    var sut = this.fixture.Create<CompletedSessionsProcessorQueue>();
-
-
-        //    // act
-        //    sut.Add(session1);
-        //    await Task.Delay(300).ConfigureAwait(false);
-        //    var result1 = stored_sessions.ToArray();
-
-        //    sut.Add(session2);
-
-        //    await Task.Delay(1200).ConfigureAwait(false);
-        //    var result2 = stored_sessions.ToArray();
+            var logger = this.fixture.FreezeMock<IProfilerLogger>();
 
 
-        //    // assert
-        //    result1.Should().BeEmpty();
-        //    result2.Should().Equal("1, 2");
-        //}
+            // act
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session1);
+                sut.Add(session2);
+            }
+
+
+            // assert
+            logger.Verify(x => x.LogWarning(new ResultsProcessorOverflowProfilingException(null).Message,
+                                            It.IsAny<ResultsProcessorOverflowProfilingException>()));
+        }
+
+
+        [Fact]
+        public async Task Add_QueueIsFull_SkipsTheOldOne()
+        {
+            // arrange
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(200));
+            this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
+            this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
+
+            var session1 = this.CreateSession(1);
+            var session2 = this.CreateSession(2);
+            var session3 = this.CreateSession(3);
+            var stored_sessions = this.CaptureStoredSessions(delay: TimeSpan.FromMilliseconds(200));
+
+
+            // act
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(session1);
+                sut.Add(session2);
+                sut.Add(session3);
+
+                await Task.Delay(500).ConfigureAwait(false);
+            }
+
+
+            // assert
+            stored_sessions.Should().Equal("1", "3");
+        }
+
+
+        [Fact]
+        public void Add_QueueIsFull_ResultsBufferAddRetriesCountIsZero_ThrowsImmediately()
+        {
+            // arrange
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(50000));
+            this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
+            this.configuration.Setup(x => x.ResultsBufferAddRetriesCount).Returns(0);
+
+            // act
+            using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
+            {
+                sut.Add(this.CreateSession(1));
+
+                Action act = () => sut.Add(this.CreateSession(2));
+
+
+                // assert
+                act.ShouldThrow<ResultsProcessorOverflowProfilingException>();
+            }
+        }
 
 
         private ProfileSession CreateSession(int id)
@@ -194,13 +264,21 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         }
 
 
-        private ConcurrentQueue<string> CaptureStoredSessions()
+        private ConcurrentQueue<string> CaptureStoredSessions(TimeSpan? delay = null)
         {
             var result = new ConcurrentQueue<string>();
 
             this.processorService
                 .Setup(x => x.ProcessAsync(It.IsAny<IReadOnlyList<ProfileSession>>(), It.IsAny<CancellationToken>()))
-                .Callback<IReadOnlyList<ProfileSession>, CancellationToken>((x, _) => result.Enqueue(string.Join(", ", x.Select(s => s["id"]))));
+                .Callback<IReadOnlyList<ProfileSession>, CancellationToken>((x, _) => result.Enqueue(string.Join(", ", x.Select(s => s["id"]))))
+                .Returns(() =>
+                         {
+                             if (delay != null)
+                                 // ReSharper disable once MethodSupportsCancellation
+                                 return Task.Delay(delay.Value);
+
+                             return Task.CompletedTask;
+                         });
 
             return result;
         }

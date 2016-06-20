@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -14,8 +15,6 @@ namespace Rocks.Profiling.Internal.Implementation
 {
     internal class CompletedSessionsProcessorQueue : ICompletedSessionsProcessorQueue, IDisposable
     {
-        #region Private readonly fields
-
         [ThreadSafe]
         private readonly object processingTaskInitializationLock = new object();
 
@@ -29,16 +28,9 @@ namespace Rocks.Profiling.Internal.Implementation
         [ThreadSafe]
         private readonly CancellationTokenSource cancellationTokenSource;
 
-        #endregion
-
-        #region Private fields
-
         [ThreadSafe]
         private Task processingTask;
 
-        #endregion
-
-        #region Construct
 
         /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
@@ -64,9 +56,6 @@ namespace Rocks.Profiling.Internal.Implementation
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
-        #endregion
-
-        #region IDisposable Members
 
         /// <summary>
         ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -84,9 +73,6 @@ namespace Rocks.Profiling.Internal.Implementation
             }
         }
 
-        #endregion
-
-        #region IProfilingResultsProcessor Members
 
         /// <summary>
         ///     Add results from completed profiling session.
@@ -105,8 +91,22 @@ namespace Rocks.Profiling.Internal.Implementation
             {
                 this.EnsureProcessingTaskStarted();
 
-                if (!this.dataToProcess.TryAdd(session))
-                    throw new ResultsProcessorOverflowProfilingException();
+                var retries = this.configuration.ResultsBufferAddRetriesCount;
+                while (true)
+                {
+                    if (this.dataToProcess.TryAdd(session))
+                        return;
+
+                    var overflow_exception = new ResultsProcessorOverflowProfilingException();
+                    this.logger.LogWarning(overflow_exception.Message, overflow_exception);
+
+                    retries--;
+                    if (retries < 0)
+                        throw overflow_exception;
+
+                    ProfileSession tmp;
+                    this.dataToProcess.TryTake(out tmp);
+                }
             }
             catch (Exception ex)
             {
@@ -114,9 +114,6 @@ namespace Rocks.Profiling.Internal.Implementation
             }
         }
 
-        #endregion
-
-        #region Private methods
 
         private void EnsureProcessingTaskStarted()
         {
@@ -153,12 +150,21 @@ namespace Rocks.Profiling.Internal.Implementation
                     }
                     else
                     {
-                        while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize)
+                        var stopwatch = Stopwatch.StartNew();
+
+                        while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize &&
+                               stopwatch.Elapsed < this.configuration.ResultsProcessBatchDelay)
                         {
                             ProfileSession session;
-                            if (!this.dataToProcess.TryTake(out session,
-                                                            (int) this.configuration.ResultsProcessBatchDelay.TotalMilliseconds,
-                                                            this.cancellationTokenSource.Token))
+
+                            var allowed_delay = (this.configuration.ResultsProcessBatchDelay - stopwatch.Elapsed).TotalMilliseconds;
+                            if (allowed_delay < 0)
+                                allowed_delay = 0;
+
+                            if (this.cancellationTokenSource.IsCancellationRequested || this.dataToProcess.IsCompleted)
+                                break;
+
+                            if (!this.dataToProcess.TryTake(out session, (int) allowed_delay, this.cancellationTokenSource.Token))
                                 break;
 
                             if (this.processorService.ShouldProcess(session))
@@ -184,7 +190,5 @@ namespace Rocks.Profiling.Internal.Implementation
                 }
             }
         }
-
-        #endregion
     }
 }
