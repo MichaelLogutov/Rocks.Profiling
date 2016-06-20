@@ -182,6 +182,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // arrange
             this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(5000));
             this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
+            this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -221,6 +222,9 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
             {
                 sut.Add(session1);
+
+                await Task.Delay(100).ConfigureAwait(false);
+
                 sut.Add(session2);
                 sut.Add(session3);
 
@@ -234,19 +238,27 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
-        public void Add_QueueIsFull_ResultsBufferAddRetriesCountIsZero_ThrowsImmediately()
+        public async Task Add_QueueIsFull_ResultsBufferAddRetriesCountIsZero_ThrowsImmediately()
         {
             // arrange
             this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(50000));
             this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
+            this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
             this.configuration.Setup(x => x.ResultsBufferAddRetriesCount).Returns(0);
+
+            this.CaptureStoredSessions(delay: TimeSpan.FromMilliseconds(1000));
+
 
             // act
             using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
             {
                 sut.Add(this.CreateSession(1));
 
-                Action act = () => sut.Add(this.CreateSession(2));
+                await Task.Delay(200).ConfigureAwait(false);
+
+                sut.Add(this.CreateSession(2));
+
+                Action act = () => sut.Add(this.CreateSession(3));
 
 
                 // assert
