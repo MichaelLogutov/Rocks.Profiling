@@ -101,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonTests.cs" />
     <Compile Include="DependencyInjectionConfigTests.cs" />
     <Compile Include="FixtureBuilder.cs" />
     <Compile Include="IntegrationTests\ProfilerMultithreadStressTest.cs" />

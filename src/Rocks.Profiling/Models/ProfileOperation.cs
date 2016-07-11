@@ -12,7 +12,19 @@ namespace Rocks.Profiling.Models
     [DataContract]
     public class ProfileOperation : IDisposable
     {
-        #region Construct
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.<br />
+        ///     This method indended to be called from <see cref="ProfileSession"/>
+        ///     and should not be called manually.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="session" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="specification" /> is <see langword="null" />.</exception>
+        public ProfileOperation(int id,
+                                [NotNull] ProfileSession session,
+                                [NotNull] ProfileOperationSpecification specification) : this(id, session, specification, null)
+        {
+        }
+
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.<br />
@@ -24,7 +36,7 @@ namespace Rocks.Profiling.Models
         public ProfileOperation(int id,
                                 [NotNull] ProfileSession session,
                                 [NotNull] ProfileOperationSpecification specification,
-                                [CanBeNull] ProfileOperation parent = null)
+                                [CanBeNull] ProfileOperation parent)
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
@@ -49,9 +61,6 @@ namespace Rocks.Profiling.Models
                 this.Data = new Dictionary<string, object>(specification.Data, StringComparer.Ordinal);
         }
 
-        #endregion
-
-        #region Public properties
 
         /// <summary>
         ///     Id of the operation inside <see cref="Session" />.
@@ -194,9 +203,6 @@ namespace Rocks.Profiling.Models
         [CanBeNull, DataMember(Name = "CallStack", EmitDefaultValue = false)]
         public string CallStack { get; internal set; }
 
-        #endregion
-
-        #region Public methods
 
         /// <summary>
         ///     Returns a string that represents the current object.
@@ -209,9 +215,6 @@ namespace Rocks.Profiling.Models
             return this.FullName;
         }
 
-        #endregion
-
-        #region IDisposable Members
 
         /// <summary>
         ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -225,7 +228,5 @@ namespace Rocks.Profiling.Models
 
             this.IsCompleted = true;
         }
-
-        #endregion
     }
 }
