@@ -54,6 +54,7 @@ namespace Rocks.Profiling.Models
             this.Category = specification.Category;
             this.Resource = specification.Resource;
             this.NormalDuration = specification.NormalDuration;
+            this.StartDate = DateTime.UtcNow;
 
             this.Parent = parent;
 
@@ -164,7 +165,7 @@ namespace Rocks.Profiling.Models
         public ProfileSession Session { get; }
 
         /// <summary>
-        ///     Start time of the operation.
+        ///     Start time of the operation relative to the session. 
         /// </summary>
         public TimeSpan StartTime { get; }
 
@@ -172,6 +173,12 @@ namespace Rocks.Profiling.Models
         ///     End time of the operation.
         /// </summary>
         public TimeSpan? EndTime { get; internal set; }
+
+        /// <summary>
+        ///     Absolute start datetime of the operation, in UTC timezone.
+        /// </summary>
+        [DataMember]
+        public DateTime StartDate { get; }
 
         /// <summary>
         ///     Gets the total duration of the operation.

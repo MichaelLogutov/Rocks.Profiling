@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Ploeh.AutoFixture;
 using Rocks.Profiling.Models;
 using Xunit;
@@ -37,6 +38,24 @@ namespace Rocks.Profiling.Tests.Models
 
             // assert
             result.Should().Be(expected);
+        }
+
+
+        [Fact]
+        public void Always_ReturnsCorrectDateTimeInUtc()
+        {
+            // arrange
+            var expectedDateTime = DateTime.UtcNow;
+
+
+            // act
+            var sut = new ProfileOperation(1,
+                                           this.fixture.Create<ProfileSession>(),
+                                           this.fixture.Create<ProfileOperationSpecification>());
+
+
+            // assert
+            sut.StartDate.Should().BeAfter(expectedDateTime).And.BeCloseTo(expectedDateTime, 1000);
         }
     }
 }
