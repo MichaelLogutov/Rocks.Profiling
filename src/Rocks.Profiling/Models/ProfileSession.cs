@@ -16,22 +16,20 @@ namespace Rocks.Profiling.Models
     [DataContract]
     public sealed class ProfileSession
     {
-        #region Private readonly fields
-
         private readonly Stopwatch stopwatch;
         private readonly IProfilerLogger logger;
         private readonly List<ProfileOperation> operations;
         private readonly Stack<ProfileOperation> operationsStack;
+        private readonly IEnumerable<IProfilerEventsHandler> eventsHandlers;
 
         private int newId;
 
-        #endregion
-
-        #region Construct
 
         /// <exception cref="ArgumentNullException"><paramref name="profiler"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
-        public ProfileSession([NotNull] IProfiler profiler, [NotNull] IProfilerLogger logger)
+        public ProfileSession([NotNull] IProfiler profiler,
+                              [NotNull] IProfilerLogger logger,
+                              [NotNull] IEnumerable<IProfilerEventsHandler> eventsHandlers)
         {
             if (profiler == null)
                 throw new ArgumentNullException(nameof(profiler));
@@ -39,19 +37,20 @@ namespace Rocks.Profiling.Models
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
 
+            if (eventsHandlers == null)
+                throw new ArgumentNullException(nameof(eventsHandlers));
+
             this.stopwatch = Stopwatch.StartNew();
 
             this.Profiler = profiler;
             this.logger = logger;
+            this.eventsHandlers = eventsHandlers;
 
             this.operations = new List<ProfileOperation>();
             this.operationsStack = new Stack<ProfileOperation>();
             this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
-        #endregion
-
-        #region Public properties
 
         /// <summary>
         ///     Profiler of the session.
@@ -116,9 +115,6 @@ namespace Rocks.Profiling.Models
         [DataMember]
         public bool HasOperationLongerThanNormal { get; private set; }
 
-        #endregion
-
-        #region Public methods
 
         /// <summary>
         ///     Adds new additional data to the <see cref="Data" /> dictionary.
@@ -133,9 +129,6 @@ namespace Rocks.Profiling.Models
                 this.Data[kv.Key] = kv.Value;
         }
 
-        #endregion
-
-        #region Protected methods
 
         /// <summary>
         ///     Starts new operation measure.
@@ -199,13 +192,23 @@ namespace Rocks.Profiling.Models
 
                 if (operation.Duration >= operation.NormalDuration)
                     this.HasOperationLongerThanNormal = true;
+
+                foreach (var events_handler in this.eventsHandlers)
+                {
+                    try
+                    {
+                        events_handler.OnOperationEnded(operation);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError(ex);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex);
             }
         }
-
-        #endregion
     }
 }

@@ -10,15 +10,11 @@ namespace Rocks.Profiling.Internal.Implementation
 {
     internal class Profiler : IProfiler
     {
-        #region Private readonly fields
-
         private readonly ICurrentSessionProvider currentSession;
         private readonly IProfilerLogger logger;
         private readonly ICompletedSessionsProcessorQueue completedSessionsProcessorQueue;
+        private readonly IEnumerable<IProfilerEventsHandler> eventsHandlers;
 
-        #endregion
-
-        #region Construct
 
         /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="currentSession"/> is <see langword="null" />.</exception>
@@ -27,7 +23,8 @@ namespace Rocks.Profiling.Internal.Implementation
         public Profiler([NotNull] IProfilerConfiguration configuration,
                         [NotNull] ICurrentSessionProvider currentSession,
                         [NotNull] IProfilerLogger logger,
-                        [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue)
+                        [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue,
+                        [NotNull] IEnumerable<IProfilerEventsHandler> eventsHandlers)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
@@ -41,24 +38,22 @@ namespace Rocks.Profiling.Internal.Implementation
             if (completedSessionsProcessorQueue == null)
                 throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
 
+            if (eventsHandlers == null)
+                throw new ArgumentNullException(nameof(eventsHandlers));
+
             this.Configuration = configuration;
             this.currentSession = currentSession;
             this.logger = logger;
             this.completedSessionsProcessorQueue = completedSessionsProcessorQueue;
+            this.eventsHandlers = eventsHandlers;
         }
 
-        #endregion
-
-        #region Public properties
 
         /// <summary>
         ///     Current profiler configuration.
         /// </summary>
         public IProfilerConfiguration Configuration { get; }
 
-        #endregion
-
-        #region IProfiler Members
 
         /// <summary>
         ///     Creates new profile session.
@@ -75,7 +70,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (this.currentSession.Get() != null)
                     throw new SessionAlreadyStartedProfilingException();
 
-                var session = new ProfileSession(this, this.logger);
+                var session = new ProfileSession(this, this.logger, this.eventsHandlers);
 
                 if (additionalSessionData != null)
                     session.AddData(additionalSessionData);
@@ -136,6 +131,18 @@ namespace Rocks.Profiling.Internal.Implementation
 
                 this.completedSessionsProcessorQueue.Add(session);
 
+                foreach (var events_handler in this.eventsHandlers)
+                {
+                    try
+                    {
+                        events_handler.OnSessionEnded(session);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError(ex);
+                    }
+                }
+
                 this.currentSession.Delete();
             }
             catch (Exception ex)
@@ -143,7 +150,5 @@ namespace Rocks.Profiling.Internal.Implementation
                 this.logger.LogError(ex);
             }
         }
-
-        #endregion
     }
 }

@@ -103,6 +103,8 @@
   <ItemGroup>
     <Compile Include="CommonTests.cs" />
     <Compile Include="DependencyInjectionConfigTests.cs" />
+    <Compile Include="Exceptions\TestsProfilerLogger.cs" />
+    <Compile Include="Exceptions\ValidTestException.cs" />
     <Compile Include="FixtureBuilder.cs" />
     <Compile Include="IntegrationTests\ProfilerMultithreadStressTest.cs" />
     <Compile Include="Internal\Implementation\CurrentSessionProviderTests.cs" />

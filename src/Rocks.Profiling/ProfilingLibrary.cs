@@ -18,13 +18,8 @@ namespace Rocks.Profiling
 {
     public static class ProfilingLibrary
     {
-        #region Static fields
-
         internal static Container Container { get; private set; }
 
-        #endregion
-
-        #region Static methods
 
         public static void Setup(Func<HttpContextBase> httpContextFactory, Container externalContainer = null)
         {
@@ -69,15 +64,9 @@ namespace Rocks.Profiling
         public static void StopProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
             => ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
 
-        #endregion
-
-        #region Protected properties
 
         internal static Func<HttpContextBase> HttpContextFactory { get; private set; }
 
-        #endregion
-
-        #region Private methods
 
         private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c)
         {
@@ -93,6 +82,8 @@ namespace Rocks.Profiling
             c.RegisterSingleton<ICompletedSessionProcessorService, CompletedSessionProcessorService>();
             c.RegisterSingleton<IProfilerResultsStorage, NullProfilerResultsStorage>();
             c.RegisterSingleton<ICompletedSessionProcessingFilter, NullCompletedSessionProcessingFilter>();
+
+            c.RegisterCollection<IProfilerEventsHandler>();
 
             ReplaceProviderFactories();
         }
@@ -111,7 +102,7 @@ namespace Rocks.Profiling
                 {
                     factory = DbProviderFactories.GetFactory(row);
                 }
-                    // ReSharper disable once CatchAllClause
+                // ReSharper disable once CatchAllClause
                 catch (Exception)
                 {
                     continue;
@@ -120,7 +111,7 @@ namespace Rocks.Profiling
                 if (factory is ProfiledDbProviderFactory)
                     continue;
 
-                var proxy_type = typeof (ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType());
+                var proxy_type = typeof(ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType());
 
                 var wrapped_provider_row = table.NewRow();
                 wrapped_provider_row["Name"] = row["Name"];
@@ -146,7 +137,7 @@ namespace Rocks.Profiling
             {
             }
 
-            var type = typeof (DbProviderFactories);
+            var type = typeof(DbProviderFactories);
 
             var config_table_field = type.GetField("_configTable", BindingFlags.NonPublic | BindingFlags.Static)
                                      ?? type.GetField("_providerTable", BindingFlags.NonPublic | BindingFlags.Static);
@@ -162,7 +153,5 @@ namespace Rocks.Profiling
 
             return (DataTable) config_table;
         }
-
-        #endregion
     }
 }

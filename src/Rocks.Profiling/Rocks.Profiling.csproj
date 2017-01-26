@@ -80,6 +80,7 @@
     <Compile Include="ICurrentSessionProvider.cs" />
     <Compile Include="ICompletedSessionProcessingFilter.cs" />
     <Compile Include="Configuration\IProfilerConfiguration.cs" />
+    <Compile Include="IProfilerEventsHandler.cs" />
     <Compile Include="Models\ProfileOperationCategories.cs" />
     <Compile Include="Models\ProfileOperationExtensions.cs" />
     <Compile Include="Models\ProfileOperationSpecification.cs" />

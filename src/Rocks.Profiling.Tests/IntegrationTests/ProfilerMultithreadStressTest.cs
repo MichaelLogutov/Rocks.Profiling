@@ -5,6 +5,7 @@ using Rocks.Helpers;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
+using Rocks.Profiling.Tests.Exceptions;
 using Xunit;
 
 // ReSharper disable ThrowingSystemException
@@ -19,7 +20,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
         {
             // arrange
             ProfilingLibrary.Setup(() => null);
-            ProfilingLibrary.Container.RegisterSingleton<IProfilerLogger, RethrowProfilerLogger>();
+            ProfilingLibrary.Container.RegisterSingleton<IProfilerLogger, TestsProfilerLogger>();
 
 
             var tasks = Enumerable.Range(0, 10)

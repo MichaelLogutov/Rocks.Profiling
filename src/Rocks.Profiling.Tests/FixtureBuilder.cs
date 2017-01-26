@@ -7,6 +7,7 @@ using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
+using Rocks.Profiling.Tests.Exceptions;
 using SimpleInjector;
 
 namespace Rocks.Profiling.Tests
@@ -36,7 +37,7 @@ namespace Rocks.Profiling.Tests
             fixture.Customize(new AutoConfiguredMoqCustomization());
 
             {
-                var logger_mock = new Mock<RethrowProfilerLogger>();
+                var logger_mock = new Mock<TestsProfilerLogger>();
                 logger_mock.CallBase = true;
                 fixture.Inject<IProfilerLogger>(logger_mock.Object);
             }
