@@ -13,13 +13,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     [DesignerCategory("")]
     internal class ProfiledDbCommand : DbCommand
     {
-        #region Private readonly fields
-
         private readonly IProfiler profiler;
 
-        #endregion
-
-        #region Construct
 
         public ProfiledDbCommand(DbCommand innerCommand)
         {
@@ -34,9 +29,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             this.InnerConnection = innerConnection;
         }
 
-        #endregion
-
-        #region Public properties
 
         public DbCommand InnerCommand { get; private set; }
         public ProfiledDbConnection InnerConnection { get; private set; }
@@ -77,10 +69,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             get { return this.InnerCommand.UpdatedRowSource; }
             set { this.InnerCommand.UpdatedRowSource = value; }
         }
-
-        #endregion
-
-        #region Public methods
 
         public override void Cancel() => this.InnerCommand.Cancel();
         public override void Prepare() => this.InnerCommand.Prepare();
@@ -123,9 +111,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             }
         }
 
-        #endregion
-
-        #region Protected properties
 
         protected override DbParameterCollection DbParameterCollection => this.InnerCommand.Parameters;
 
@@ -160,9 +145,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             }
         }
 
-        #endregion
-
-        #region Protected methods
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
@@ -197,9 +179,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             base.Dispose(disposing);
         }
 
-        #endregion
-
-        #region Private methods
 
         [CanBeNull]
         private IDisposable Profile(string name)
@@ -222,7 +201,5 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
             return operation;
         }
-
-        #endregion
     }
 }

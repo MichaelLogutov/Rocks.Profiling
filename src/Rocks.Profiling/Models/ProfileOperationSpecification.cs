@@ -9,8 +9,6 @@ namespace Rocks.Profiling.Models
     /// </summary>
     public class ProfileOperationSpecification
     {
-        #region Construct
-
         /// <exception cref="ArgumentException">Argument <paramref name="name"/> is null or whitespace</exception>
         public ProfileOperationSpecification([NotNull] string name)
         {
@@ -36,9 +34,6 @@ namespace Rocks.Profiling.Models
             this.Resource = resource;
         }
 
-        #endregion
-
-        #region Public properties
 
         /// <summary>
         ///     Name of the operation.<br />
@@ -75,7 +70,5 @@ namespace Rocks.Profiling.Models
         ///     Default is null (not specified).
         /// </summary>
         public TimeSpan? NormalDuration { get; set; }
-
-        #endregion
     }
 }

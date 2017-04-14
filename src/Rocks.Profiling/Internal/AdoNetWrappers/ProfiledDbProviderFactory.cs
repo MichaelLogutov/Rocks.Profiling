@@ -12,19 +12,10 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     internal class ProfiledDbProviderFactory<TProviderFactory> : ProfiledDbProviderFactory, IServiceProvider
         where TProviderFactory : DbProviderFactory
     {
-        #region Constants
-
         public static readonly ProfiledDbProviderFactory<TProviderFactory> Instance = new ProfiledDbProviderFactory<TProviderFactory>();
-
-        #endregion
-
-        #region Private readonly fields
 
         private readonly TProviderFactory innerFactory;
 
-        #endregion
-
-        #region Construct
 
         /// <exception cref="NotSupportedException">Provider doesn't have Instance property.</exception>
         public ProfiledDbProviderFactory()
@@ -38,15 +29,9 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             // ReSharper restore ExceptionNotDocumented
         }
 
-        #endregion
-
-        #region Public properties
 
         public override bool CanCreateDataSourceEnumerator => this.innerFactory.CanCreateDataSourceEnumerator;
 
-        #endregion
-
-        #region Public methods
 
         public override DbConnection CreateConnection()
         {
@@ -99,9 +84,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             return this.innerFactory.CreateParameter();
         }
 
-        #endregion
-
-        #region IServiceProvider Members
 
         public object GetService(Type serviceType)
         {
@@ -112,7 +94,5 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
             return service;
         }
-
-        #endregion
     }
 }

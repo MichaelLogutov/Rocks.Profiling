@@ -10,8 +10,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     [DesignerCategory("")]
     public class ProfiledDbConnection : DbConnection
     {
-        #region Construct
-
         public ProfiledDbConnection(DbConnection connection)
             : this(connection, connection.TryGetProviderFactory())
         {
@@ -24,9 +22,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             this.InnerProviderFactory = innerProviderFactory;
         }
 
-        #endregion
-
-        #region Public properties
 
         public DbConnection InnerConnection { get; private set; }
         public DbProviderFactory InnerProviderFactory { get; private set; }
@@ -67,10 +62,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             set { this.InnerConnection.Site = value; }
         }
 
-        #endregion
-
-        #region Public methods
-
         public override void ChangeDatabase(string databaseName) => this.InnerConnection.ChangeDatabase(databaseName);
         public override void Close() => this.InnerConnection.Close();
         public override void Open() => this.InnerConnection.Open();
@@ -79,15 +70,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         public override DataTable GetSchema(string collectionName) => this.InnerConnection.GetSchema(collectionName);
         public override DataTable GetSchema(string collectionName, string[] restrictionValues) => this.InnerConnection.GetSchema(collectionName, restrictionValues);
 
-        #endregion
-
-        #region Protected properties
-
         protected override DbProviderFactory DbProviderFactory => this.InnerProviderFactory;
 
-        #endregion
-
-        #region Protected methods
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
@@ -114,7 +98,5 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
             base.Dispose(disposing);
         }
-
-        #endregion
     }
 }

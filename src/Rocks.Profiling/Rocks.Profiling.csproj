@@ -37,25 +37,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=10.1.4.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.1.4\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
     </Reference>
-    <Reference Include="Rocks.Helpers, Version=1.5.3.6, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rocks.Helpers.1.5.3.6\lib\net451\Rocks.Helpers.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Rocks.Helpers, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rocks.Helpers.1.6.0\lib\net451\Rocks.Helpers.dll</HintPath>
     </Reference>
     <Reference Include="Rocks.SimpleInjector">
-      <HintPath>..\packages\Rocks.SimpleInjector.2.0.2.0\lib\net451\Rocks.SimpleInjector.dll</HintPath>
+      <HintPath>..\packages\Rocks.SimpleInjector.3.0.0\lib\net451\Rocks.SimpleInjector.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.1.5.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.1.5\lib\net45\SimpleInjector.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SimpleInjector, Version=4.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.0\lib\net45\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />

@@ -29,7 +29,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
 
 
             // act
-            var result = Task.WaitAll(tasks, 5000);
+            var result = Task.WaitAll(tasks, 10000);
 
 
             // assert

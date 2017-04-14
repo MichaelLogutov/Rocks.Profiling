@@ -11,15 +11,10 @@ namespace Rocks.Profiling.Internal.Implementation
 {
     internal class CompletedSessionProcessorService : ICompletedSessionProcessorService
     {
-        #region Private readonly fields
-
         private readonly IProfilerConfiguration configuration;
         private readonly IProfilerResultsStorage resultsStorage;
         private readonly ICompletedSessionProcessingFilter completedSessionFilter;
 
-        #endregion
-
-        #region Construct
 
         public CompletedSessionProcessorService([NotNull] IProfilerConfiguration configuration,
                                                 [NotNull] IProfilerResultsStorage resultsStorage,
@@ -39,9 +34,6 @@ namespace Rocks.Profiling.Internal.Implementation
             this.completedSessionFilter = completedSessionFilter;
         }
 
-        #endregion
-
-        #region ICompletedSessionProcessorService Members
 
         /// <summary>
         ///     Determines if completed session is needs to be processed.
@@ -82,7 +74,5 @@ namespace Rocks.Profiling.Internal.Implementation
 
             return this.resultsStorage.AddAsync(sessions, cancellationToken);
         }
-
-        #endregion
     }
 }

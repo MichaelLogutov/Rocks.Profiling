@@ -105,6 +105,11 @@ _TeamCity*
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
+*.ncrunchsolution
+*.ncrunchsolution.user
+*.ncrunchproject
+!default.v2.ncrunchsolution
+!default.v2.ncrunchproject
 
 # MightyMoose
 *.mm.*
@@ -184,3 +189,6 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+#Rider
+.idea/

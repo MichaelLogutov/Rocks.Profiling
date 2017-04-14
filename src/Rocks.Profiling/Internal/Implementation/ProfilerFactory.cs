@@ -7,16 +7,11 @@ namespace Rocks.Profiling.Internal.Implementation
     /// </summary>
     internal static class ProfilerFactory
     {
-        #region Static fields
-
         private const string ProfilerInstanceKey = "__PROFILER_INSTANCE";
 
         [NotNull]
         private static readonly IProfiler SingletonInstance = CreateInstance();
 
-        #endregion
-
-        #region Static methods
 
         /// <summary>
         ///     Gets the current profiler instance.
@@ -43,15 +38,10 @@ namespace Rocks.Profiling.Internal.Implementation
             return result;
         }
 
-        #endregion
-
-        #region Private methods
 
         private static IProfiler CreateInstance()
         {
             return ProfilingLibrary.Container.GetInstance<IProfiler>();
         }
-
-        #endregion
     }
 }

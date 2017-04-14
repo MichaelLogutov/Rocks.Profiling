@@ -10,16 +10,11 @@ namespace Rocks.Profiling
     /// </summary>
     public interface IProfiler
     {
-        #region Public properties
-
         /// <summary>
         ///     Current profiler configuration.
         /// </summary>
         IProfilerConfiguration Configuration { get; }
 
-        #endregion
-
-        #region Public methods
 
         /// <summary>
         ///     Creates new profile session.
@@ -41,7 +36,5 @@ namespace Rocks.Profiling
         ///     Stops current profile session and stores the results.
         /// </summary>
         void Stop([CanBeNull] IDictionary<string, object> additionalSessionData = null);
-
-        #endregion
     }
 }
