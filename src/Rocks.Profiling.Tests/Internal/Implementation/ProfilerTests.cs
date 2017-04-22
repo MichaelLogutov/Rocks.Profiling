@@ -81,11 +81,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            this.fixture.Create<Profiler>().Start();
+            var result = this.fixture.Create<Profiler>().Start();
 
 
             // assert
-            this.currentSessionProvider.Verify(m => m.Set(It.Is<ProfileSession>(x => x != null)));
+            this.currentSessionProvider.Verify(m => m.Set(result));
         }
 
 

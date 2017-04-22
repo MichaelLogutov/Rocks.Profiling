@@ -26,26 +26,11 @@ namespace Rocks.Profiling.Internal.Implementation
                         [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue,
                         [NotNull] IEnumerable<IProfilerEventsHandler> eventsHandlers)
         {
-            if (configuration == null)
-                throw new ArgumentNullException(nameof(configuration));
-
-            if (currentSession == null)
-                throw new ArgumentNullException(nameof(currentSession));
-
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            if (completedSessionsProcessorQueue == null)
-                throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
-
-            if (eventsHandlers == null)
-                throw new ArgumentNullException(nameof(eventsHandlers));
-
-            this.Configuration = configuration;
-            this.currentSession = currentSession;
-            this.logger = logger;
-            this.completedSessionsProcessorQueue = completedSessionsProcessorQueue;
-            this.eventsHandlers = eventsHandlers;
+            this.Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            this.currentSession = currentSession ?? throw new ArgumentNullException(nameof(currentSession));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.completedSessionsProcessorQueue = completedSessionsProcessorQueue ?? throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
+            this.eventsHandlers = eventsHandlers ?? throw new ArgumentNullException(nameof(eventsHandlers));
         }
 
 
@@ -60,12 +45,12 @@ namespace Rocks.Profiling.Internal.Implementation
         ///     If there was already session started - throws an exception.<br />
         ///     Any exceptions this method throws are swallowed and logged to <see cref="IProfilerLogger"/>.
         /// </summary>
-        public void Start(IDictionary<string, object> additionalSessionData = null)
+        public ProfileSession Start(IDictionary<string, object> additionalSessionData = null)
         {
             try
             {
                 if (!this.Configuration.Enabled)
-                    return;
+                    return null;
 
                 if (this.currentSession.Get() != null)
                     throw new SessionAlreadyStartedProfilingException();
@@ -76,10 +61,13 @@ namespace Rocks.Profiling.Internal.Implementation
                     session.AddData(additionalSessionData);
 
                 this.currentSession.Set(session);
+
+                return session;
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex);
+                return null;
             }
         }
 
@@ -111,6 +99,33 @@ namespace Rocks.Profiling.Internal.Implementation
 
 
         /// <summary>
+        ///     Starts new scope that will measure execution time of the operation
+        ///     with specified <paramref name="specification"/>.<br />
+        ///     Uppon disposing will store the results of measurement in the specified <paramref name="session"/>.<br />
+        /// </summary>
+        public ProfileOperation Profile(ProfileSession session, ProfileOperationSpecification specification)
+        {
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+
+            try
+            {
+                if (!this.Configuration.Enabled)
+                    return null;
+
+                var operation = session.StartMeasure(specification);
+
+                return operation;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
+                return null;
+            }
+        }
+
+
+        /// <summary>
         ///     Stops current profile session and stores the results.
         ///     If there is no session started - throws an exception.<br />
         ///     Any exceptions this method throws are swallowed and logged to <see cref="IProfilerLogger"/>.
@@ -126,28 +141,56 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (session == null)
                     throw new NoCurrentSessionProfilingException();
 
-                if (additionalSessionData != null)
-                    session.AddData(additionalSessionData);
-
-                this.completedSessionsProcessorQueue.Add(session);
-
-                foreach (var events_handler in this.eventsHandlers)
-                {
-                    try
-                    {
-                        events_handler.OnSessionEnded(session);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogError(ex);
-                    }
-                }
+                this.StopSession(additionalSessionData, session);
 
                 this.currentSession.Delete();
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex);
+            }
+        }
+
+
+        /// <summary>
+        ///     Stops specified profile <paramref name="session"/> and stores the results.
+        /// </summary>
+        public void Stop(ProfileSession session, IDictionary<string, object> additionalSessionData = null)
+        {
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+
+            try
+            {
+                if (!this.Configuration.Enabled)
+                    return;
+
+                this.StopSession(additionalSessionData, session);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
+            }
+        }
+
+
+        private void StopSession(IDictionary<string, object> additionalSessionData, ProfileSession session)
+        {
+            if (additionalSessionData != null)
+                session.AddData(additionalSessionData);
+
+            this.completedSessionsProcessorQueue.Add(session);
+
+            foreach (var events_handler in this.eventsHandlers)
+            {
+                try
+                {
+                    events_handler.OnSessionEnded(session);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex);
+                }
             }
         }
     }

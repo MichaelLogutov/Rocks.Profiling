@@ -12,6 +12,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("b5d36831-d566-4f32-a7b6-4d052e122eb0")]
-[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyVersion("3.0.0.0")]
 [assembly: InternalsVisibleTo("Rocks.Profiling.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -43,7 +43,8 @@ namespace Rocks.Profiling
         /// <summary>
         ///     Creates new profile session.
         /// </summary>
-        public static void StartProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
+        [CanBeNull]
+        public static ProfileSession StartProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
             => ProfilerFactory.GetCurrentProfiler().Start(additionalSessionData);
 
 
@@ -57,12 +58,27 @@ namespace Rocks.Profiling
         public static ProfileOperation Profile([NotNull] ProfileOperationSpecification specification)
             => ProfilerFactory.GetCurrentProfiler().Profile(specification);
 
+        /// <summary>
+        ///     Starts new scope that will measure execution time of the operation
+        ///     with specified <paramref name="specification"/>.<br />
+        ///     Uppon disposing will store the results of measurement in the specified <paramref name="session"/>.<br />
+        ///     If there is no session started - returns dummy operation that will do nothing.
+        /// </summary>
+        [CanBeNull, MustUseReturnValue]
+        public static ProfileOperation Profile([NotNull] ProfileSession session, [NotNull] ProfileOperationSpecification specification)
+            => ProfilerFactory.GetCurrentProfiler().Profile(session, specification);
 
         /// <summary>
         ///     Stops current profile session and stores the results.
         /// </summary>
         public static void StopProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
             => ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
+
+        /// <summary>
+        ///     Stops specified profile <paramref name="session"/> and stores the results.
+        /// </summary>
+        public static void StopProfiling([NotNull] ProfileSession session, [CanBeNull] IDictionary<string, object> additionalSessionData = null)
+            => ProfilerFactory.GetCurrentProfiler().Stop(session, additionalSessionData);
 
 
         internal static Func<HttpContextBase> HttpContextFactory { get; private set; }
