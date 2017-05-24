@@ -1,4 +1,5 @@
-﻿using Ploeh.AutoFixture;
+﻿using JetBrains.Annotations;
+using Ploeh.AutoFixture;
 using Rocks.Profiling.Models;
 using Xunit;
 
@@ -29,6 +30,7 @@ namespace Rocks.Profiling.Tests
         }
 
 
+        [UsedImplicitly]
         private class MyClass
         {
             private readonly IProfiler profiler;

@@ -42,8 +42,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         public override string ConnectionString
         {
-            get { return this.InnerConnection.ConnectionString; }
-            set { this.InnerConnection.ConnectionString = value; }
+            get => this.InnerConnection.ConnectionString;
+            set => this.InnerConnection.ConnectionString = value;
         }
 
         public override int ConnectionTimeout => this.InnerConnection.ConnectionTimeout;
@@ -58,8 +58,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         public override ISite Site
         {
-            get { return this.InnerConnection.Site; }
-            set { this.InnerConnection.Site = value; }
+            get => this.InnerConnection.Site;
+            set => this.InnerConnection.Site = value;
         }
 
         public override void ChangeDatabase(string databaseName) => this.InnerConnection.ChangeDatabase(databaseName);

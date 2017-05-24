@@ -8,29 +8,25 @@ using Rocks.Profiling.Models;
 
 namespace Rocks.Profiling.Internal.Implementation
 {
-    internal class Profiler : IProfiler
+    internal class Profiler : IProfiler, IInternalProfiler
     {
         private readonly ICurrentSessionProvider currentSession;
         private readonly IProfilerLogger logger;
         private readonly ICompletedSessionsProcessorQueue completedSessionsProcessorQueue;
-        private readonly IEnumerable<IProfilerEventsHandler> eventsHandlers;
+        private readonly IProfilerEventsHandler eventsHandler;
 
 
-        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="currentSession"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="completedSessionsProcessorQueue"/> is <see langword="null" />.</exception>
         public Profiler([NotNull] IProfilerConfiguration configuration,
                         [NotNull] ICurrentSessionProvider currentSession,
                         [NotNull] IProfilerLogger logger,
                         [NotNull] ICompletedSessionsProcessorQueue completedSessionsProcessorQueue,
-                        [NotNull] IEnumerable<IProfilerEventsHandler> eventsHandlers)
+                        [NotNull] IProfilerEventsHandler eventsHandler)
         {
             this.Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.currentSession = currentSession ?? throw new ArgumentNullException(nameof(currentSession));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.completedSessionsProcessorQueue = completedSessionsProcessorQueue ?? throw new ArgumentNullException(nameof(completedSessionsProcessorQueue));
-            this.eventsHandlers = eventsHandlers ?? throw new ArgumentNullException(nameof(eventsHandlers));
+            this.eventsHandler = eventsHandler ?? throw new ArgumentNullException(nameof(eventsHandler));
         }
 
 
@@ -55,7 +51,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (this.currentSession.Get() != null)
                     throw new SessionAlreadyStartedProfilingException();
 
-                var session = new ProfileSession(this, this.logger, this.eventsHandlers);
+                var session = new ProfileSession(this, this.logger);
 
                 if (additionalSessionData != null)
                     session.AddData(additionalSessionData);
@@ -86,7 +82,20 @@ namespace Rocks.Profiling.Internal.Implementation
                     return null;
 
                 var session = this.currentSession.Get();
-                var operation = session?.StartMeasure(specification);
+
+                ProfileOperation operation;
+                if (session != null)
+                {
+                    operation = session.StartMeasure(specification);
+                }
+                else
+                {
+                    operation = new ProfileOperation(id: 0,
+                                                     profiler: this,
+                                                     session: null,
+                                                     specification: specification,
+                                                     parent: null);
+                }
 
                 return operation;
             }
@@ -174,6 +183,25 @@ namespace Rocks.Profiling.Internal.Implementation
         }
 
 
+        /// <summary>
+        ///     Profiled operation has been ended.
+        /// </summary>
+        public void OnOperationEnded(ProfileOperation operation)
+        {
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
+            try
+            {
+                this.eventsHandler.OnOperationEnded(operation);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
+            }
+        }
+
+
         private void StopSession(IDictionary<string, object> additionalSessionData, ProfileSession session)
         {
             if (additionalSessionData != null)
@@ -181,16 +209,13 @@ namespace Rocks.Profiling.Internal.Implementation
 
             this.completedSessionsProcessorQueue.Add(session);
 
-            foreach (var events_handler in this.eventsHandlers)
+            try
             {
-                try
-                {
-                    events_handler.OnSessionEnded(session);
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex);
-                }
+                this.eventsHandler.OnSessionEnded(session);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
             }
         }
     }

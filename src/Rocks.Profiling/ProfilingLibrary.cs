@@ -98,8 +98,7 @@ namespace Rocks.Profiling
             c.RegisterSingleton<ICompletedSessionProcessorService, CompletedSessionProcessorService>();
             c.RegisterSingleton<IProfilerResultsStorage, NullProfilerResultsStorage>();
             c.RegisterSingleton<ICompletedSessionProcessingFilter, NullCompletedSessionProcessingFilter>();
-
-            c.RegisterCollection<IProfilerEventsHandler>();
+            c.RegisterSingleton<IProfilerEventsHandler, NullProfilerEventsHandler>();
 
             ReplaceProviderFactories();
         }

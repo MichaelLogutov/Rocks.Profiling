@@ -36,38 +36,38 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         public override string CommandText
         {
-            get { return this.InnerCommand.CommandText; }
-            set { this.InnerCommand.CommandText = value; }
+            get => this.InnerCommand.CommandText;
+            set => this.InnerCommand.CommandText = value;
         }
 
         public override int CommandTimeout
         {
-            get { return this.InnerCommand.CommandTimeout; }
-            set { this.InnerCommand.CommandTimeout = value; }
+            get => this.InnerCommand.CommandTimeout;
+            set => this.InnerCommand.CommandTimeout = value;
         }
 
         public override CommandType CommandType
         {
-            get { return this.InnerCommand.CommandType; }
-            set { this.InnerCommand.CommandType = value; }
+            get => this.InnerCommand.CommandType;
+            set => this.InnerCommand.CommandType = value;
         }
 
         public override bool DesignTimeVisible
         {
-            get { return this.InnerCommand.DesignTimeVisible; }
-            set { this.InnerCommand.DesignTimeVisible = value; }
+            get => this.InnerCommand.DesignTimeVisible;
+            set => this.InnerCommand.DesignTimeVisible = value;
         }
 
         public override ISite Site
         {
-            get { return this.InnerCommand.Site; }
-            set { this.InnerCommand.Site = value; }
+            get => this.InnerCommand.Site;
+            set => this.InnerCommand.Site = value;
         }
 
         public override UpdateRowSource UpdatedRowSource
         {
-            get { return this.InnerCommand.UpdatedRowSource; }
-            set { this.InnerCommand.UpdatedRowSource = value; }
+            get => this.InnerCommand.UpdatedRowSource;
+            set => this.InnerCommand.UpdatedRowSource = value;
         }
 
         public override void Cancel() => this.InnerCommand.Cancel();
@@ -81,7 +81,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
-        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteNonQueryAsync))
@@ -100,7 +99,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
-        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteScalarAsync))
@@ -117,7 +115,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override DbConnection DbConnection
         {
-            get { return this.InnerConnection; }
+            get => this.InnerConnection;
 
             set
             {
@@ -134,7 +132,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
 
         protected override DbTransaction DbTransaction
         {
-            get { return this.InnerTransaction; }
+            get => this.InnerTransaction;
             set
             {
                 this.InnerTransaction = value as ProfiledDbTransaction;
@@ -153,7 +151,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         }
 
 
-        /// <exception cref="DbException">An error occurred while executing the command text.</exception>
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
             using (this.Profile(ProfileOperationNames.DbCommandExecuteReaderAsync))

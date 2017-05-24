@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using Rocks.Profiling.Configuration;
+using Rocks.Profiling.Internal;
+using Rocks.Profiling.Internal.Helpers;
 
 namespace Rocks.Profiling.Models
 {
@@ -12,16 +15,22 @@ namespace Rocks.Profiling.Models
     [DataContract]
     public class ProfileOperation : IDisposable
     {
+        private readonly Stopwatch time;
+
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="ProfileOperation" /> class.<br />
         ///     This method indended to be called from <see cref="ProfileSession"/>
         ///     and should not be called manually.
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="session" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="specification" /> is <see langword="null" />.</exception>
         public ProfileOperation(int id,
                                 [NotNull] ProfileSession session,
-                                [NotNull] ProfileOperationSpecification specification) : this(id, session, specification, null)
+                                [NotNull] ProfileOperationSpecification specification)
+            : this(id: id,
+                   profiler: session.Profiler,
+                   session: session,
+                   specification: specification,
+                   parent: null)
         {
         }
 
@@ -31,24 +40,32 @@ namespace Rocks.Profiling.Models
         ///     This method indended to be called from <see cref="ProfileSession"/>
         ///     and should not be called manually.
         /// </summary>
-        /// <exception cref="ArgumentNullException"><paramref name="session" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="specification" /> is <see langword="null" />.</exception>
         public ProfileOperation(int id,
-                                [NotNull] ProfileSession session,
+                                [NotNull] IProfiler profiler,
+                                [CanBeNull] ProfileSession session,
                                 [NotNull] ProfileOperationSpecification specification,
                                 [CanBeNull] ProfileOperation parent)
         {
-            if (session == null)
-                throw new ArgumentNullException(nameof(session));
-
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
             this.Id = id;
-            this.Session = session;
+            this.Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
 
-            this.Profiler = this.Session.Profiler;
-            this.StartTime = this.Session.Time;
+            if (session != null)
+            {
+                if (session.Profiler != profiler)
+                    throw new InvalidOperationException("Session.Profiler does not match specified profiler.");
+
+                this.Session = session;
+                this.StartTime = this.Session.Time;
+            }
+
+            if (this.Profiler.Configuration.CaptureCallStacks)
+            {
+                var current_assembly = this.GetType().Assembly;
+                this.CallStack = new StackTrace(true).ToAsyncString(x => x.DeclaringType?.Assembly != current_assembly);
+            }
 
             this.Name = specification.Name;
             this.Category = specification.Category;
@@ -60,6 +77,9 @@ namespace Rocks.Profiling.Models
 
             if (specification.Data != null)
                 this.Data = new Dictionary<string, object>(specification.Data, StringComparer.Ordinal);
+
+            // start timer as close to the profiled code as possible
+            this.time = Stopwatch.StartNew();
         }
 
 
@@ -100,12 +120,12 @@ namespace Rocks.Profiling.Models
                 string result = null;
 
                 if (this.Category != null)
-                    result = $"{this.Category}::";
+                    result = this.Category + "::";
 
                 result += this.Name;
 
                 if (this.Resource != null)
-                    result += $"::{this.Resource}";
+                    result += "::" + this.Resource;
 
                 return result;
             }
@@ -165,12 +185,13 @@ namespace Rocks.Profiling.Models
         public ProfileSession Session { get; }
 
         /// <summary>
-        ///     Start time of the operation relative to the session. 
+        ///     Start time of the operation relative to the session.<br />
+        ///     In case of sessionless operation the start time will be null.
         /// </summary>
-        public TimeSpan StartTime { get; }
+        public TimeSpan? StartTime { get; }
 
         /// <summary>
-        ///     End time of the operation.
+        ///     End time of the operation relative to the session. 
         /// </summary>
         public TimeSpan? EndTime { get; internal set; }
 
@@ -182,10 +203,9 @@ namespace Rocks.Profiling.Models
 
         /// <summary>
         ///     Gets the total duration of the operation.
-        ///     This property returns time passed between <see cref="StartTime" /> and <see cref="EndTime" />.
         /// </summary>
         [DataMember]
-        public TimeSpan Duration => this.EndTime - this.StartTime ?? TimeSpan.Zero;
+        public TimeSpan Duration => this.time.Elapsed;
 
         /// <summary>
         ///     Gets the duration which considered "normal" for this operation.
@@ -208,7 +228,7 @@ namespace Rocks.Profiling.Models
         ///     This property filled only if <see cref="IProfilerConfiguration.CaptureCallStacks" /> is <see langword="true" />.
         /// </summary>
         [CanBeNull, DataMember(Name = "CallStack", EmitDefaultValue = false)]
-        public string CallStack { get; internal set; }
+        public string CallStack { get; }
 
 
         /// <summary>
@@ -217,10 +237,7 @@ namespace Rocks.Profiling.Models
         /// <returns>
         ///     A string that represents the current object.
         /// </returns>
-        public override string ToString()
-        {
-            return this.FullName;
-        }
+        public override string ToString() => this.FullName;
 
 
         /// <summary>
@@ -231,7 +248,10 @@ namespace Rocks.Profiling.Models
             if (this.IsCompleted)
                 return;
 
+            this.time?.Stop();
             this.Session?.StopMeasure(this);
+
+            (this.Profiler as IInternalProfiler)?.OnOperationEnded(this);
 
             this.IsCompleted = true;
         }

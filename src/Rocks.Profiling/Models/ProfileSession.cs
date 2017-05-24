@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
-using Rocks.Profiling.Internal.Helpers;
 using Rocks.Profiling.Loggers;
 
 namespace Rocks.Profiling.Models
@@ -20,7 +19,6 @@ namespace Rocks.Profiling.Models
         private readonly IProfilerLogger logger;
         private readonly List<ProfileOperation> operations;
         private readonly Stack<ProfileOperation> operationsStack;
-        private readonly IEnumerable<IProfilerEventsHandler> eventsHandlers;
 
         private int newId;
 
@@ -28,23 +26,12 @@ namespace Rocks.Profiling.Models
         /// <exception cref="ArgumentNullException"><paramref name="profiler"/> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
         public ProfileSession([NotNull] IProfiler profiler,
-                              [NotNull] IProfilerLogger logger,
-                              [NotNull] IEnumerable<IProfilerEventsHandler> eventsHandlers)
+                              [NotNull] IProfilerLogger logger)
         {
-            if (profiler == null)
-                throw new ArgumentNullException(nameof(profiler));
-
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            if (eventsHandlers == null)
-                throw new ArgumentNullException(nameof(eventsHandlers));
-
             this.stopwatch = Stopwatch.StartNew();
 
-            this.Profiler = profiler;
-            this.logger = logger;
-            this.eventsHandlers = eventsHandlers;
+            this.Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             this.operations = new List<ProfileOperation>();
             this.operationsStack = new Stack<ProfileOperation>();
@@ -145,15 +132,10 @@ namespace Rocks.Profiling.Models
             this.newId++;
 
             var operation = new ProfileOperation(id: this.newId,
+                                                 profiler: this.Profiler,
                                                  session: this,
                                                  specification: specification,
                                                  parent: last_operation);
-
-            if (this.Profiler.Configuration.CaptureCallStacks)
-            {
-                var current_assembly = this.GetType().Assembly;
-                operation.CallStack = new StackTrace(true).ToAsyncString(x => x.DeclaringType?.Assembly != current_assembly);
-            }
 
             this.operations.Add(operation);
             this.operationsStack.Push(operation);
@@ -192,18 +174,6 @@ namespace Rocks.Profiling.Models
 
                 if (operation.Duration >= operation.NormalDuration)
                     this.HasOperationLongerThanNormal = true;
-
-                foreach (var events_handler in this.eventsHandlers)
-                {
-                    try
-                    {
-                        events_handler.OnOperationEnded(operation);
-                    }
-                    catch (Exception ex)
-                    {
-                        this.logger.LogError(ex);
-                    }
-                }
             }
             catch (Exception ex)
             {

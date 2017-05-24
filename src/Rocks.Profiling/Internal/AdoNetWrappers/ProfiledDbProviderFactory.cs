@@ -17,7 +17,6 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         private readonly TProviderFactory innerFactory;
 
 
-        /// <exception cref="NotSupportedException">Provider doesn't have Instance property.</exception>
         public ProfiledDbProviderFactory()
         {
             var field = typeof (TProviderFactory).GetField("Instance", BindingFlags.Public | BindingFlags.Static);

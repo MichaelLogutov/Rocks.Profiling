@@ -58,6 +58,22 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
         [Fact]
+        public void NoSession_Profile_ReturnsOperation()
+        {
+            // arrange
+            this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
+
+
+            // act
+            var result = this.fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test"));
+
+
+            // assert
+            result.Should().NotBeNull();
+        }
+
+
+        [Fact]
         public void Stop_NoSessionActive_Throws()
         {
             // arrange
@@ -142,10 +158,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Stop_Always_CallsEventsHandlers()
         {
             // arrange
-            var events_handler1 = new Mock<IProfilerEventsHandler>();
-            var events_handler2 = new Mock<IProfilerEventsHandler>();
-
-            this.fixture.Inject<IEnumerable<IProfilerEventsHandler>>(new[] { events_handler1.Object, events_handler2.Object });
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
 
             var sut = this.fixture.Create<Profiler>();
 
@@ -158,21 +171,16 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            events_handler1.Verify(m => m.OnSessionEnded(It.Is<ProfileSession>(x => x != null)), Times.Once);
-            events_handler2.Verify(m => m.OnSessionEnded(It.Is<ProfileSession>(x => x != null)), Times.Once);
+            events_handler.Verify(m => m.OnSessionEnded(It.Is<ProfileSession>(x => x != null)), Times.Once);
         }
 
 
         [Fact]
-        public void Stop_OneEventHandlerThroes_StillCallsRemainingEventsHandlers()
+        public void Stop_OneEventHandlerThrows_DoesNotThrow()
         {
             // arrange
-            var events_handler1 = new Mock<IProfilerEventsHandler>();
-            var events_handler2 = new Mock<IProfilerEventsHandler>();
-
-            events_handler1.Setup(x => x.OnSessionEnded(It.IsAny<ProfileSession>())).Throws<ValidTestException>();
-
-            this.fixture.Inject<IEnumerable<IProfilerEventsHandler>>(new[] { events_handler1.Object, events_handler2.Object });
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+            events_handler.Setup(x => x.OnSessionEnded(It.IsAny<ProfileSession>())).Throws<ValidTestException>();
 
             var sut = this.fixture.Create<Profiler>();
 
@@ -185,18 +193,45 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            events_handler2.Verify(x => x.OnSessionEnded(It.IsAny<ProfileSession>()), Times.Once);
+        }
+
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void OperationEnded_Always_CallsEventsHandlers(bool noSession)
+        {
+            // arrange
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+            var profiler = this.fixture.Create<Profiler>();
+
+            if (noSession)
+                this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
+            else
+            {
+                this.fixture.Inject<IProfiler>(profiler);
+                this.currentSessionProvider.Setup(x => x.Get()).Returns(this.fixture.Create<ProfileSession>);
+            }
+
+            var sut = profiler.Profile(new ProfileOperationSpecification("test"));
+
+
+            // act
+            ((IDisposable) sut)?.Dispose();
+
+
+            // assert
+            events_handler.Verify(x => x.OnOperationEnded(sut), Times.Once);
         }
 
 
         [Fact]
-        public void OperationEnded_Always_CallsEventsHandlers()
+        public void OperationEnded_EventHandlerThrows_DoesNotThrowsFromDispose()
         {
             // arrange
-            var events_handler1 = new Mock<IProfilerEventsHandler>();
-            var events_handler2 = new Mock<IProfilerEventsHandler>();
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
 
-            this.fixture.Inject<IEnumerable<IProfilerEventsHandler>>(new[] { events_handler1.Object, events_handler2.Object });
+            events_handler.Setup(x => x.OnOperationEnded(It.IsAny<ProfileOperation>())).Throws<ValidTestException>();
 
             var session = this.fixture.Create<ProfileSession>();
             this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
@@ -205,38 +240,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // act
-            ((IDisposable) operation)?.Dispose();
+            Action act = () => ((IDisposable) operation)?.Dispose();
 
 
             // assert
-            events_handler1.Verify(m => m.OnOperationEnded(operation), Times.Once);
-            events_handler2.Verify(m => m.OnOperationEnded(operation), Times.Once);
-        }
-
-
-        [Fact]
-        public void OperationEnded_OneEventHandlerThroes_StillCallsRemainingEventsHandlers()
-        {
-            // arrange
-            var events_handler1 = new Mock<IProfilerEventsHandler>();
-            var events_handler2 = new Mock<IProfilerEventsHandler>();
-
-            events_handler1.Setup(x => x.OnOperationEnded(It.IsAny<ProfileOperation>())).Throws<ValidTestException>();
-
-            this.fixture.Inject<IEnumerable<IProfilerEventsHandler>>(new[] { events_handler1.Object, events_handler2.Object });
-
-            var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
-
-            var operation = this.fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test"));
-
-
-            // act
-            ((IDisposable) operation)?.Dispose();
-
-
-            // assert
-            events_handler2.Verify(m => m.OnOperationEnded(operation), Times.Once);
+            act.ShouldNotThrow();
         }
 
 
@@ -274,17 +282,17 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].Operations.ShouldAllBeEquivalentTo
-                      (new object[]
-                       {
-                           new { Id = 1, Name = "a", ParentId = (int?) null },
-                           new { Id = 2, Name = "b", ParentId = 1 },
-                           new { Id = 3, Name = "c", ParentId = 2 },
-                           new { Id = 4, Name = "d", ParentId = 1 },
-                           new { Id = 5, Name = "e", ParentId = (int?) null },
-                           new { Id = 6, Name = "f", ParentId = 5 }
-                       },
-                       o => o.ExcludingMissingMembers());
+            results[0]
+                .Operations.ShouldAllBeEquivalentTo(new object[]
+                                                    {
+                                                        new { Id = 1, Name = "a", ParentId = (int?) null },
+                                                        new { Id = 2, Name = "b", ParentId = 1 },
+                                                        new { Id = 3, Name = "c", ParentId = 2 },
+                                                        new { Id = 4, Name = "d", ParentId = 1 },
+                                                        new { Id = 5, Name = "e", ParentId = (int?) null },
+                                                        new { Id = 6, Name = "f", ParentId = 5 }
+                                                    },
+                                                    o => o.ExcludingMissingMembers());
         }
 
 
@@ -351,10 +359,12 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].Operations[0]
-                      .CallStack.SplitNullSafe('\n')
-                      .First()
-                      .Should().Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
+            results[0]
+                .Operations[0]
+                .CallStack.SplitNullSafe('\n')
+                .First()
+                .Should()
+                .Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
         }
 
 

@@ -25,9 +25,13 @@ namespace Rocks.Profiling.Tests.Models
         public void Always_ReturnsCorrectFullName(string category, string name, string resource, string expected)
         {
             // arrange
+            var session = this.fixture.Create<ProfileSession>();
+
             var sut = new ProfileOperation(1,
-                                           this.fixture.Create<ProfileSession>(),
-                                           new ProfileOperationSpecification(name) { Category = category });
+                                           session.Profiler,
+                                           session,
+                                           new ProfileOperationSpecification(name) { Category = category },
+                                           null);
 
             sut.Resource = resource;
 
@@ -45,17 +49,20 @@ namespace Rocks.Profiling.Tests.Models
         public void Always_ReturnsCorrectDateTimeInUtc()
         {
             // arrange
-            var expectedDateTime = DateTime.UtcNow;
+            var session = this.fixture.Create<ProfileSession>();
+            var expected_date_time = DateTime.UtcNow;
 
 
             // act
             var sut = new ProfileOperation(1,
-                                           this.fixture.Create<ProfileSession>(),
-                                           this.fixture.Create<ProfileOperationSpecification>());
+                                           session.Profiler,
+                                           session,
+                                           this.fixture.Create<ProfileOperationSpecification>(),
+                                           null);
 
 
             // assert
-            sut.StartDate.Should().BeAfter(expectedDateTime).And.BeCloseTo(expectedDateTime, 1000);
+            sut.StartDate.Should().BeAfter(expected_date_time).And.BeCloseTo(expected_date_time, 1000);
         }
     }
 }

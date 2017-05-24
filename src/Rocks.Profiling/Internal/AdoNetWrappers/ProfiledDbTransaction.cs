@@ -9,14 +9,8 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     {
         public ProfiledDbTransaction([NotNull] DbTransaction innerTransaction, [NotNull] ProfiledDbConnection innerConnection)
         {
-            if (innerTransaction == null)
-                throw new ArgumentNullException(nameof(innerTransaction));
-
-            if (innerConnection == null)
-                throw new ArgumentNullException(nameof(innerConnection));
-
-            this.InnerTransaction = innerTransaction;
-            this.InnerConnection = innerConnection;
+            this.InnerTransaction = innerTransaction ?? throw new ArgumentNullException(nameof(innerTransaction));
+            this.InnerConnection = innerConnection ?? throw new ArgumentNullException(nameof(innerConnection));
         }
 
 
