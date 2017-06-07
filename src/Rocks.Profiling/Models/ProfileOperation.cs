@@ -58,7 +58,7 @@ namespace Rocks.Profiling.Models
                     throw new InvalidOperationException("Session.Profiler does not match specified profiler.");
 
                 this.Session = session;
-                this.StartTime = this.Session.Time;
+                this.StartTime = session.Time;
             }
 
             if (this.Profiler.Configuration.CaptureCallStacks)
