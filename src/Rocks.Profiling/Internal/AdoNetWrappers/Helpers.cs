@@ -1,4 +1,6 @@
 ﻿using System.Data.Common;
+using Rocks.Helpers;
+
 
 namespace Rocks.Profiling.Internal.AdoNetWrappers
 {
@@ -10,7 +12,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             if (wrapped_db_connection != null)
                 return wrapped_db_connection.InnerProviderFactory;
 
-            return DbProviderFactories.GetFactory(connection);
+            return DbFactory.Get(connection);
         }
     }
 }

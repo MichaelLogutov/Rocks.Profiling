@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using System.Web;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Http;
 using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
 
@@ -11,13 +11,13 @@ namespace Rocks.Profiling.Internal.Implementation
     {
         private const string HttpContextCurrentSessionKey = "RocksProfiling_CurrentSession";
 
-        private readonly Func<HttpContextBase> httpContextFactory;
+        private readonly Func<HttpContext> httpContextFactory;
 
         [ThreadSafe]
         private static readonly AsyncLocal<ProfileSession> CurrentSession = new AsyncLocal<ProfileSession>();
 
 
-        public CurrentSessionProvider(Func<HttpContextBase> httpContextFactory)
+        public CurrentSessionProvider(Func<HttpContext> httpContextFactory)
         {
             this.httpContextFactory = httpContextFactory;
         }
