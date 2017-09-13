@@ -104,25 +104,18 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-            DbFactory.CreateInstance = (type) =>
+            DbFactory.CreateInstance = (instance) =>
                                        {
-                                           DbProviderFactory factory;
-                                           try
+                                           if (instance is ProfiledDbProviderFactory)
                                            {
-                                               factory = DbFactory.Get(type.FullName);
-                                           }
-                                           // ReSharper disable once CatchAllClause
-                                           catch (Exception)
-                                           {
-                                               return null;
+                                               return instance;
                                            }
 
-                                           if (factory is ProfiledDbProviderFactory)
-                                           {
-                                               return factory;
-                                           }
+                                           var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
+                                           
+                                           DbFactory.Set(instance.GetType().Namespace.ToLower(), newInstance);
 
-                                           return (DbProviderFactory) Activator.CreateInstance(typeof(ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType()));
+                                           return newInstance;
                                        };
         }
     }

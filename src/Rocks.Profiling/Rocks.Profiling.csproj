@@ -26,13 +26,8 @@
         <PackageReference Include="FastMember" Version="1.1.0"/>
         <PackageReference Include="JetBrains.Annotations" Version="11.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0"/>
-        <!--<PackageReference Include="Rocks.Helpers" Version="2.0.0"/>-->
-        <!--<PackageReference Include="Rocks.Dataflow" Version="2.0.0"/>-->
+        <PackageReference Include="Rocks.Helpers" Version="2.1.0"/>
+        <PackageReference Include="Rocks.Dataflow" Version="2.0.0"/>
         <PackageReference Include="Rocks.SimpleInjector" Version="4.0.0"/>
-    </ItemGroup>
-    <!-- Projects -->
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\Rocks.Helpers\src\Rocks.Helpers\Rocks.Helpers.csproj"/>
-        <ProjectReference Include="..\..\..\Rocks.Dataflow\src\Rocks.Dataflow\Rocks.Dataflow.csproj"/>
     </ItemGroup>
 </Project>
