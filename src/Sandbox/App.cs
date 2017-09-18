@@ -17,7 +17,7 @@ using SimpleInjector;
 
 namespace Sandbox
 {
-    public sealed class App
+    public static class App
     {
         private sealed class ConsoleProfileResultsStorage : IProfilerResultsStorage
         {
@@ -60,7 +60,7 @@ namespace Sandbox
         }
 
 
-        public void Main()
+        public static void Main()
         {
             try
             {
@@ -85,7 +85,7 @@ namespace Sandbox
                 container.Verify();
 
 
-                //ProfilingLibrary.StartProfiling();
+                ProfilingLibrary.StartProfiling();
 
                 using (var connection = ConfigurationManager.ConnectionStrings["Test"]
                                                             .CreateDbConnection())
@@ -150,10 +150,10 @@ namespace Sandbox
                                       id);
                 }
 
-                //ProfilingLibrary.StopProfiling(new Dictionary<string, object>
-                //                               {
-                //                                   { "name", "test session" }
-                //                               });
+                ProfilingLibrary.StopProfiling(new Dictionary<string, object>
+                                               {
+                                                   { "name", "test session" }
+                                               });
 
                 Task.Delay(500)
                     .Wait();

@@ -73,7 +73,7 @@ namespace Rocks.Profiling.Configuration
         ///     Value can be specified in application config key "Profiling.ResultsBufferAddRetriesCount".<br />
         ///     Default value is 3.
         /// </summary>
-        public int ResultsBufferAddRetriesCount { get; }
+        public virtual int ResultsBufferAddRetriesCount { get; }
 
 
         /// <summary>

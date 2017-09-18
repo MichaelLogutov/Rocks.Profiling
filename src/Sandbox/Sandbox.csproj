@@ -4,6 +4,8 @@
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
         </DefaultItemExcludes>
         <TargetFramework>netcoreapp2.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <StartupObject>Sandbox.App</StartupObject>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>
