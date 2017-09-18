@@ -104,19 +104,19 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-            DbFactory.CreateInstance = (instance) =>
-                                       {
-                                           if (instance is ProfiledDbProviderFactory)
-                                           {
-                                               return instance;
-                                           }
-
-                                           var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
-                                           
-                                           DbFactory.Set(instance.GetType().Namespace.ToLower(), newInstance);
-
-                                           return newInstance;
-                                       };
+            DbFactory.SetConstructInstanceInterceptor((instance) =>
+                                                      {
+                                                          if (instance is ProfiledDbProviderFactory)
+                                                          {
+                                                              return instance;
+                                                          }
+                                                          
+                                                          var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
+                                                          
+                                                          DbFactory.Set(instance.GetType().Namespace.ToLower(), newInstance);
+                                                          
+                                                          return newInstance;
+                                                      });
         }
     }
 }
