@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
@@ -42,7 +42,7 @@ namespace Rocks.Profiling.Tests
                 fixture.Inject<IProfilerLogger>(logger_mock.Object);
             }
 
-            fixture.Inject<Func<HttpContextBase>>(() => null);
+            fixture.Inject<Func<HttpContext>>(() => null);
 
             {
                 var container = new Container { Options = { AllowOverridingRegistrations = true } };

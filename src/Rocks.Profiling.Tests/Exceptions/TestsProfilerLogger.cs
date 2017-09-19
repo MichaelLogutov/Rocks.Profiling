@@ -12,7 +12,7 @@ namespace Rocks.Profiling.Tests.Exceptions
         ///     Will be called on warnings during profiling.<br />
         ///     The implementation must be thread safe.
         /// </summary>
-        public void LogWarning(string message, Exception ex = null)
+        public virtual void LogWarning(string message, Exception ex = null)
         {
         }
 
@@ -22,7 +22,7 @@ namespace Rocks.Profiling.Tests.Exceptions
         ///     The implementation must be thread safe.
         /// </summary>
         /// <exception cref="Exception">Always thrown.</exception>
-        public void LogError(Exception ex)
+        public virtual void LogError(Exception ex)
         {
             if (ex is ValidTestException)
                 return;

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Reflection;
-using System.Web;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Http;
+using Rocks.Helpers;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
@@ -21,7 +19,7 @@ namespace Rocks.Profiling
         internal static Container Container { get; private set; }
 
 
-        public static void Setup(Func<HttpContextBase> httpContextFactory, Container externalContainer = null)
+        public static void Setup(Func<HttpContext> httpContextFactory, Container externalContainer = null)
         {
             if (externalContainer == null)
                 externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
@@ -81,14 +79,14 @@ namespace Rocks.Profiling
             => ProfilerFactory.GetCurrentProfiler().Stop(session, additionalSessionData);
 
 
-        internal static Func<HttpContextBase> HttpContextFactory { get; private set; }
+        internal static Func<HttpContext> HttpContextFactory { get; private set; }
 
 
-        private static void RegisterAll(Func<HttpContextBase> httpContextFactory, Container c)
+        private static void RegisterAll(Func<HttpContext> httpContextFactory, Container c)
         {
             c.RegisterSingleton<IProfilerConfiguration, ProfilerConfiguration>();
 
-            c.RegisterSingleton<Func<HttpContextBase>>(httpContextFactory);
+            c.RegisterSingleton<Func<HttpContext>>(httpContextFactory);
 
             c.RegisterSingleton<ICurrentSessionProvider, CurrentSessionProvider>();
             c.RegisterSingleton<IProfiler, Profiler>();
@@ -106,67 +104,19 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-            var table = GetDbProviderFactoryConfigTable();
-            if (table == null)
-                return;
-
-            foreach (var row in table.Rows.Cast<DataRow>().ToList())
-            {
-                DbProviderFactory factory;
-                try
-                {
-                    factory = DbProviderFactories.GetFactory(row);
-                }
-                // ReSharper disable once CatchAllClause
-                catch (Exception)
-                {
-                    continue;
-                }
-
-                if (factory is ProfiledDbProviderFactory)
-                    continue;
-
-                var proxy_type = typeof(ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType());
-
-                var wrapped_provider_row = table.NewRow();
-                wrapped_provider_row["Name"] = row["Name"];
-                wrapped_provider_row["Description"] = row["Description"];
-                wrapped_provider_row["InvariantName"] = row["InvariantName"];
-                wrapped_provider_row["AssemblyQualifiedName"] = proxy_type.AssemblyQualifiedName;
-
-                table.Rows.Remove(row);
-                table.Rows.Add(wrapped_provider_row);
-            }
-        }
-
-
-        [CanBeNull]
-        private static DataTable GetDbProviderFactoryConfigTable()
-        {
-            try
-            {
-                // force initialization
-                DbProviderFactories.GetFactory("Unknown");
-            }
-            catch (ArgumentException)
-            {
-            }
-
-            var type = typeof(DbProviderFactories);
-
-            var config_table_field = type.GetField("_configTable", BindingFlags.NonPublic | BindingFlags.Static)
-                                     ?? type.GetField("_providerTable", BindingFlags.NonPublic | BindingFlags.Static);
-
-            if (config_table_field == null)
-                return null;
-
-            var config_table = config_table_field.GetValue(null);
-
-            var config_table_dataset = config_table as DataSet;
-            if (config_table_dataset != null)
-                return config_table_dataset.Tables["DbProviderFactories"];
-
-            return (DataTable) config_table;
+            DbFactory.SetConstructInstanceInterceptor((instance) =>
+                                                      {
+                                                          if (instance is ProfiledDbProviderFactory)
+                                                          {
+                                                              return instance;
+                                                          }
+                                                          
+                                                          var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
+                                                          
+                                                          DbFactory.Set(instance.GetType().Namespace, newInstance);
+                                                          
+                                                          return newInstance;
+                                                      });
         }
     }
 }

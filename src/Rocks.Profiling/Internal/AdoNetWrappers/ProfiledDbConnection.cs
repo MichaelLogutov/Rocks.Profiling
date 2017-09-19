@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using IsolationLevel = System.Data.IsolationLevel;
 
@@ -65,6 +67,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
         public override void ChangeDatabase(string databaseName) => this.InnerConnection.ChangeDatabase(databaseName);
         public override void Close() => this.InnerConnection.Close();
         public override void Open() => this.InnerConnection.Open();
+        public override Task OpenAsync(CancellationToken cancellationToken) => this.InnerConnection.OpenAsync(cancellationToken);
         public override void EnlistTransaction(Transaction transaction) => this.InnerConnection.EnlistTransaction(transaction);
         public override DataTable GetSchema() => this.InnerConnection.GetSchema();
         public override DataTable GetSchema(string collectionName) => this.InnerConnection.GetSchema(collectionName);

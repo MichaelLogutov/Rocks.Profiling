@@ -1,2 +1,4 @@
-# Rocks.Profiling
+Rocks.Profiling
+===============
+
 An auto profiling library.
