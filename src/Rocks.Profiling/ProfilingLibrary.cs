@@ -113,7 +113,7 @@ namespace Rocks.Profiling
                                                           
                                                           var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
                                                           
-                                                          DbFactory.Set(instance.GetType().Namespace.ToLower(), newInstance);
+                                                          DbFactory.Set(instance.GetType().Namespace, newInstance);
                                                           
                                                           return newInstance;
                                                       });
