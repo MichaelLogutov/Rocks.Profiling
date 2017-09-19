@@ -18,6 +18,7 @@
         <PackageReference Include="AutoFixture.AutoMoq" Version="3.50.6"/>
         <PackageReference Include="FluentAssertions" Version="4.19.4"/>
         <PackageReference Include="Moq" Version="4.7.99"/>
+        <PackageReference Include="Rocks.Dataflow" Version="2.1.0"/>
     </ItemGroup>
     <!-- Projects -->
     <ItemGroup>
