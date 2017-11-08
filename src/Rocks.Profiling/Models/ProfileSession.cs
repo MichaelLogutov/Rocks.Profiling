@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Threading;
 using JetBrains.Annotations;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
@@ -18,7 +19,7 @@ namespace Rocks.Profiling.Models
         private readonly Stopwatch stopwatch;
         private readonly IProfilerLogger logger;
         private readonly List<ProfileOperation> operations;
-        private readonly Stack<ProfileOperation> operationsStack;
+        private readonly AsyncLocal<Stack<ProfileOperation>> operationsStack;
 
         private int newId;
 
@@ -34,7 +35,7 @@ namespace Rocks.Profiling.Models
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             this.operations = new List<ProfileOperation>();
-            this.operationsStack = new Stack<ProfileOperation>();
+            this.operationsStack = new AsyncLocal<Stack<ProfileOperation>>();
             this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
@@ -127,7 +128,12 @@ namespace Rocks.Profiling.Models
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
-            var last_operation = this.operationsStack.Count > 0 ? this.operationsStack.Peek() : null;
+            if (this.operationsStack.Value == null)
+            {
+                this.operationsStack.Value = new Stack<ProfileOperation>();
+            }
+            
+            var last_operation = this.operationsStack.Value.Count > 0 ? this.operationsStack.Value.Peek() : null;
 
             this.newId++;
 
@@ -138,7 +144,7 @@ namespace Rocks.Profiling.Models
                                                  parent: last_operation);
 
             this.operations.Add(operation);
-            this.operationsStack.Push(operation);
+            this.operationsStack.Value.Push(operation);
 
             return operation;
         }
@@ -160,11 +166,14 @@ namespace Rocks.Profiling.Models
                 if (operation.Session != this)
                     throw new OperationFromAnotherSessionProfilingException();
 
-                var current_operation = this.operationsStack.Pop();
+                if (this.operationsStack.Value == null)
+                    throw new OperationsOutOfOrderProfillingException();
+                
+                var current_operation = this.operationsStack.Value.Pop();
                 if (current_operation != operation)
                     throw new OperationsOutOfOrderProfillingException();
 
-                var parent_operation = this.operationsStack.Count > 0 ? this.operationsStack.Peek() : null;
+                var parent_operation = this.operationsStack.Value.Count > 0 ? this.operationsStack.Value.Peek() : null;
                 if (parent_operation != operation.Parent)
                     throw new OperationsOutOfOrderProfillingException();
 

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
-using Rocks.Helpers;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
@@ -11,6 +9,14 @@ using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
+
+#if NET461 || NET471
+    using HttpContext = System.Web.HttpContextBase;
+#endif
+#if NETSTANDARD2_0
+    using Microsoft.AspNetCore.Http;
+    using Rocks.Helpers;
+#endif
 
 namespace Rocks.Profiling
 {
@@ -104,6 +110,7 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
+#if NETSTANDARD20
             DbFactory.SetConstructInstanceInterceptor((instance) =>
                                                       {
                                                           if (instance is ProfiledDbProviderFactory)
@@ -117,6 +124,7 @@ namespace Rocks.Profiling
                                                           
                                                           return newInstance;
                                                       });
+#endif
         }
     }
 }
