@@ -132,8 +132,10 @@ namespace Rocks.Profiling.Models
             {
                 this.operationsStack.Value = new Stack<ProfileOperation>();
             }
+
+            var operation_stack = this.operationsStack.Value;
             
-            var last_operation = this.operationsStack.Value.Count > 0 ? this.operationsStack.Value.Peek() : null;
+            var last_operation = operation_stack.Count > 0 ? operation_stack.Peek() : null;
 
             this.newId++;
 
@@ -144,7 +146,7 @@ namespace Rocks.Profiling.Models
                                                  parent: last_operation);
 
             this.operations.Add(operation);
-            this.operationsStack.Value.Push(operation);
+            operation_stack.Push(operation);
 
             return operation;
         }
@@ -166,14 +168,15 @@ namespace Rocks.Profiling.Models
                 if (operation.Session != this)
                     throw new OperationFromAnotherSessionProfilingException();
 
-                if (this.operationsStack.Value == null)
+                var operation_stack = this.operationsStack.Value;
+                if (operation_stack == null)
                     throw new OperationsOutOfOrderProfillingException();
                 
-                var current_operation = this.operationsStack.Value.Pop();
+                var current_operation = operation_stack.Pop();
                 if (current_operation != operation)
                     throw new OperationsOutOfOrderProfillingException();
 
-                var parent_operation = this.operationsStack.Value.Count > 0 ? this.operationsStack.Value.Peek() : null;
+                var parent_operation = operation_stack.Count > 0 ? operation_stack.Peek() : null;
                 if (parent_operation != operation.Parent)
                     throw new OperationsOutOfOrderProfillingException();
 
