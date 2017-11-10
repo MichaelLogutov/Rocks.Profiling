@@ -3,7 +3,7 @@
     <PropertyGroup>
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
         </DefaultItemExcludes>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>net461;net471;netstandard2.0</TargetFrameworks>
         <Version>4.1.0</Version>
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
@@ -25,8 +25,31 @@
     <ItemGroup>
         <PackageReference Include="FastMember" Version="1.1.0"/>
         <PackageReference Include="JetBrains.Annotations" Version="11.0.0"/>
+    </ItemGroup>
+    <!-- NuGet packages for .NET Framework -->
+    <ItemGroup Condition="$(TargetFramework) == 'net461'">
+        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
+        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net471'">
+        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
+        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
+    </ItemGroup>
+    <!-- NuGet packages for .NET Core -->
+    <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0"/>
         <PackageReference Include="Rocks.Helpers" Version="2.1.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="4.0.0"/>
+        <PackageReference Include="Rocks.SimpleInjector" Version="4.1.0"/>
+    </ItemGroup>
+    <!-- References for .NET Framework -->
+    <ItemGroup Condition="$(TargetFramework) == 'net461'">
+        <Reference Include="System.Configuration"/>
+        <Reference Include="System.Transactions"/>
+        <Reference Include="System.Web"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net471'">
+        <Reference Include="System.Configuration"/>
+        <Reference Include="System.Transactions"/>
+        <Reference Include="System.Web"/>
     </ItemGroup>
 </Project>

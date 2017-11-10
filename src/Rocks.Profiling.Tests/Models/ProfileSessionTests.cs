@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Ploeh.AutoFixture;
+using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
 
@@ -32,6 +34,40 @@ namespace Rocks.Profiling.Tests.Models
 
             // assert
             sut.Duration.Should().BeGreaterThan(TimeSpan.Zero);
+        }
+
+
+        [Fact]
+        public void StartAndStop_InSeparatedTask_ShouldNotThrow()
+        {
+            // arrange
+            var profiler = this.fixture.Create<Profiler>();
+
+            var task1 = this.CreateTask(profiler, "test1");
+            var task2 = this.CreateTask(profiler, "test2");
+
+            // act
+            Action action = async () =>
+                            {
+                                var task1Result = await task1.ConfigureAwait(false);
+                                var task2Result = await task2.ConfigureAwait(false);
+                            };
+
+            // assert
+            action.ShouldNotThrow();
+        }
+
+        private async Task<int> CreateTask(IProfiler profiler, string name)
+        {
+            using (profiler.Profile(new ProfileOperationSpecification(name)
+                                    {
+                                        Category = "Test"
+                                    }))
+            {
+                await Task.Delay(100);
+            }
+
+            return 42;
         }
     }
 }

@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Threading;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
 using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
+
+#if NET461 || NET471
+    using HttpContext = System.Web.HttpContextBase;
+#endif
+#if NETSTANDARD2_0
+    using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Rocks.Profiling.Internal.Implementation
 {

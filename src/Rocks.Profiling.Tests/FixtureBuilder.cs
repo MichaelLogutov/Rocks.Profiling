@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
@@ -9,6 +8,13 @@ using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Tests.Exceptions;
 using SimpleInjector;
+
+#if NET461 || NET471
+    using HttpContext = System.Web.HttpContextBase;
+#endif
+#if NETCOREAPP2_0
+    using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Rocks.Profiling.Tests
 {
