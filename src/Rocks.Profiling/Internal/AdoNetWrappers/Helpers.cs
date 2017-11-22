@@ -15,7 +15,7 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
             if (wrapped_db_connection != null)
                 return wrapped_db_connection.InnerProviderFactory;
 
-#if NET461 || NET471
+#if NET46 || NET461 || NET462 || NET47 || NET471
             return DbProviderFactories.GetFactory(connection);
 #endif
 #if NETSTANDARD2_0

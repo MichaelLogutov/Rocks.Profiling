@@ -3,7 +3,7 @@
     <PropertyGroup>
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
         </DefaultItemExcludes>
-        <TargetFrameworks>net461;net471;netcoreapp2.0</TargetFrameworks>
+        <TargetFrameworks>net46;net461;net462;net47;net471;netcoreapp2.0</TargetFrameworks>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>

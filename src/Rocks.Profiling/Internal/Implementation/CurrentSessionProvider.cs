@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
 
-#if NET461 || NET471
+#if NET46 || NET461 || NET462 || NET47 || NET471
     using HttpContext = System.Web.HttpContextBase;
 #endif
 #if NETSTANDARD2_0

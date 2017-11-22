@@ -3,7 +3,7 @@
     <PropertyGroup>
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
         </DefaultItemExcludes>
-        <TargetFrameworks>net461;net471;netcoreapp2.0</TargetFrameworks>
+        <TargetFrameworks>net46;net461;net462;net47;net471;netcoreapp2.0</TargetFrameworks>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>
@@ -20,7 +20,16 @@
         <PackageReference Include="Moq" Version="4.7.145"/>
     </ItemGroup>
     <!-- NuGet packages for .NET Framework -->
+    <ItemGroup Condition="$(TargetFramework) == 'net46'">
+        <PackageReference Include="Rocks.Dataflow" Version="1.4.0.1"/>
+    </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
+        <PackageReference Include="Rocks.Dataflow" Version="1.4.0.1"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net462'">
+        <PackageReference Include="Rocks.Dataflow" Version="1.4.0.1"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net47'">
         <PackageReference Include="Rocks.Dataflow" Version="1.4.0.1"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
@@ -31,7 +40,16 @@
         <PackageReference Include="Rocks.Dataflow" Version="2.1.0"/>
     </ItemGroup>
     <!-- References for .NET Framework -->
+    <ItemGroup Condition="$(TargetFramework) == 'net46'">
+        <Reference Include="System.Web"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net462'">
+        <Reference Include="System.Web"/>
+    </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
+        <Reference Include="System.Web"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net47'">
         <Reference Include="System.Web"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
