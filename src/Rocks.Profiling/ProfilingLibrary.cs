@@ -10,7 +10,10 @@ using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
 
-#if NET461 || NET471
+#if NET46 || NET461 || NET462 || NET47 || NET471
+    using System.Data;
+    using System.Linq;
+    using System.Reflection;
     using HttpContext = System.Web.HttpContextBase;
 #endif
 #if NETSTANDARD2_0
@@ -110,7 +113,40 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-#if NETSTANDARD20
+#if NET46 || NET461 || NET462 || NET47 || NET471
+            var table = GetDbProviderFactoryConfigTable();
+            if (table == null)
+                return;
+
+            foreach (var row in table.Rows.Cast<DataRow>().ToList())
+            {
+                DbProviderFactory factory;
+                try
+                {
+                    factory = DbProviderFactories.GetFactory(row);
+                }
+                // ReSharper disable once CatchAllClause
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (factory is ProfiledDbProviderFactory)
+                    continue;
+
+                var proxy_type = typeof(ProfiledDbProviderFactory<>).MakeGenericType(factory.GetType());
+
+                var wrapped_provider_row = table.NewRow();
+                wrapped_provider_row["Name"] = row["Name"];
+                wrapped_provider_row["Description"] = row["Description"];
+                wrapped_provider_row["InvariantName"] = row["InvariantName"];
+                wrapped_provider_row["AssemblyQualifiedName"] = proxy_type.AssemblyQualifiedName;
+
+                table.Rows.Remove(row);
+                table.Rows.Add(wrapped_provider_row);
+            }
+#endif
+#if NETSTANDARD2_0
             DbFactory.SetConstructInstanceInterceptor((instance) =>
                                                       {
                                                           if (instance is ProfiledDbProviderFactory)
@@ -126,5 +162,37 @@ namespace Rocks.Profiling
                                                       });
 #endif
         }
+        
+        
+#if NET46 || NET461 || NET462 || NET47 || NET471
+        [CanBeNull]
+        private static DataTable GetDbProviderFactoryConfigTable()
+        {
+            try
+            {
+                // force initialization
+                DbProviderFactories.GetFactory("Unknown");
+            }
+            catch (ArgumentException)
+            {
+            }
+
+            var type = typeof(DbProviderFactories);
+
+            var config_table_field = type.GetField("_configTable", BindingFlags.NonPublic | BindingFlags.Static)
+                                     ?? type.GetField("_providerTable", BindingFlags.NonPublic | BindingFlags.Static);
+
+            if (config_table_field == null)
+                return null;
+
+            var config_table = config_table_field.GetValue(null);
+
+            var config_table_dataset = config_table as DataSet;
+            if (config_table_dataset != null)
+                return config_table_dataset.Tables["DbProviderFactories"];
+
+            return (DataTable) config_table;
+        }
+#endif
     }
 }

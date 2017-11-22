@@ -3,7 +3,7 @@
     <PropertyGroup>
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
         </DefaultItemExcludes>
-        <TargetFrameworks>net461;net471;netcoreapp2.0</TargetFrameworks>
+        <TargetFrameworks>net46;net461;net462;net47;net471;netcoreapp2.0</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <StartupObject>Sandbox.App</StartupObject>
     </PropertyGroup>
@@ -23,7 +23,22 @@
         <PackageReference Include="System.Net.NameResolution" Version="4.3.0"/>
     </ItemGroup>
     <!-- References for .NET Framework -->
+    <ItemGroup Condition="$(TargetFramework) == 'net46'">
+        <Reference Include="System.Configuration"/>
+        <Reference Include="System.Transactions"/>
+        <Reference Include="System.Web"/>
+    </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
+        <Reference Include="System.Configuration"/>
+        <Reference Include="System.Transactions"/>
+        <Reference Include="System.Web"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net462'">
+        <Reference Include="System.Configuration"/>
+        <Reference Include="System.Transactions"/>
+        <Reference Include="System.Web"/>
+    </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework) == 'net47'">
         <Reference Include="System.Configuration"/>
         <Reference Include="System.Transactions"/>
         <Reference Include="System.Web"/>
