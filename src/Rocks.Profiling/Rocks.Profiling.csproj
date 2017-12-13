@@ -12,6 +12,7 @@
         <Description>A library for auto profiling code.</Description>
         <Copyright>Copyright © Michael Logutov 2017</Copyright>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Rocks.Profiling.xml</DocumentationFile>
+        <NoWarn>1591</NoWarn>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>
