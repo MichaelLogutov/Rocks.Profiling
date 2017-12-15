@@ -1,16 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- Properties -->
     <PropertyGroup>
-        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
+        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v2.ncrunchproject;**\*.v3.ncrunchproject;**\*.nupkg
         </DefaultItemExcludes>
-        <TargetFrameworks>net46;net461;net462;net47;net471;netstandard2.0</TargetFrameworks>
-        <Version>4.3.0</Version>
+        <TargetFrameworks>net461;net471;netstandard2.0</TargetFrameworks>
+        <Version>4.4.0</Version>
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <Authors>Michael Logutov</Authors>
         <Company>Michael Logutov</Company>
         <Description>A library for auto profiling code.</Description>
         <Copyright>Copyright © Michael Logutov 2017</Copyright>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Rocks.Profiling.xml</DocumentationFile>
+        <NoWarn>1591</NoWarn>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>
@@ -23,53 +25,22 @@
     </PropertyGroup>
     <!-- NuGet packages -->
     <ItemGroup>
+        <PackageReference Include="Rocks.Helpers" Version="2.2.0"/>
+        <PackageReference Include="Rocks.SimpleInjector" Version="4.2.1"/>
         <PackageReference Include="FastMember" Version="1.1.0"/>
         <PackageReference Include="JetBrains.Annotations" Version="11.0.0"/>
     </ItemGroup>
     <!-- NuGet packages for .NET Framework -->
-    <ItemGroup Condition="$(TargetFramework) == 'net46'">
-        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
-    </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
-        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'net462'">
-        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'net47'">
-        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
-        <PackageReference Include="Rocks.Helpers" Version="1.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="3.0.0"/>
     </ItemGroup>
     <!-- NuGet packages for .NET Core -->
     <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0"/>
-        <PackageReference Include="Rocks.Helpers" Version="2.1.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="4.1.0"/>
     </ItemGroup>
     <!-- References for .NET Framework -->
-    <ItemGroup Condition="$(TargetFramework) == 'net46'">
-        <Reference Include="System.Configuration"/>
-        <Reference Include="System.Transactions"/>
-        <Reference Include="System.Web"/>
-    </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
-        <Reference Include="System.Configuration"/>
-        <Reference Include="System.Transactions"/>
-        <Reference Include="System.Web"/>
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'net462'">
-        <Reference Include="System.Configuration"/>
-        <Reference Include="System.Transactions"/>
-        <Reference Include="System.Web"/>
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'net47'">
         <Reference Include="System.Configuration"/>
         <Reference Include="System.Transactions"/>
         <Reference Include="System.Web"/>
@@ -79,4 +50,11 @@
         <Reference Include="System.Transactions"/>
         <Reference Include="System.Web"/>
     </ItemGroup>
+    <!-- Documentation -->
+    <Target Name="IncludeDocumentationFiles" BeforeTargets="PrepareForPublish">
+        <ItemGroup>
+            <DocumentationFiles Include="bin\$(Configuration)\$(TargetFramework)\*.xml" />
+        </ItemGroup>
+        <Copy SourceFiles="@(DocumentationFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
+    </Target>
 </Project>

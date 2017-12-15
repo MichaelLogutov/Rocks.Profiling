@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- Properties -->
     <PropertyGroup>
-        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v3.ncrunchproject;**\*.v3.ncrunchproject.user
+        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v2.ncrunchproject;**\*.v3.ncrunchproject;**\*.nupkg
         </DefaultItemExcludes>
-        <TargetFrameworks>net46;net461;net462;net47;net471;netcoreapp2.0</TargetFrameworks>
+        <TargetFrameworks>net461;net471;netcoreapp2.0</TargetFrameworks>
     </PropertyGroup>
     <!-- Properties for NuGet package -->
     <PropertyGroup>
@@ -12,8 +12,8 @@
     <!-- NuGet packages -->
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0"/>
-        <PackageReference Include="xunit" Version="2.2.0"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0"/>
+        <PackageReference Include="xunit" Version="2.3.1"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1"/>
         <PackageReference Include="AutoFixture" Version="3.51.0"/>
         <PackageReference Include="FluentAssertions" Version="4.19.4"/>
     </ItemGroup>
