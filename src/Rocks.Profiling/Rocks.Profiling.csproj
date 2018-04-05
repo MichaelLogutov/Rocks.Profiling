@@ -4,13 +4,13 @@
         <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v2.ncrunchproject;**\*.v3.ncrunchproject;**\*.nupkg
         </DefaultItemExcludes>
         <TargetFrameworks>net461;net471;netstandard2.0</TargetFrameworks>
-        <Version>4.4.0</Version>
+        <Version>4.5.0</Version>
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <Authors>Michael Logutov</Authors>
         <Company>Michael Logutov</Company>
         <Description>A library for auto profiling code.</Description>
-        <Copyright>Copyright © Michael Logutov 2017</Copyright>
+        <Copyright>Copyright © Michael Logutov 2018</Copyright>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Rocks.Profiling.xml</DocumentationFile>
         <NoWarn>1591</NoWarn>
     </PropertyGroup>
@@ -27,7 +27,7 @@
     <ItemGroup>
         <PackageReference Include="Rocks.Helpers" Version="2.2.0"/>
         <PackageReference Include="Rocks.SimpleInjector" Version="4.2.1"/>
-        <PackageReference Include="FastMember" Version="1.1.0"/>
+        <PackageReference Include="FastMember" Version="1.3.0"/>
         <PackageReference Include="JetBrains.Annotations" Version="11.0.0"/>
     </ItemGroup>
     <!-- NuGet packages for .NET Framework -->

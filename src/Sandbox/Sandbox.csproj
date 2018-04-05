@@ -15,8 +15,8 @@
     <ItemGroup>
         <PackageReference Include="AutoFixture" Version="3.51.0"/>
         <PackageReference Include="FluentAssertions" Version="4.19.4"/>
-        <PackageReference Include="Dapper" Version="1.50.2"/>
-        <PackageReference Include="Newtonsoft.Json" Version="10.0.3"/>
+        <PackageReference Include="Dapper" Version="1.50.4"/>
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.0"/>
     </ItemGroup>
     <!-- NuGet packages for .NET Framework -->
     <ItemGroup Condition="$(TargetFramework) == 'net461'">
