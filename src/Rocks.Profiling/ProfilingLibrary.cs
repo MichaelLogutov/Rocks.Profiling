@@ -95,7 +95,7 @@ namespace Rocks.Profiling
         {
             c.RegisterSingleton<IProfilerConfiguration, ProfilerConfiguration>();
 
-            c.RegisterSingleton<Func<HttpContext>>(httpContextFactory);
+            c.RegisterInstance(httpContextFactory);
 
             c.RegisterSingleton<ICurrentSessionProvider, CurrentSessionProvider>();
             c.RegisterSingleton<IProfiler, Profiler>();
