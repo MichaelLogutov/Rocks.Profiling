@@ -50,7 +50,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
 
             ProfilingLibrary.Setup(() => null);
             ProfilingLibrary.Container.RegisterSingleton<IProfilerLogger, TestsProfilerLogger>();
-            ProfilingLibrary.Container.RegisterSingleton<IProfilerResultsStorage>(profiler_results_storage);
+            ProfilingLibrary.Container.RegisterInstance<IProfilerResultsStorage>(profiler_results_storage);
             ProfilingLibrary.Container.RegisterSingleton<IProfilerConfiguration, TestProfilerConfiguration>();
 
 
