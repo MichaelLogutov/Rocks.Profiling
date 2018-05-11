@@ -25,7 +25,7 @@ namespace Sandbox
             ///     Adds new profile <paramref name="sessions"/> to the storage.
             /// </summary>
             public Task AddAsync(IReadOnlyList<ProfileSession> sessions,
-                                 CancellationToken cancellationToken = default (CancellationToken))
+                                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var json = JsonConvert.SerializeObject(sessions,
                                                        new JsonSerializerSettings
@@ -68,15 +68,8 @@ namespace Sandbox
                 ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"] = "00:00:00";
                 ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"] = "1";
 
-                var container = new Container
-                                {
-                                    Options =
-                                    {
-                                        AllowOverridingRegistrations = true
-                                    }
-                                };
-                ProfilingLibrary.Setup(() => null,
-                                       container);
+                var container = new Container { Options = { AllowOverridingRegistrations = true } };
+                ProfilingLibrary.Setup(() => null, container);
 
                 container.RegisterSingleton<IProfilerLogger, ConsoleProfilerLogger>();
                 container.RegisterSingleton<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
@@ -87,82 +80,53 @@ namespace Sandbox
 
                 ProfilingLibrary.StartProfiling();
 
-                using (var connection = ConfigurationManager.ConnectionStrings["Test"]
-                                                            .CreateDbConnection())
+                using (var connection = ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection())
                 {
                     var count = connection.Execute(@"insert TestRocksProfilingTable(Data) values (@data)",
                                                    new[]
                                                    {
-                                                       new
-                                                       {
-                                                           data = "123"
-                                                       },
-                                                       new
-                                                       {
-                                                           data = "456"
-                                                       },
-                                                       new
-                                                       {
-                                                           data = "789"
-                                                       }
+                                                       new { data = "123" },
+                                                       new { data = "456" },
+                                                       new { data = "789" }
                                                    }
-                                                  );
+                    );
 
-                    Console.WriteLine("Inserted rows: {0}",
-                                      count);
+                    Console.WriteLine("Inserted rows: {0}", count);
                 }
 
                 using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    using (var connection = ConfigurationManager.ConnectionStrings["Test"]
-                                                                .CreateDbConnection())
+                    using (var connection = ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection())
                     {
                         var count = connection.Execute(@"insert TestRocksProfilingTable(Data) values (@data)",
                                                        new[]
                                                        {
-                                                           new
-                                                           {
-                                                               data = "123"
-                                                           },
-                                                           new
-                                                           {
-                                                               data = "456"
-                                                           },
-                                                           new
-                                                           {
-                                                               data = "789"
-                                                           }
+                                                           new { data = "123" },
+                                                           new { data = "456" },
+                                                           new { data = "789" }
                                                        }
-                                                      );
+                        );
 
-                        Console.WriteLine("Inserted rows: {0}",
-                                          count);
+                        Console.WriteLine("Inserted rows: {0}", count);
                     }
                 }
 
                 using (var connection = ConfigurationManager.ConnectionStrings["Test"]
                                                             .CreateDbConnection())
                 {
-                    var id = connection.Query<int>("select top 1 Id from TestRocksProfilingTable order by Id desc")
-                                       .FirstOrNull();
+                    var id = connection.Query<int>("select top 1 Id from TestRocksProfilingTable order by Id desc").FirstOrNull();
 
-                    Console.WriteLine("Selected via ADO: {0}",
-                                      id);
+                    Console.WriteLine("Selected via ADO: {0}", id);
                 }
 
-                ProfilingLibrary.StopProfiling(new Dictionary<string, object>
-                                               {
-                                                   { "name", "test session" }
-                                               });
+                ProfilingLibrary.StopProfiling(new Dictionary<string, object> { { "name", "test session" } });
 
-                Task.Delay(500)
-                    .Wait();
+                Task.Delay(500).Wait();
             }
             // ReSharper disable once CatchAllClause
             catch (Exception ex)
             {
-                Console.WriteLine("\n\n{0}\n\n",
-                                  ex);
+                Console.WriteLine("\n\n{0}\n\n", ex);
             }
         }
     }

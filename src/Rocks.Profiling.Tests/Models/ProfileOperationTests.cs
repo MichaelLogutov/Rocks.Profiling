@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Models;
 using Xunit;
 

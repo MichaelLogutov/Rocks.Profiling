@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;

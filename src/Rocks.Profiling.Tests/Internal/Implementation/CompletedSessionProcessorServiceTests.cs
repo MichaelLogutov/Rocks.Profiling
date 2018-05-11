@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;

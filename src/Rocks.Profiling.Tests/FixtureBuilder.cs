@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Moq;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
-using Ploeh.AutoFixture.Kernel;
+using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.Kernel;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Tests.Exceptions;
 using SimpleInjector;
+#if NET471
+using HttpContext = System.Web.HttpContextBase;
 
-#if NET461 || NET471
-    using HttpContext = System.Web.HttpContextBase;
 #endif
 #if NETCOREAPP2_0
     using Microsoft.AspNetCore.Http;
@@ -40,7 +40,7 @@ namespace Rocks.Profiling.Tests
         {
             var fixture = new Fixture();
             fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-            fixture.Customize(new AutoConfiguredMoqCustomization());
+            fixture.Customize(new AutoMoqCustomization { ConfigureMembers = true });
 
             {
                 var logger_mock = new Mock<TestsProfilerLogger>();
@@ -55,35 +55,35 @@ namespace Rocks.Profiling.Tests
                 container.ResolveUnregisteredType += (sender, args) =>
                                                      {
                                                          args.Register(() => new SpecimenContext(fixture).Resolve
-                                                                                 (new SeededRequest(args.UnregisteredServiceType, null)));
+                                                                           (new SeededRequest(args.UnregisteredServiceType, null)));
                                                      };
 
                 fixture.Inject(container);
             }
 
             fixture.Customize<IProfiler>
-                (c => c.FromFactory(() =>
-                                    {
-                                        var profiler = new Mock<IProfiler>();
-                                        var configuration = (IProfilerConfiguration) new SpecimenContext(fixture).Resolve
-                                                                                         (new SeededRequest(typeof(IProfilerConfiguration), null));
+            (c => c.FromFactory(() =>
+                                {
+                                    var profiler = new Mock<IProfiler>();
+                                    var configuration = (IProfilerConfiguration) new SpecimenContext(fixture).Resolve
+                                        (new SeededRequest(typeof(IProfilerConfiguration), null));
 
-                                        profiler.Setup(x => x.Configuration).Returns(configuration);
+                                    profiler.Setup(x => x.Configuration).Returns(configuration);
 
-                                        return profiler.Object;
-                                    })
-                       .OmitAutoProperties());
+                                    return profiler.Object;
+                                })
+                   .OmitAutoProperties());
 
 
             fixture.Customize<IProfilerConfiguration>
-                (c => c.FromFactory(() =>
-                                    {
-                                        var mock = new Mock<ProfilerConfiguration>();
-                                        mock.CallBase = true;
+            (c => c.FromFactory(() =>
+                                {
+                                    var mock = new Mock<ProfilerConfiguration>();
+                                    mock.CallBase = true;
 
-                                        return mock.Object;
-                                    })
-                       .OmitAutoProperties());
+                                    return mock.Object;
+                                })
+                   .OmitAutoProperties());
 
             foreach (var initializer in this.additionalInitializers)
                 initializer(fixture);

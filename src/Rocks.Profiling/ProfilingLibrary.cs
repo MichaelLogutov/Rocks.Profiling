@@ -10,7 +10,7 @@ using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
 
-#if NET461 || NET471
+#if NET471
     using System.Data;
     using System.Linq;
     using System.Reflection;
@@ -113,7 +113,7 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-#if NET461 || NET471
+#if NET471
             var table = GetDbProviderFactoryConfigTable();
             if (table == null)
                 return;
@@ -164,7 +164,7 @@ namespace Rocks.Profiling
         }
         
         
-#if NET461 || NET471
+#if NET471
         [CanBeNull]
         private static DataTable GetDbProviderFactoryConfigTable()
         {

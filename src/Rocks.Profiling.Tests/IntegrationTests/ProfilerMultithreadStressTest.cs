@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Rocks.Profiling.Tests.IntegrationTests
 {
-    [Trait("Category", "IntegrationTests")]
+    [Trait("Category", "IntegrationTests"), Collection("IntegrationTests")]
     public class ProfilerMultithreadStressTest
     {
         [Fact]
@@ -57,36 +57,36 @@ namespace Rocks.Profiling.Tests.IntegrationTests
             var exceptions = new List<Exception>();
 
             var dataflow = DataflowFluent
-                .ReceiveDataOfType<int>()
-                .TransformAsync(async id =>
-                                {
-                                    var item = new DataflowItemContext
+                           .ReceiveDataOfType<int>()
+                           .TransformAsync(async id =>
+                                           {
+                                               var item = new DataflowItemContext
+                                                          {
+                                                              Id = id,
+                                                              ProfileSession = ProfilingLibrary.StartProfiling()
+                                                          };
+
+                                               using (ProfilingLibrary.Profile(item.ProfileSession, new ProfileOperationSpecification("a")))
                                                {
-                                                   Id = id,
-                                                   ProfileSession = ProfilingLibrary.StartProfiling()
-                                               };
+                                                   await Task.Delay(50).ConfigureAwait(true);
+                                               }
 
-                                    using (ProfilingLibrary.Profile(item.ProfileSession, new ProfileOperationSpecification("a")))
-                                    {
-                                        await Task.Delay(50).ConfigureAwait(true);
-                                    }
-
-                                    return item;
-                                })
-                .ProcessAsync(async item =>
-                              {
-                                  using (ProfilingLibrary.Profile(item.ProfileSession, new ProfileOperationSpecification("b")))
-                                  {
-                                      await Task.Delay(50).ConfigureAwait(true);
-                                  }
-                              })
-                .ActionAsync(item =>
-                             {
-                                 ProfilingLibrary.StopProfiling(item.ProfileSession);
-                                 return Task.CompletedTask;
-                             })
-                .WithDefaultExceptionLogger((ex, obj) => exceptions.Add(ex))
-                .CreateDataflow();
+                                               return item;
+                                           })
+                           .ProcessAsync(async item =>
+                                         {
+                                             using (ProfilingLibrary.Profile(item.ProfileSession, new ProfileOperationSpecification("b")))
+                                             {
+                                                 await Task.Delay(50).ConfigureAwait(true);
+                                             }
+                                         })
+                           .ActionAsync(item =>
+                                        {
+                                            ProfilingLibrary.StopProfiling(item.ProfileSession);
+                                            return Task.CompletedTask;
+                                        })
+                           .WithDefaultExceptionLogger((ex, obj) => exceptions.Add(ex))
+                           .CreateDataflow();
 
 
             // act
@@ -100,11 +100,8 @@ namespace Rocks.Profiling.Tests.IntegrationTests
                                     .Select(x => x.Name)
                                     .GroupBy(x => x)
                                     .Select(x => new { Name = x.Key, Count = x.Count() })
-                                    .ShouldAllBeEquivalentTo(new[]
-                                                             {
-                                                                 new { Name = "a", Count = 10 },
-                                                                 new { Name = "b", Count = 10 }
-                                                             });
+                                    .Should().BeEquivalentTo(new { Name = "a", Count = 10 },
+                                                             new { Name = "b", Count = 10 });
         }
 
 

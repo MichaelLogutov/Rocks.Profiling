@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Internal.Implementation;
@@ -280,7 +280,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
                 // assert
-                act.ShouldThrow<ResultsProcessorOverflowProfilingException>();
+                act.Should().Throw<ResultsProcessorOverflowProfilingException>();
             }
         }
 

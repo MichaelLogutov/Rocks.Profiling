@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Tests;
 using Xunit;

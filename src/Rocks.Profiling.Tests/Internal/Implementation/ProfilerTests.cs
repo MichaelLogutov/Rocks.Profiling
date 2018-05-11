@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Moq;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Helpers;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
@@ -53,7 +53,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            act.ShouldNotThrow();
+            act.Should().NotThrow();
         }
 
 
@@ -85,7 +85,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            act.ShouldThrow<NoCurrentSessionProfilingException>();
+            act.Should().Throw<NoCurrentSessionProfilingException>();
         }
 
 
@@ -150,7 +150,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
             // assert
             results.Should().HaveCount(1);
-            results[0].Data.ShouldBeEquivalentTo(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2, ["c"] = 3 });
+            results[0].Data.Should().BeEquivalentTo(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2, ["c"] = 3 });
         }
 
 
@@ -244,7 +244,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            act.ShouldNotThrow();
+            act.Should().NotThrow();
         }
 
 
@@ -283,7 +283,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             results.Should().HaveCount(1);
             results[0]
-                .Operations.ShouldAllBeEquivalentTo(new object[]
+                .Operations.Should().BeEquivalentTo(new object[]
                                                     {
                                                         new { Id = 1, Name = "a", ParentId = (int?) null },
                                                         new { Id = 2, Name = "b", ParentId = 1 },
@@ -313,7 +313,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            act.ShouldThrow<OperationsOutOfOrderProfillingException>();
+            act.Should().Throw<OperationsOutOfOrderProfillingException>();
         }
 
 
@@ -334,7 +334,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
 
 
             // assert
-            act.ShouldThrow<OperationsOutOfOrderProfillingException>();
+            act.Should().Throw<OperationsOutOfOrderProfillingException>();
         }
 
 

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Rocks.Profiling.Internal.Implementation;
 using Rocks.Profiling.Models;
 using Xunit;
@@ -47,15 +47,16 @@ namespace Rocks.Profiling.Tests.Models
             var task2 = this.CreateTask(profiler, "test2");
 
             // act
-            Action action = async () =>
-                            {
-                                var task1Result = await task1.ConfigureAwait(false);
-                                var task2Result = await task2.ConfigureAwait(false);
-                            };
+            Func<Task> act = async () =>
+                             {
+                                 await task1.ConfigureAwait(false);
+                                 await task2.ConfigureAwait(false);
+                             };
 
             // assert
-            action.ShouldNotThrow();
+            act.Should().NotThrow();
         }
+
 
         private async Task<int> CreateTask(IProfiler profiler, string name)
         {

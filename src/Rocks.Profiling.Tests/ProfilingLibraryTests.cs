@@ -15,11 +15,11 @@ namespace Rocks.Profiling.Tests
             ProfilingLibrary.Setup(() => null);
 
             // act
-            var connection =  "server=localhost; database=TestDb; Integrated Security=True; Max Pool Size=5".CreateDbConnection();
+            var connection = "server=localhost; database=TestDb; Integrated Security=True; Max Pool Size=5".CreateDbConnection();
             var connectionType = connection.GetType();
 
             // assert
-            connectionType.ShouldBeEquivalentTo(typeof(ProfiledDbConnection));
+            connectionType.Should().Be(typeof(ProfiledDbConnection));
         }
     }
 }
