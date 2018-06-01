@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v2.ncrunchproject;**\*.v3.ncrunchproject;**\*.nupkg
-        </DefaultItemExcludes>
         <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
-        <Version>4.8.0</Version>
+        <Version>4.10.0</Version>
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <Authors>Michael Logutov</Authors>
@@ -21,7 +19,13 @@
         <PackageProjectUrl>https://github.com/MichaelLogutov/Rocks.Profiling</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/MichaelLogutov/Rocks.Profiling/blob/master/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/MichaelLogutov/Rocks.Profiling</RepositoryUrl>
-        <PackageReleaseNotes>4.8.0 (2018-05-10)
+        <PackageReleaseNotes>4.10.0 (2018-06-01)
+            Packages update
+
+            4.9.0 (2018-05-31)
+            Packages update
+
+            4.8.0 (2018-05-10)
             Removed .NET 4.6.1
 
             4.7.0 (2018-04-27)
@@ -29,16 +33,13 @@
         </PackageReleaseNotes>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Rocks.Helpers" Version="2.6.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="4.5.0"/>
-        <PackageReference Include="JetBrains.Annotations" Version="11.1.0"/>
+        <PackageReference Include="Rocks.SimpleInjector" Version="4.7.0"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
         <Reference Include="System.Transactions"/>
         <Reference Include="System.Web"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.3"/>
     </ItemGroup>
     <Target Name="IncludeDocumentationFiles" BeforeTargets="PrepareForPublish">
         <ItemGroup>

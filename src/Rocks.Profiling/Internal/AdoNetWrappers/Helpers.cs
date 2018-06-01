@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
+#if NETSTANDARD
+using Rocks.Helpers;
 
-#if NETSTANDARD2_0
-    using Rocks.Helpers;
 #endif
 
 
@@ -11,15 +11,13 @@ namespace Rocks.Profiling.Internal.AdoNetWrappers
     {
         public static DbProviderFactory TryGetProviderFactory(this DbConnection connection)
         {
-            var wrapped_db_connection = connection as ProfiledDbConnection;
-            if (wrapped_db_connection != null)
+            if (connection is ProfiledDbConnection wrapped_db_connection)
                 return wrapped_db_connection.InnerProviderFactory;
 
-#if NET471
+#if !NETSTANDARD
             return DbProviderFactories.GetFactory(connection);
-#endif
-#if NETSTANDARD2_0
-            return DbFactory.Get(connection);
+#else
+            return GlobalDbFactoriesProvider.Get(connection);
 #endif
         }
     }

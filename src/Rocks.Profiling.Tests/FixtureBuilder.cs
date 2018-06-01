@@ -8,11 +8,11 @@ using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Tests.Exceptions;
 using SimpleInjector;
-#if NET471
+#if NETFRAMEWORK
 using HttpContext = System.Web.HttpContextBase;
 
 #endif
-#if NETCOREAPP2_0
+#if NETCOREAPP
     using Microsoft.AspNetCore.Http;
 #endif
 

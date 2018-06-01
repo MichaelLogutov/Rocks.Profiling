@@ -1,28 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <DefaultItemExcludes>$(DefaultItemExcludes);**\*.v2.ncrunchproject;**\*.v3.ncrunchproject;**\*.nupkg
-        </DefaultItemExcludes>
-        <TargetFrameworks>net471;netcoreapp2.0</TargetFrameworks>
+        <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
     </PropertyGroup>
     <PropertyGroup>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Rocks.Dataflow" Version="2.5.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2"/>
         <PackageReference Include="xunit" Version="2.3.1"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1"/>
-        <PackageReference Include="AutoFixture" Version="4.3.0"/>
-        <PackageReference Include="AutoFixture.AutoMoq" Version="4.3.0"/>
-        <PackageReference Include="FluentAssertions" Version="5.3.0"/>
+        <PackageReference Include="AutoFixture" Version="4.4.0"/>
+        <PackageReference Include="AutoFixture.AutoMoq" Version="4.4.0"/>
+        <PackageReference Include="FluentAssertions" Version="5.3.2"/>
         <PackageReference Include="Moq" Version="4.8.2"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
         <Reference Include="System.Transactions"/>
         <Reference Include="System.Web"/>
     </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.3"/>
+    <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.0"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Rocks.Profiling\Rocks.Profiling.csproj"/>

@@ -4,10 +4,9 @@ using JetBrains.Annotations;
 using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
 
-#if NET471
+#if NETFRAMEWORK
     using HttpContext = System.Web.HttpContextBase;
-#endif
-#if NETSTANDARD2_0
+#else
     using Microsoft.AspNetCore.Http;
 #endif
 

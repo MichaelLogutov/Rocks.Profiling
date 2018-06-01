@@ -9,16 +9,15 @@ using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
-
-#if NET471
+#if NETFRAMEWORK
     using System.Data;
     using System.Linq;
     using System.Reflection;
     using HttpContext = System.Web.HttpContextBase;
-#endif
-#if NETSTANDARD2_0
-    using Microsoft.AspNetCore.Http;
-    using Rocks.Helpers;
+#else
+using Microsoft.AspNetCore.Http;
+using Rocks.Helpers;
+
 #endif
 
 namespace Rocks.Profiling
@@ -65,6 +64,7 @@ namespace Rocks.Profiling
         public static ProfileOperation Profile([NotNull] ProfileOperationSpecification specification)
             => ProfilerFactory.GetCurrentProfiler().Profile(specification);
 
+
         /// <summary>
         ///     Starts new scope that will measure execution time of the operation
         ///     with specified <paramref name="specification"/>.<br />
@@ -75,11 +75,13 @@ namespace Rocks.Profiling
         public static ProfileOperation Profile([NotNull] ProfileSession session, [NotNull] ProfileOperationSpecification specification)
             => ProfilerFactory.GetCurrentProfiler().Profile(session, specification);
 
+
         /// <summary>
         ///     Stops current profile session and stores the results.
         /// </summary>
         public static void StopProfiling([CanBeNull] IDictionary<string, object> additionalSessionData = null)
             => ProfilerFactory.GetCurrentProfiler().Stop(additionalSessionData);
+
 
         /// <summary>
         ///     Stops specified profile <paramref name="session"/> and stores the results.
@@ -113,7 +115,7 @@ namespace Rocks.Profiling
 
         private static void ReplaceProviderFactories()
         {
-#if NET471
+#if NETFRAMEWORK
             var table = GetDbProviderFactoryConfigTable();
             if (table == null)
                 return;
@@ -146,25 +148,24 @@ namespace Rocks.Profiling
                 table.Rows.Add(wrapped_provider_row);
             }
 #endif
-#if NETSTANDARD2_0
-            DbFactory.SetConstructInstanceInterceptor((instance) =>
-                                                      {
-                                                          if (instance is ProfiledDbProviderFactory)
-                                                          {
-                                                              return instance;
-                                                          }
-                                                          
-                                                          var newInstance = (DbProviderFactory) Activator.CreateInstance(typeof (ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
-                                                          
-                                                          DbFactory.Set(instance.GetType().Namespace, newInstance);
-                                                          
-                                                          return newInstance;
-                                                      });
+#if NETSTANDARD
+            GlobalDbFactoriesProvider.SetConstructInstanceInterceptor(
+                instance =>
+                {
+                    if (instance is ProfiledDbProviderFactory)
+                        return instance;
+
+                    var new_instance = (DbProviderFactory) Activator.CreateInstance(typeof(ProfiledDbProviderFactory<>).MakeGenericType(instance.GetType()));
+
+                    GlobalDbFactoriesProvider.Set(instance.GetType().Namespace, new_instance);
+
+                    return new_instance;
+                });
 #endif
         }
-        
-        
-#if NET471
+
+
+#if NETFRAMEWORK
         [CanBeNull]
         private static DataTable GetDbProviderFactoryConfigTable()
         {
