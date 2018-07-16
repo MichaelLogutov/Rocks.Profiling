@@ -1,50 +1,38 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
-        <Version>4.10.0</Version>
-        <FileVersion>$(Version)</FileVersion>
-        <AssemblyVersion>$(Version)</AssemblyVersion>
-        <Authors>Michael Logutov</Authors>
-        <Company>Michael Logutov</Company>
-        <Description>A library for auto profiling code.</Description>
-        <Copyright>Copyright © Michael Logutov 2018</Copyright>
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Rocks.Profiling.xml</DocumentationFile>
-        <NoWarn>1591</NoWarn>
-    </PropertyGroup>
-    <PropertyGroup>
-        <IsPackable>true</IsPackable>
-        <PackageId>Rocks.Profiling</PackageId>
-        <PackageVersion>$(Version)</PackageVersion>
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <PackageProjectUrl>https://github.com/MichaelLogutov/Rocks.Profiling</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/MichaelLogutov/Rocks.Profiling/blob/master/LICENSE</PackageLicenseUrl>
-        <RepositoryUrl>https://github.com/MichaelLogutov/Rocks.Profiling</RepositoryUrl>
-        <PackageReleaseNotes>4.10.0 (2018-06-01)
-            Packages update
-
-            4.9.0 (2018-05-31)
-            Packages update
-
-            4.8.0 (2018-05-10)
-            Removed .NET 4.6.1
-
-            4.7.0 (2018-04-27)
-            Update packages
-        </PackageReleaseNotes>
-    </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
+    <Version>4.10.1</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <Authors>Michael Logutov</Authors>
+    <Company>Michael Logutov</Company>
+    <Description>A library for auto profiling code.</Description>
+    <Copyright>Copyright © Michael Logutov 2018</Copyright>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>$(AssemblyName)</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/MichaelLogutov/Rocks.Profiling</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/MichaelLogutov/Rocks.Profiling/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/MichaelLogutov/Rocks.Profiling</RepositoryUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Rocks.SimpleInjector" Version="4.7.0" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'net471'">
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
+  </ItemGroup>
+  <Target Name="IncludeDocumentationFiles" BeforeTargets="PrepareForPublish">
     <ItemGroup>
-        <PackageReference Include="Rocks.SimpleInjector" Version="4.7.0"/>
+      <DocumentationFiles Include="bin\$(Configuration)\$(TargetFramework)\*.xml" />
     </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'net471'">
-        <Reference Include="System.Transactions"/>
-        <Reference Include="System.Web"/>
-    </ItemGroup>
-    <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
-    </ItemGroup>
-    <Target Name="IncludeDocumentationFiles" BeforeTargets="PrepareForPublish">
-        <ItemGroup>
-            <DocumentationFiles Include="bin\$(Configuration)\$(TargetFramework)\*.xml"/>
-        </ItemGroup>
-        <Copy SourceFiles="@(DocumentationFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false"/>
-    </Target>
+    <Copy SourceFiles="@(DocumentationFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
+  </Target>
 </Project>

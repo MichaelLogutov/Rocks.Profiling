@@ -10,10 +10,11 @@ using Rocks.Profiling.Models;
 using Rocks.Profiling.Storage;
 using SimpleInjector;
 #if NETFRAMEWORK
-    using System.Data;
-    using System.Linq;
-    using System.Reflection;
-    using HttpContext = System.Web.HttpContextBase;
+using System.Data;
+using System.Linq;
+using System.Reflection;
+using HttpContext = System.Web.HttpContextBase;
+
 #else
 using Microsoft.AspNetCore.Http;
 using Rocks.Helpers;
@@ -24,18 +25,23 @@ namespace Rocks.Profiling
 {
     public static class ProfilingLibrary
     {
+        private static readonly object SetupLock = new object();
+
         internal static Container Container { get; private set; }
 
 
         public static void Setup(Func<HttpContext> httpContextFactory, Container externalContainer = null)
         {
-            if (externalContainer == null)
-                externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
+            lock (SetupLock)
+            {
+                if (externalContainer == null)
+                    externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
 
-            RegisterAll(httpContextFactory, externalContainer);
+                RegisterAll(httpContextFactory, externalContainer);
 
-            Container = externalContainer;
-            HttpContextFactory = httpContextFactory;
+                Container = externalContainer;
+                HttpContextFactory = httpContextFactory;
+            }
         }
 
 
