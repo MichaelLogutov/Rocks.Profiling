@@ -107,8 +107,7 @@ namespace Rocks.Profiling.Internal.Implementation
                     if (retries < 0)
                         throw overflow_exception;
 
-                    ProfileSession tmp;
-                    this.dataToProcess.TryTake(out tmp);
+                    this.dataToProcess.TryTake(out _);
                 }
             }
             catch (Exception ex)
@@ -157,8 +156,6 @@ namespace Rocks.Profiling.Internal.Implementation
                         while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize &&
                                stopwatch.Elapsed < this.configuration.ResultsProcessBatchDelay)
                         {
-                            ProfileSession session;
-
                             var allowed_delay = (this.configuration.ResultsProcessBatchDelay - stopwatch.Elapsed).TotalMilliseconds;
                             if (allowed_delay < 0)
                                 allowed_delay = 0;
@@ -166,7 +163,7 @@ namespace Rocks.Profiling.Internal.Implementation
                             if (this.cancellationTokenSource.IsCancellationRequested || this.dataToProcess.IsCompleted)
                                 break;
 
-                            if (!this.dataToProcess.TryTake(out session, (int) allowed_delay, this.cancellationTokenSource.Token))
+                            if (!this.dataToProcess.TryTake(out var session, (int) allowed_delay, this.cancellationTokenSource.Token))
                                 break;
 
                             sessions.Add(session);

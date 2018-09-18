@@ -194,8 +194,7 @@ namespace Rocks.Profiling
 
             var config_table = config_table_field.GetValue(null);
 
-            var config_table_dataset = config_table as DataSet;
-            if (config_table_dataset != null)
+            if (config_table is DataSet config_table_dataset)
                 return config_table_dataset.Tables["DbProviderFactories"];
 
             return (DataTable) config_table;

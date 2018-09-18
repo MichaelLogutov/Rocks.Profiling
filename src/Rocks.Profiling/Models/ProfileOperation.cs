@@ -153,8 +153,7 @@ namespace Rocks.Profiling.Models
                 if (this.Data == null)
                     return null;
 
-                object result;
-                if (!this.Data.TryGetValue(dataKey, out result))
+                if (!this.Data.TryGetValue(dataKey, out var result))
                     return null;
 
                 return result;

@@ -150,7 +150,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (session == null)
                     throw new NoCurrentSessionProfilingException();
 
-                this.StopSession(additionalSessionData, session);
+                this.StopSession(session, additionalSessionData);
 
                 this.currentSession.Delete();
             }
@@ -174,7 +174,7 @@ namespace Rocks.Profiling.Internal.Implementation
                 if (!this.Configuration.Enabled)
                     return;
 
-                this.StopSession(additionalSessionData, session);
+                this.StopSession(session, additionalSessionData);
             }
             catch (Exception ex)
             {
@@ -202,7 +202,7 @@ namespace Rocks.Profiling.Internal.Implementation
         }
 
 
-        private void StopSession(IDictionary<string, object> additionalSessionData, ProfileSession session)
+        private void StopSession(ProfileSession session, IDictionary<string, object> additionalSessionData)
         {
             if (additionalSessionData != null)
                 session.AddData(additionalSessionData);

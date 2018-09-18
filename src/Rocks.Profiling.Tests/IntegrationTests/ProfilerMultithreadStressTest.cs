@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Rocks.Profiling.Tests.IntegrationTests
 {
-    [Trait("Category", "IntegrationTests"), Collection("IntegrationTests")]
+    [Collection("IntegrationTests")]
     public class ProfilerMultithreadStressTest
     {
         [Fact]

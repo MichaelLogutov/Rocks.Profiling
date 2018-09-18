@@ -1,3 +1,7 @@
+## 4.10.2 - 2018-09-18
+### Fixed
+- Changed IProfiler to be always singleton
+
 ## 4.10.1 - 2018-07-16
 ### Fixed
 - Implemented SetupLock to fix issue in integration tests parallel initialization

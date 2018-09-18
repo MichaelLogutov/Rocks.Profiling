@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -21,9 +22,6 @@ namespace Sandbox
     {
         private sealed class ConsoleProfileResultsStorage : IProfilerResultsStorage
         {
-            /// <summary>
-            ///     Adds new profile <paramref name="sessions"/> to the storage.
-            /// </summary>
             public Task AddAsync(IReadOnlyList<ProfileSession> sessions,
                                  CancellationToken cancellationToken = default(CancellationToken))
             {
@@ -42,46 +40,28 @@ namespace Sandbox
         }
 
 
-        private sealed class ConsoleProfileEventHandlers : IProfilerEventsHandler
-        {
-            public void OnSessionEnded(ProfileSession session)
-            {
-                Console.WriteLine("IProfilerEventsHandler.OnSessionEnded: {0}",
-                                  session);
-            }
-
-
-            public void OnOperationEnded(ProfileOperation operation)
-            {
-                Console.WriteLine("IProfilerEventsHandler.OnOperationEnded: {0} (duration {1})",
-                                  operation,
-                                  operation.Duration);
-            }
-        }
-
-
-        public static void Main()
+        public static async Task Main()
         {
             try
             {
                 ConfigurationManager.AppSettings["Profiling.Enabled"] = "true";
                 ConfigurationManager.AppSettings["Profiling.ResultsProcessBatchDelay"] = "00:00:00";
-                ConfigurationManager.AppSettings["Profiling.ResultsBufferSize"] = "1";
+                ConfigurationManager.AppSettings["Profiling.ResultsProcessMaxBatchSize"] = "1";
 
                 var container = new Container { Options = { AllowOverridingRegistrations = true } };
                 ProfilingLibrary.Setup(() => null, container);
 
                 container.RegisterSingleton<IProfilerLogger, ConsoleProfilerLogger>();
                 container.RegisterSingleton<IProfilerResultsStorage, ConsoleProfileResultsStorage>();
-                container.RegisterSingleton<IProfilerEventsHandler, ConsoleProfileEventHandlers>();
 
                 container.Verify();
-
 
                 ProfilingLibrary.StartProfiling();
 
                 using (var connection = ConfigurationManager.ConnectionStrings["Test"].CreateDbConnection())
                 {
+                    connection.Execute(@"truncate table TestRocksProfilingTable");
+
                     var count = connection.Execute(@"insert TestRocksProfilingTable(Data) values (@data)",
                                                    new[]
                                                    {
@@ -101,9 +81,9 @@ namespace Sandbox
                         var count = connection.Execute(@"insert TestRocksProfilingTable(Data) values (@data)",
                                                        new[]
                                                        {
-                                                           new { data = "123" },
-                                                           new { data = "456" },
-                                                           new { data = "789" }
+                                                           new { data = "2 123" },
+                                                           new { data = "2 456" },
+                                                           new { data = "2 789" }
                                                        }
                         );
 
@@ -114,16 +94,16 @@ namespace Sandbox
                 using (var connection = ConfigurationManager.ConnectionStrings["Test"]
                                                             .CreateDbConnection())
                 {
-                    var id = connection.Query<int>("select top 1 Id from TestRocksProfilingTable order by Id desc").FirstOrNull();
+                    var data = (await connection.QueryAsync<string>("select top 1 Data from TestRocksProfilingTable order by Id;" +
+                                                                    "waitfor delay '00:00:01'")).FirstOrDefault();
 
-                    Console.WriteLine("Selected via ADO: {0}", id);
+                    Console.WriteLine("Selected via ADO: {0}", data);
                 }
 
                 ProfilingLibrary.StopProfiling(new Dictionary<string, object> { { "name", "test session" } });
 
                 Task.Delay(500).Wait();
             }
-            // ReSharper disable once CatchAllClause
             catch (Exception ex)
             {
                 Console.WriteLine("\n\n{0}\n\n", ex);

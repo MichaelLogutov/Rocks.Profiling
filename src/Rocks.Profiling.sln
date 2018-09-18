@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rocks.Profiling.Tests", "Ro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rocks.Profiling.NoInternalsVisible.Tests", "Rocks.Profiling.NoInternalsVisible.Tests\Rocks.Profiling.NoInternalsVisible.Tests.csproj", "{8E33CFED-B75C-4D9C-B255-76D6E4A58EBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSandbox.NetFramework", "WebSandbox.NetFramework\WebSandbox.NetFramework.csproj", "{4509DE03-565C-40E7-BA6E-7322C5EBDC9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8E33CFED-B75C-4D9C-B255-76D6E4A58EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E33CFED-B75C-4D9C-B255-76D6E4A58EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E33CFED-B75C-4D9C-B255-76D6E4A58EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4509DE03-565C-40E7-BA6E-7322C5EBDC9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4509DE03-565C-40E7-BA6E-7322C5EBDC9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4509DE03-565C-40E7-BA6E-7322C5EBDC9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4509DE03-565C-40E7-BA6E-7322C5EBDC9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
