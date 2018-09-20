@@ -4,6 +4,8 @@
         <OutputType>Exe</OutputType>
         <StartupObject>Sandbox.App</StartupObject>
         <LangVersion>7.1</LangVersion>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     </PropertyGroup>
     <PropertyGroup>
         <IsPackable>false</IsPackable>
@@ -20,7 +22,7 @@
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
         <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Rocks.Profiling\Rocks.Profiling.csproj" />

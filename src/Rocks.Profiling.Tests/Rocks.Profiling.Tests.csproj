@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     </PropertyGroup>
     <PropertyGroup>
         <IsPackable>false</IsPackable>
@@ -20,7 +22,7 @@
         <Reference Include="System.Web"/>
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Rocks.Profiling\Rocks.Profiling.csproj"/>

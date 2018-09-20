@@ -1,3 +1,9 @@
+## 4.11.0 - 2018-09-20
+### Fixed
+- Fixed issue when DB providers not always been intercepted and wrapped into profiled instance
+### Changed
+- Packages update
+
 ## 4.10.2 - 2018-09-18
 ### Fixed
 - Changed IProfiler to be always singleton

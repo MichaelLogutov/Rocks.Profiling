@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using JetBrains.Annotations;
+using Rocks.Helpers;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Internal.AdoNetWrappers;
 using Rocks.Profiling.Internal.Implementation;
@@ -17,7 +18,6 @@ using HttpContext = System.Web.HttpContextBase;
 
 #else
 using Microsoft.AspNetCore.Http;
-using Rocks.Helpers;
 
 #endif
 
@@ -154,7 +154,7 @@ namespace Rocks.Profiling
                 table.Rows.Add(wrapped_provider_row);
             }
 #endif
-#if NETSTANDARD
+
             GlobalDbFactoriesProvider.SetConstructInstanceInterceptor(
                 instance =>
                 {
@@ -167,7 +167,6 @@ namespace Rocks.Profiling
 
                     return new_instance;
                 });
-#endif
         }
 
 
