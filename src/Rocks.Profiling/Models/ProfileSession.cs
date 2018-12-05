@@ -63,8 +63,7 @@ namespace Rocks.Profiling.Models
                 if (string.IsNullOrEmpty(dataKey))
                     throw new ArgumentException("Argument is null or empty", nameof(dataKey));
 
-                object result;
-                if (!this.Data.TryGetValue(dataKey, out result))
+                if (!this.Data.TryGetValue(dataKey, out var result))
                     return null;
 
                 return result;
@@ -129,9 +128,7 @@ namespace Rocks.Profiling.Models
                 throw new ArgumentNullException(nameof(specification));
 
             if (this.operationsStack.Value == null)
-            {
                 this.operationsStack.Value = new Stack<ProfileOperation>();
-            }
 
             var operation_stack = this.operationsStack.Value;
             
@@ -170,15 +167,14 @@ namespace Rocks.Profiling.Models
 
                 var operation_stack = this.operationsStack.Value;
                 if (operation_stack == null)
-                    throw new OperationsOutOfOrderProfillingException();
+                    throw new OperationsOutOfOrderProfillingException($"Operations are out of order. OperationsStack is null. Operation \"{operation}\".");
                 
-                var current_operation = operation_stack.Pop();
-                if (current_operation != operation)
-                    throw new OperationsOutOfOrderProfillingException();
-
-                var parent_operation = operation_stack.Count > 0 ? operation_stack.Peek() : null;
-                if (parent_operation != operation.Parent)
-                    throw new OperationsOutOfOrderProfillingException();
+                if (operation_stack.Count == 0)
+                    throw new OperationsOutOfOrderProfillingException($"Operations are out of order. OperationsStack is empty. Operation \"{operation}\".");
+                
+                var current_operation = operation_stack.Peek();
+                if (current_operation == operation)
+                    operation_stack.Pop();
 
                 operation.EndTime = this.Time;
 

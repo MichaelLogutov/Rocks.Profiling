@@ -1,3 +1,9 @@
+## 4.12.0 - 2018-12-05
+### Fixed
+- Fixed issue with multiple async operations awaited in wrong order generated OperationsOutOfOrderProfillingException. 
+### Changed
+- Packages update
+
 ## 4.11.0 - 2018-09-20
 ### Fixed
 - Fixed issue when DB providers not always been intercepted and wrapped into profiled instance

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using AutoFixture;
@@ -118,6 +119,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
+
             sut.Stop();
 
 
@@ -145,6 +147,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
+
             sut.Stop(new Dictionary<string, object> { ["a"] = 1, ["b"] = 2 });
 
 
@@ -167,6 +170,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
+
             sut.Stop();
 
 
@@ -189,6 +193,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (sut.Profile(new ProfileOperationSpecification("test")))
             {
             }
+
             sut.Stop();
 
 
@@ -296,48 +301,6 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         }
 
 
-        [Fact]
-        public void Profile_OperationsDisposedOutOfOrder_Throws()
-        {
-            // arrange
-            var sut = this.fixture.Create<Profiler>();
-
-
-            // act
-            Action act = () =>
-                         {
-                             using (sut.Profile(new ProfileOperationSpecification("a")))
-                                 // ReSharper disable once MustUseReturnValue
-                                 sut.Profile(new ProfileOperationSpecification("b"));
-                         };
-
-
-            // assert
-            act.Should().Throw<OperationsOutOfOrderProfillingException>();
-        }
-
-
-        [Fact]
-        public void Profile_OperationHasWrongParent_Throws()
-        {
-            // arrange
-            var sut = this.fixture.Create<Profiler>();
-
-
-            // act
-            Action act = () =>
-                         {
-                             using (sut.Profile(new ProfileOperationSpecification("a")))
-                             using (var operation = sut.Profile(new ProfileOperationSpecification("b")))
-                                 operation.SetPropertyValue(x => x.Parent, null);
-                         };
-
-
-            // assert
-            act.Should().Throw<OperationsOutOfOrderProfillingException>();
-        }
-
-
         [Fact, MethodImpl(MethodImplOptions.NoInlining)]
         public void Profile_WithCaptureCallStacks_FillsOperationCallStackProperty()
         {
@@ -366,6 +329,94 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                 .Should()
                 .Contain(nameof(this.Profile_WithCaptureCallStacks_FillsOperationCallStackProperty));
         }
+
+
+        [Fact]
+        public void Profile_MultipleAsyncOperationsAwaitedLater_DoesNotThrows()
+        {
+            // arrange
+            var sut = this.fixture.Create<Profiler>();
+
+            async Task AsyncMethod(string name, int delay)
+            {
+                using (sut.Profile(new ProfileOperationSpecification(name)))
+                {
+                    await Task.Delay(delay);
+                }
+            }
+
+
+            // act
+            Func<Task> act = async () =>
+                             {
+                                 using (sut.Profile(new ProfileOperationSpecification("root")))
+                                 {
+                                     var a = AsyncMethod("a", 500);
+                                     var b = AsyncMethod("b", 100);
+                                     await Task.WhenAll(a, b);
+                                 }
+                             };
+
+
+            // assert
+            act.Should().NotThrow();
+        }
+        
+        
+        [Fact]
+        public void Profile_MultipleAsyncOperationsStartedWithTaskRun_DoesNotThrows()
+        {
+            // arrange
+            var sut = this.fixture.Create<Profiler>();
+
+            async Task AsyncMethod(string name, int delay)
+            {
+                await Task.Delay(100);
+                
+                using (sut.Profile(new ProfileOperationSpecification(name)))
+                {
+                    await Task.Delay(delay);
+                }
+            }
+
+
+            // act
+            Func<Task> act = async () =>
+                             {
+                                 using (sut.Profile(new ProfileOperationSpecification("root")))
+                                 {
+                                     var a = Task.Run(async () => await AsyncMethod("a", 500));
+                                     var b = Task.Run(async () => await AsyncMethod("b", 250));
+                                     await Task.WhenAll(a, b);
+                                 }
+                             };
+
+
+            // assert
+            act.Should().NotThrow();
+        }
+        
+        
+        // [Fact]
+        // public void Profile_OperationsDisposedOutOfOrder_ShouldNotThrow()
+        // {
+        //     // arrange
+        //     var sut = this.fixture.Create<Profiler>();
+        //
+        //     
+        //     // act
+        //     Action act = () =>
+        //                  {
+        //                      var profile_operation1 = sut.Profile(new ProfileOperationSpecification("a"));
+        //                      var profile_operation2 = sut.Profile(new ProfileOperationSpecification("b"));
+        //                      ((IDisposable) profile_operation1)?.Dispose();
+        //                      ((IDisposable) profile_operation2)?.Dispose();
+        //                  };
+        //
+        //     
+        //     // assert
+        //     act.Should().NotThrow();
+        // }
 
 
         private static IList<ProfileSession> CaptureProfileSessionAddedToTheResultsProcessor(IFixture fixture)
