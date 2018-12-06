@@ -23,6 +23,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         private readonly IFixture fixture;
         private readonly Mock<IProfilerConfiguration> configuration;
         private readonly Mock<ICurrentSessionProvider> currentSessionProvider;
+        private readonly ProfileSession session;
 
 
         public ProfilerTests()
@@ -32,8 +33,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             this.configuration = this.fixture.FreezeMock<IProfilerConfiguration>();
             this.currentSessionProvider = this.fixture.FreezeMock<ICurrentSessionProvider>();
 
-            var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
+            this.session = this.fixture.Create<ProfileSession>();
+            this.currentSessionProvider.Setup(x => x.Get()).Returns(this.session);
         }
 
 
@@ -133,10 +134,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Stop_HasActiveSession_SendsCombinedAdditionalDataToResultsProcessor()
         {
             // arrange
-            var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
-
-            session.AddData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
+            this.session.AddData(new Dictionary<string, object> { ["a"] = 1, ["c"] = 3 });
 
             var results = CaptureProfileSessionAddedToTheResultsProcessor(this.fixture);
 
@@ -237,9 +235,6 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
 
             events_handler.Setup(x => x.OnOperationEnded(It.IsAny<ProfileOperation>())).Throws<ValidTestException>();
-
-            var session = this.fixture.Create<ProfileSession>();
-            this.currentSessionProvider.Setup(x => x.Get()).Returns(session);
 
             var operation = this.fixture.Create<Profiler>().Profile(new ProfileOperationSpecification("test"));
 
@@ -361,8 +356,8 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             act.Should().NotThrow();
         }
-        
-        
+
+
         [Fact]
         public void Profile_MultipleAsyncOperationsStartedWithTaskRun_DoesNotThrows()
         {
@@ -372,7 +367,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             async Task AsyncMethod(string name, int delay)
             {
                 await Task.Delay(100);
-                
+
                 using (sut.Profile(new ProfileOperationSpecification(name)))
                 {
                     await Task.Delay(delay);
@@ -395,28 +390,51 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             act.Should().NotThrow();
         }
-        
-        
-        // [Fact]
-        // public void Profile_OperationsDisposedOutOfOrder_ShouldNotThrow()
-        // {
-        //     // arrange
-        //     var sut = this.fixture.Create<Profiler>();
-        //
-        //     
-        //     // act
-        //     Action act = () =>
-        //                  {
-        //                      var profile_operation1 = sut.Profile(new ProfileOperationSpecification("a"));
-        //                      var profile_operation2 = sut.Profile(new ProfileOperationSpecification("b"));
-        //                      ((IDisposable) profile_operation1)?.Dispose();
-        //                      ((IDisposable) profile_operation2)?.Dispose();
-        //                  };
-        //
-        //     
-        //     // assert
-        //     act.Should().NotThrow();
-        // }
+
+
+        [Fact]
+        public async Task Profile_NestedAsyncOperationsAwaitedLater_AlwaysCorrectlyDetermineParent()
+        {
+            // arrange
+            var sut = this.fixture.Create<Profiler>();
+
+            async Task AsyncMethod(string name, int delay)
+            {
+                await Task.Delay(100);
+
+                using (sut.Profile(new ProfileOperationSpecification(name)))
+                {
+                    await Task.Delay(delay);
+                }
+            }
+
+
+            // act
+            using (sut.Profile(new ProfileOperationSpecification("root")))
+            {
+                var a = Task.Run(async () =>
+                                 {
+                                     await AsyncMethod("a", 500);
+                                     using (sut.Profile(new ProfileOperationSpecification("a2")))
+                                     {
+                                         await AsyncMethod("a3", 500);
+                                     }
+                                 });
+                var b = Task.Run(async () => await AsyncMethod("b", 250));
+                await Task.WhenAll(a, b);
+
+                await AsyncMethod("c", 250);
+            }
+
+
+            // assert
+            this.session.Operations.Should().ContainSingle(x => x.Name == "root").Which.Parent.Should().BeNull();
+            (this.session.Operations.Should().ContainSingle(x => x.Name == "a").Which.Parent?.Name).Should().Be("root");
+            (this.session.Operations.Should().ContainSingle(x => x.Name == "a2").Which.Parent?.Name).Should().Be("root");
+            (this.session.Operations.Should().ContainSingle(x => x.Name == "a3").Which.Parent?.Name).Should().Be("a2");
+            (this.session.Operations.Should().ContainSingle(x => x.Name == "b").Which.Parent?.Name).Should().Be("root");
+            (this.session.Operations.Should().ContainSingle(x => x.Name == "c").Which.Parent?.Name).Should().Be("root");
+        }
 
 
         private static IList<ProfileSession> CaptureProfileSessionAddedToTheResultsProcessor(IFixture fixture)

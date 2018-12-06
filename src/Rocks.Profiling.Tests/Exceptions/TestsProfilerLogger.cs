@@ -14,6 +14,7 @@ namespace Rocks.Profiling.Tests.Exceptions
         /// </summary>
         public virtual void LogWarning(string message, Exception ex = null)
         {
+            Console.WriteLine("WARNING: {0}\n{1}", message, ex);
         }
 
 

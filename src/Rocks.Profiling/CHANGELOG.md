@@ -1,3 +1,7 @@
+## 4.12.1 - 2018-12-06
+### Fixed
+- Fixed issue with multiple async operations awaited later could get wrong parent
+
 ## 4.12.0 - 2018-12-05
 ### Fixed
 - Fixed issue with multiple async operations awaited in wrong order generated OperationsOutOfOrderProfillingException. 

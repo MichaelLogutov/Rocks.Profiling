@@ -19,7 +19,7 @@ namespace Rocks.Profiling.Models
         private readonly Stopwatch stopwatch;
         private readonly IProfilerLogger logger;
         private readonly List<ProfileOperation> operations;
-        private readonly AsyncLocal<Stack<ProfileOperation>> operationsStack;
+        private readonly AsyncLocal<ProfileOperation> currentParentOperation;
 
         private int newId;
 
@@ -35,7 +35,7 @@ namespace Rocks.Profiling.Models
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             this.operations = new List<ProfileOperation>();
-            this.operationsStack = new AsyncLocal<Stack<ProfileOperation>>();
+            this.currentParentOperation = new AsyncLocal<ProfileOperation>();
             this.Data = new Dictionary<string, object>(StringComparer.Ordinal);
         }
 
@@ -127,23 +127,16 @@ namespace Rocks.Profiling.Models
             if (specification == null)
                 throw new ArgumentNullException(nameof(specification));
 
-            if (this.operationsStack.Value == null)
-                this.operationsStack.Value = new Stack<ProfileOperation>();
-
-            var operation_stack = this.operationsStack.Value;
-            
-            var last_operation = operation_stack.Count > 0 ? operation_stack.Peek() : null;
-
             this.newId++;
 
             var operation = new ProfileOperation(id: this.newId,
                                                  profiler: this.Profiler,
                                                  session: this,
                                                  specification: specification,
-                                                 parent: last_operation);
+                                                 parent: this.currentParentOperation.Value);
 
             this.operations.Add(operation);
-            operation_stack.Push(operation);
+            this.currentParentOperation.Value = operation;
 
             return operation;
         }
@@ -165,16 +158,10 @@ namespace Rocks.Profiling.Models
                 if (operation.Session != this)
                     throw new OperationFromAnotherSessionProfilingException();
 
-                var operation_stack = this.operationsStack.Value;
-                if (operation_stack == null)
-                    throw new OperationsOutOfOrderProfillingException($"Operations are out of order. OperationsStack is null. Operation \"{operation}\".");
-                
-                if (operation_stack.Count == 0)
-                    throw new OperationsOutOfOrderProfillingException($"Operations are out of order. OperationsStack is empty. Operation \"{operation}\".");
-                
-                var current_operation = operation_stack.Peek();
-                if (current_operation == operation)
-                    operation_stack.Pop();
+                if (this.currentParentOperation.Value == operation)
+                    this.currentParentOperation.Value = operation.Parent;
+                else
+                    this.logger.LogWarning($"Operations are out of order. Current parent operation does not match completed operation \"{operation}\".");
 
                 operation.EndTime = this.Time;
 
