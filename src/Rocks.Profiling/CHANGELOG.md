@@ -1,3 +1,7 @@
+## 4.12.2 - 2018-12-06
+### Fixed
+- Fixed issue with duplicate library setup overwriting previous registrations.
+
 ## 4.12.1 - 2018-12-06
 ### Fixed
 - Fixed issue with multiple async operations awaited later could get wrong parent

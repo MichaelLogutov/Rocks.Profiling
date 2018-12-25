@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using JetBrains.Annotations;
@@ -29,6 +30,8 @@ namespace Rocks.Profiling
 
         internal static Container Container { get; private set; }
 
+        private static readonly HashSet<Container> InitializedContainers = new HashSet<Container>();
+
 
         public static void Setup(Func<HttpContext> httpContextFactory, Container externalContainer = null)
         {
@@ -36,11 +39,15 @@ namespace Rocks.Profiling
             {
                 if (externalContainer == null)
                     externalContainer = new Container { Options = { AllowOverridingRegistrations = true } };
+                
+                if (InitializedContainers.Contains(externalContainer))
+                    return;
 
                 RegisterAll(httpContextFactory, externalContainer);
 
                 Container = externalContainer;
                 HttpContextFactory = httpContextFactory;
+                InitializedContainers.Add(externalContainer);
             }
         }
 
