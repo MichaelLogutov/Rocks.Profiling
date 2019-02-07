@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Threading;
 using JetBrains.Annotations;
+using Rocks.Helpers;
 using Rocks.Profiling.Exceptions;
 using Rocks.Profiling.Loggers;
 
@@ -93,7 +94,27 @@ namespace Rocks.Profiling.Models
         ///     The list of all operations in the session.
         /// </summary>
         [DataMember(Name = "Operations", EmitDefaultValue = false)]
-        public IReadOnlyList<ProfileOperation> Operations => this.operations;
+        public IReadOnlyList<ProfileOperation> Operations
+        {
+            get
+            {
+                lock (this.operations)
+                    return this.operations.ConvertToReadOnlyList();
+            }
+        }
+
+
+        /// <summary>
+        ///     Determine are there any operations in this session <see cref="Operations"/> list.
+        /// </summary>
+        public bool HasOperations
+        {
+            get
+            {
+                lock (this.operations)
+                    return this.operations.Count > 0;
+            }
+        }
 
         /// <summary>
         ///     Returns true if there is an operation which <see cref="ProfileOperation.Duration" />
@@ -135,7 +156,9 @@ namespace Rocks.Profiling.Models
                                                  specification: specification,
                                                  parent: this.currentParentOperation.Value);
 
-            this.operations.Add(operation);
+            lock (this.operations)
+                this.operations.Add(operation);
+
             this.currentParentOperation.Value = operation;
 
             return operation;

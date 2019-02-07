@@ -1,3 +1,9 @@
+## 4.13.0 - 2018-02-07
+### Fixed
+- Possible fix for IndexOutOfRangeException for ProfileSession.StartMeasure
+### Added
+- Added ProfileSession.HasOperations property
+
 ## 4.12.2 - 2018-12-06
 ### Fixed
 - Fixed issue with duplicate library setup overwriting previous registrations.

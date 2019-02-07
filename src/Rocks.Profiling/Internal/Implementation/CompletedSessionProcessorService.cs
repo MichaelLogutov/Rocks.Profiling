@@ -47,7 +47,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (should_process != null)
                 return should_process.Value;
 
-            if (session.Operations.Count == 0)
+            if (!session.HasOperations)
                 return false;
 
             if (session.HasOperationLongerThanNormal)
