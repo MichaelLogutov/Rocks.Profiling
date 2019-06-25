@@ -105,6 +105,39 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             this.currentSessionProvider.Verify(m => m.Set(result));
         }
+        
+        
+        [Fact]
+        public void Start_Always_CallsEventsHandler()
+        {
+            // arrange
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+            this.currentSessionProvider.Setup(x => x.Get()).Returns((ProfileSession) null);
+
+
+            // act
+            this.fixture.Create<Profiler>().Start();
+
+
+            // assert
+            events_handler.Verify(m => m.OnSessionStarted(It.Is<ProfileSession>(profileSession => profileSession != null)));
+        }
+
+
+        [Fact]
+        public void Start_OneEventHandlerThrows_DoesNotThrow()
+        {
+            // arrange
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+            events_handler.Setup(x => x.OnSessionStarted(It.IsAny<ProfileSession>())).Throws<ValidTestException>();
+            this.fixture.FreezeMock<ICurrentSessionProvider>().Setup(provider => provider.Get()).Returns((ProfileSession)null);
+            
+            // act
+            this.fixture.Create<Profiler>().Start();
+
+
+            // assert
+        }
 
 
         [Fact]
@@ -293,6 +326,46 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                                                         new { Id = 6, Name = "f", ParentId = 5 }
                                                     },
                                                     o => o.ExcludingMissingMembers());
+        }
+        
+        
+        [Fact]
+        public void Profile_Always_CallsEventsHandlers()
+        {
+            // arrange
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+
+            var sut = this.fixture.Create<Profiler>();
+
+
+            // act
+            using (sut.Profile(new ProfileOperationSpecification("test")))
+            {
+            }
+
+            // assert
+            events_handler.Verify(m => m.OnOperationStarted(It.Is<ProfileOperation>(x => x != null)), Times.Once);
+        }
+
+
+        [Fact]
+        public void Profile_OneEventHandlerThrows_DoesNotThrow()
+        {
+            // arrange
+            var events_handler = this.fixture.FreezeMock<IProfilerEventsHandler>();
+            events_handler.Setup(x => x.OnOperationStarted(It.IsAny<ProfileOperation>())).Throws<ValidTestException>();
+
+            var sut = this.fixture.Create<Profiler>();
+
+
+            // act
+            using (sut.Profile(new ProfileOperationSpecification("test")))
+            {
+            }
+
+            sut.Stop();
+
+            // assert
         }
 
 

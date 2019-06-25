@@ -57,6 +57,8 @@ namespace Rocks.Profiling.Internal.Implementation
                     session.AddData(additionalSessionData);
 
                 this.currentSession.Set(session);
+                
+                this.OnSessionStarted(session);
 
                 return session;
             }
@@ -64,6 +66,21 @@ namespace Rocks.Profiling.Internal.Implementation
             {
                 this.logger.LogError(ex);
                 return null;
+            }
+        }
+        
+        private void OnSessionStarted(ProfileSession session)
+        {
+            if(session is null)
+                throw new ArgumentNullException(nameof(session));
+            
+            try
+            {
+                this.eventsHandler.OnSessionStarted(session);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
             }
         }
 
@@ -96,6 +113,8 @@ namespace Rocks.Profiling.Internal.Implementation
                                                      specification: specification,
                                                      parent: null);
                 }
+                
+                this.OnOperationStarted(operation);
 
                 return operation;
             }
@@ -123,6 +142,8 @@ namespace Rocks.Profiling.Internal.Implementation
                     return null;
 
                 var operation = session.StartMeasure(specification);
+                
+                this.OnOperationStarted(operation);
 
                 return operation;
             }
@@ -130,6 +151,21 @@ namespace Rocks.Profiling.Internal.Implementation
             {
                 this.logger.LogError(ex);
                 return null;
+            }
+        }
+        
+        private void OnOperationStarted(ProfileOperation operation)
+        {
+            if(operation is null)
+                throw new ArgumentNullException(nameof(operation));
+
+            try
+            {
+                this.eventsHandler.OnOperationStarted(operation);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex);
             }
         }
 
