@@ -10,6 +10,18 @@ namespace Rocks.Profiling
     public interface IProfilerEventsHandler
     {
         /// <summary>
+        ///     Signals start of the profiled session.
+        /// </summary>
+        /// <param name="session"></param>
+        void OnSessionStarted([NotNull] ProfileSession session);
+
+
+        /// <summary>
+        ///     Signals start of the profiled operation.
+        /// </summary>
+        void OnOperationStarted([NotNull] ProfileOperation operation);
+        
+        /// <summary>
         ///     Signals the end of the profiled session.
         /// </summary>
         /// <param name="session"></param>

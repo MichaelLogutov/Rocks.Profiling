@@ -1,3 +1,7 @@
+## 4.14.0 - 2018-24-06
+### Added
+- Added IProfilerEventsHandler.OnSessionStarted and IProfilerEventsHandler.OnOperationStarted methods
+
 ## 4.13.0 - 2018-02-07
 ### Fixed
 - Possible fix for IndexOutOfRangeException for ProfileSession.StartMeasure

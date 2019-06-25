@@ -7,6 +7,16 @@ namespace Rocks.Profiling.Internal.Implementation
     /// </summary>
     internal class NullProfilerEventsHandler : IProfilerEventsHandler
     {
+        public void OnSessionStarted(ProfileSession session)
+        {
+        }
+
+
+        public void OnOperationStarted(ProfileOperation operation)
+        {
+        }
+
+
         public void OnSessionEnded(ProfileSession session)
         {
         }
