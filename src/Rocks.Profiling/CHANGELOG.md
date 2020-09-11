@@ -1,3 +1,7 @@
+## 4.15.0 - 2020-08-20
+### Changed
+- Packages update (SimpleInjector 5)
+
 ## 4.14.0 - 2018-24-06
 ### Added
 - Added IProfilerEventsHandler.OnSessionStarted and IProfilerEventsHandler.OnOperationStarted methods

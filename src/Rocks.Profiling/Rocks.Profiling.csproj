@@ -1,13 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
-        <Version>4.14.0</Version>
+
+        <Version>4.15.0</Version>
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>
+
+        <!--        <Version>4.15.0-rc3</Version>-->
+        <!--        <AssemblyVersion>4.15.0.3</AssemblyVersion>-->
+        <!--        <FileVersion>4.15.0.3</FileVersion>-->
+
         <Authors>Michael Logutov</Authors>
         <Company>Michael Logutov</Company>
         <Description>A library for auto profiling code.</Description>
-        <Copyright>Copyright © Michael Logutov 2018</Copyright>
+        <Copyright>Copyright © Michael Logutov 2020</Copyright>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <NoWarn>1591</NoWarn>
     </PropertyGroup>
@@ -21,19 +27,19 @@
         <RepositoryUrl>https://github.com/MichaelLogutov/Rocks.Profiling</RepositoryUrl>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Rocks.Helpers" Version="4.3.0"/>
-        <PackageReference Include="Rocks.SimpleInjector" Version="4.7.0"/>
+        <PackageReference Include="Rocks.Helpers" Version="4.8.0" />
+        <PackageReference Include="Rocks.SimpleInjector" Version="4.8.0" />
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'net471'">
-        <Reference Include="System.Transactions"/>
-        <Reference Include="System.Web"/>
+        <Reference Include="System.Transactions" />
+        <Reference Include="System.Web" />
     </ItemGroup>
     <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
     </ItemGroup>
     <Target Name="IncludeDocumentationFiles" BeforeTargets="PrepareForPublish">
         <ItemGroup>
-            <DocumentationFiles Include="bin\$(Configuration)\$(TargetFramework)\*.xml"/>
+            <DocumentationFiles Include="bin\$(Configuration)\$(TargetFramework)\*.xml" />
         </ItemGroup>
-        <Copy SourceFiles="@(DocumentationFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false"/>
+        <Copy SourceFiles="@(DocumentationFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
     </Target>
 </Project>
