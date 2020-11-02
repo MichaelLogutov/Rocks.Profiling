@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Rocks.Profiling.Configuration;
 using Rocks.Profiling.Exceptions;
+using Rocks.Profiling.Internal.Helpers;
 using Rocks.Profiling.Loggers;
 using Rocks.Profiling.Models;
 using Rocks.SimpleInjector.Attributes;
@@ -23,36 +23,27 @@ namespace Rocks.Profiling.Internal.Implementation
         private readonly ICompletedSessionProcessorService processorService;
 
         [ThreadSafe]
-        private readonly BlockingCollection<ProfileSession> dataToProcess;
+        private readonly ConcurrentQueue<ProfileSession> dataToProcess;
 
         [ThreadSafe]
         private readonly CancellationTokenSource cancellationTokenSource;
 
         [ThreadSafe]
+        private bool disposed;
+
+        [ThreadSafe]
         private Task processingTask;
 
 
-        /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="logger"/> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="processorService"/> is <see langword="null" />.</exception>
         public CompletedSessionsProcessorQueue([NotNull] IProfilerConfiguration configuration,
-                                               [NotNull] IProfilerLogger logger,
-                                               [NotNull] ICompletedSessionProcessorService processorService)
+            [NotNull] IProfilerLogger logger,
+            [NotNull] ICompletedSessionProcessorService processorService)
         {
-            if (configuration == null)
-                throw new ArgumentNullException(nameof(configuration));
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            this.processorService = processorService ?? throw new ArgumentNullException(nameof(processorService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            if (processorService == null)
-                throw new ArgumentNullException(nameof(processorService));
-
-            this.configuration = configuration;
-            this.processorService = processorService;
-            this.logger = logger;
-
-            this.dataToProcess = new BlockingCollection<ProfileSession>(this.configuration.ResultsBufferSize);
+            this.dataToProcess = new ConcurrentQueue<ProfileSession>();
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -62,15 +53,31 @@ namespace Rocks.Profiling.Internal.Implementation
         /// </summary>
         public void Dispose()
         {
+            if (this.disposed)
+                return;
+
             try
             {
+                if (!this.dataToProcess.IsEmpty)
+                {
+                    try
+                    {
+                        this.processingTask.Wait(this.configuration.ResultsProcessBatchDelay);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+                
                 this.cancellationTokenSource.Cancel();
-                this.dataToProcess.CompleteAdding();
             }
-            catch (Exception ex)
+            catch
             {
-                this.logger.LogError(ex);
+                // ignored
             }
+
+            this.disposed = true;
         }
 
 
@@ -84,7 +91,7 @@ namespace Rocks.Profiling.Internal.Implementation
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
-            if (this.dataToProcess.IsAddingCompleted)
+            if (this.disposed)
                 return;
 
             try
@@ -97,8 +104,11 @@ namespace Rocks.Profiling.Internal.Implementation
                 var retries = this.configuration.ResultsBufferAddRetriesCount;
                 while (true)
                 {
-                    if (this.dataToProcess.TryAdd(session))
+                    if (this.dataToProcess.Count < this.configuration.ResultsBufferSize)
+                    {
+                        this.dataToProcess.Enqueue(session);
                         return;
+                    }
 
                     var overflow_exception = new ResultsProcessorOverflowProfilingException();
                     this.logger.LogWarning(overflow_exception.Message, overflow_exception);
@@ -107,7 +117,7 @@ namespace Rocks.Profiling.Internal.Implementation
                     if (retries < 0)
                         throw overflow_exception;
 
-                    this.dataToProcess.TryTake(out _);
+                    this.dataToProcess.TryDequeue(out _);
                 }
             }
             catch (Exception ex)
@@ -124,10 +134,7 @@ namespace Rocks.Profiling.Internal.Implementation
 
             lock (this.processingTaskInitializationLock)
             {
-                if (this.processingTask != null)
-                    return;
-
-                this.processingTask = Task.Run(this.ProcessAsync, this.cancellationTokenSource.Token);
+                this.processingTask ??= Task.Run(this.ProcessAsync, this.cancellationTokenSource.Token);
             }
         }
 
@@ -136,34 +143,24 @@ namespace Rocks.Profiling.Internal.Implementation
         {
             var sessions = new List<ProfileSession>(this.configuration.ResultsProcessMaxBatchSize);
 
-            while (!this.cancellationTokenSource.IsCancellationRequested && !this.dataToProcess.IsCompleted)
+            while (!this.disposed && !this.cancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
                     if (this.configuration.ResultsProcessMaxBatchSize == 1)
                     {
                         // shortcut for particular case
-                        var session = this.dataToProcess.Take(this.cancellationTokenSource.Token);
-                        if (session == null)
-                            break;
-
-                        sessions.Add(session);
+                        if (this.dataToProcess.TryDequeue(out var session))
+                            sessions.Add(session);
                     }
                     else
                     {
-                        var stopwatch = Stopwatch.StartNew();
-
-                        while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize &&
-                               stopwatch.Elapsed < this.configuration.ResultsProcessBatchDelay)
+                        while (sessions.Count < this.configuration.ResultsProcessMaxBatchSize)
                         {
-                            var allowed_delay = (this.configuration.ResultsProcessBatchDelay - stopwatch.Elapsed).TotalMilliseconds;
-                            if (allowed_delay < 0)
-                                allowed_delay = 0;
-
-                            if (this.cancellationTokenSource.IsCancellationRequested || this.dataToProcess.IsCompleted)
+                            if (this.disposed || this.cancellationTokenSource.IsCancellationRequested)
                                 break;
 
-                            if (!this.dataToProcess.TryTake(out var session, (int) allowed_delay, this.cancellationTokenSource.Token))
+                            if (!this.dataToProcess.TryDequeue(out var session))
                                 break;
 
                             sessions.Add(session);
@@ -176,6 +173,14 @@ namespace Rocks.Profiling.Internal.Implementation
                             await this.processorService.ProcessAsync(sessions, this.cancellationTokenSource.Token).ConfigureAwait(false);
 
                         sessions.Clear();
+                    }
+
+                    if (this.configuration.ResultsProcessBatchDelay > TimeSpan.Zero)
+                    {
+                        await Task
+                            .Delay(this.configuration.ResultsProcessBatchDelay, this.cancellationTokenSource.Token)
+                            .Silent()
+                            .ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)

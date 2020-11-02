@@ -91,6 +91,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
 
             // act
             await dataflow.ProcessAsync(Enumerable.Range(0, 10)).ConfigureAwait(false);
+            await Task.Delay(100);
 
 
             // assert
@@ -143,6 +144,7 @@ namespace Rocks.Profiling.Tests.IntegrationTests
         {
             public override bool Enabled { get; } = true;
             public override TimeSpan SessionMinimalDuration { get; } = TimeSpan.FromMilliseconds(1);
+            public override TimeSpan ResultsProcessBatchDelay { get; } = TimeSpan.FromMilliseconds(100);
         }
     }
 }

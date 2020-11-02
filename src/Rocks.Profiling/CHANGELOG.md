@@ -1,3 +1,7 @@
+## 4.16.0 - 2020-10-27
+### Changed
+- Background profiling queue processing implementation changed from `BlockingCollection` to `ConcurrentQueue`
+
 ## 4.15.0 - 2020-08-20
 ### Changed
 - Packages update (SimpleInjector 5)

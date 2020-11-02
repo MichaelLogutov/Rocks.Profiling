@@ -65,7 +65,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_One_ThenDelay_ThenAnother_WaitsForBatchTimeForTheSecond()
         {
             // arrange
-            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(1000));
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(300));
 
             var session1 = this.CreateSession(1);
             var session2 = this.CreateSession(2);
@@ -80,12 +80,12 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             using (var sut = this.fixture.Create<CompletedSessionsProcessorQueue>())
             {
                 sut.Add(session1);
-                await Task.Delay(300).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
                 result1 = stored_sessions.ToArray();
 
                 sut.Add(session2);
 
-                await Task.Delay(700).ConfigureAwait(false);
+                await Task.Delay(300).ConfigureAwait(false);
                 result2 = stored_sessions.ToArray();
             }
 
@@ -100,7 +100,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_ThreeTimesInARow_WithMaxBatchSizeTwo_ProcessTwoFirstSessions()
         {
             // arrange
-            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(500));
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(200));
             this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(2);
 
             var session1 = this.CreateSession(1);
@@ -121,11 +121,11 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
                 result1 = stored_sessions.ToList();
 
                 sut.Add(session2);
-                await Task.Delay(200).ConfigureAwait(false);
+                await Task.Delay(300).ConfigureAwait(false);
                 result2 = stored_sessions.ToList();
 
                 sut.Add(session3);
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(200).ConfigureAwait(false);
                 result3 = stored_sessions.ToList();
             }
 
@@ -133,7 +133,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             // assert
             result1.Should().BeEmpty();
             result2.Should().Equal("1, 2");
-            result3.Should().Equal("1, 2");
+            result3.Should().Equal("1, 2", "3");
         }
 
 
@@ -198,7 +198,6 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public void Add_QueueIsFull_LogsWarning()
         {
             // arrange
-            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(5000));
             this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
             this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
 
@@ -241,7 +240,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
             {
                 sut.Add(session1);
 
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(200).ConfigureAwait(false);
 
                 sut.Add(session2);
                 sut.Add(session3);
@@ -259,7 +258,7 @@ namespace Rocks.Profiling.Tests.Internal.Implementation
         public async Task Add_QueueIsFull_ResultsBufferAddRetriesCountIsZero_ThrowsImmediately()
         {
             // arrange
-            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(50000));
+            this.configuration.Setup(x => x.ResultsProcessBatchDelay).Returns(TimeSpan.FromMilliseconds(100));
             this.configuration.Setup(x => x.ResultsBufferSize).Returns(1);
             this.configuration.Setup(x => x.ResultsProcessMaxBatchSize).Returns(1);
             this.configuration.Setup(x => x.ResultsBufferAddRetriesCount).Returns(0);
